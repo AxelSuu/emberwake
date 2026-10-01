@@ -40,10 +40,17 @@ class ParallaxLayer:
 
 
 def wrap_blur(image: pygame.Surface, radius: int) -> pygame.Surface:
-    """Gaussian-blur a horizontally tiling image without seams at its left and right edges."""
+    """Blur a horizontally tiling image without seams at its left and right edges.
+
+    The blur runs at half resolution with half the radius and is scaled back up, which looks
+    the same on soft backgrounds and is several times cheaper.
+    """
     width, height = image.get_size()
-    strip = pygame.Surface((width * 3, height), pygame.SRCALPHA)
-    for i in range(3):
-        strip.blit(image, (i * width, 0))
-    blurred = pygame.transform.gaussian_blur(strip, radius)
-    return blurred.subsurface((width, 0, width, height)).copy()
+    pad = radius * 3
+    strip = pygame.Surface((width + 2 * pad, height), pygame.SRCALPHA)
+    for x in (pad - width, pad, pad + width):
+        strip.blit(image, (x, 0))
+    half = pygame.transform.smoothscale(strip, (strip.get_width() // 2, height // 2))
+    half = pygame.transform.gaussian_blur(half, max(1, round(radius / 2)))
+    blurred = pygame.transform.smoothscale(half, strip.get_size())
+    return blurred.subsurface((pad, 0, width, height)).copy()
