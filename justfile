@@ -31,6 +31,14 @@ bench *args:
 cov:
     SDL_VIDEODRIVER=dummy uv run pytest --cov --cov-report=term-missing
 
+# Compile pixel DSL sprites from art/ into assets/
+art:
+    uv run python -m tools.pxl build
+
+# Recompile sprites whenever they change
+art-watch:
+    uv run python -m tools.pxl watch
+
 # Build the browser version into build/web
 web:
     rm -rf build/web-src && mkdir -p build/web-src
