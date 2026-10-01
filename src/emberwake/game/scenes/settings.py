@@ -106,6 +106,7 @@ class SettingsScene(Scene):
             slider("settings.master", audio, "master"),
             slider("settings.music", audio, "music"),
             slider("settings.sfx", audio, "sfx"),
+            Button(t("settings.controls"), self._controls),
             Label(t("settings.accessibility"), dim=True),
             toggle("settings.reduce_flashes", a11y, "reduce_flashes"),
             Label(t("settings.language"), dim=True),
@@ -130,6 +131,11 @@ class SettingsScene(Scene):
     def close(self) -> None:
         """Leave the screen."""
         self.manager.pop()
+
+    def _controls(self) -> None:
+        from emberwake.game.scenes.controls import ControlsScene  # noqa: PLC0415
+
+        self.manager.push(ControlsScene(self.ctx))
 
     def _set_fullscreen(self, on: bool) -> None:
         self.ctx.settings.video.fullscreen = on

@@ -193,6 +193,7 @@ class GameplayScene(Scene):
     def on_resume(self) -> None:
         """Apply settings changed in an overlay and drop input held while it was open."""
         settings = self.ctx.settings
+        self.mapper.bind(settings.controls)
         self.mapper.release_all()
         self.frame.flags = self._effects()
         self.camera.shake.intensity = settings.video.screen_shake
