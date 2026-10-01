@@ -62,3 +62,11 @@ beacon_flash = 0.35
 
 [rooms]
 entry_boost = 240
+
+[light]
+ember_max = 100.0
+drain = 2.0
+refill = 25.0
+lit_threshold = 0.05
+lantern_radius = 56.0
+beacon_radius = 96.0
