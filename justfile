@@ -15,6 +15,7 @@ check:
     uv run ty check
     uv run lint-imports
     uv run python -m tools.levels validate
+    uv run python -m tools.palette lint
 
 fix:
     uv run ruff check --fix .

@@ -7,7 +7,7 @@
 | Canvas | 640x360, integer upscaled |
 | Grid | 16 px tiles |
 | Player | ~16x24 px |
-| Palette | Resurrect 64 (`game/palette.py`), enforced by `tools/palette lint` |
+| Palette | Resurrect 64 (`game/palette.py`), enforced by `python -m tools.palette lint` (in `just check`: PNG pixels, TOML and game-code hex literals) |
 | Outlines | Dark selective outlines (INK `#2e222f`), never pure black |
 | Mood | Cold desaturated blues, plums and teals in darkness; warm ambers for light |
 
