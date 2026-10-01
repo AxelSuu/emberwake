@@ -127,6 +127,11 @@ resolution, blurs and scales it up, and multiplies the light gradient by it. `Fl
 `settings.video.shadows` switch it off. The GL backend will use an SDF from the occluder mask
 instead (#23).
 
+Light shafts (`engine.render.shafts`): `ShaftCmd` beams (a thin start widening and fading out),
+cached per shape and 5-degree angle and added over the world layer; lit beacons emit three,
+swaying. `Flag.SHAFTS` / `settings.video.light_shafts` toggle them. Depth blur on the software
+path is the pre-blurred parallax layers of the backdrops.
+
 Particles (`engine.render.particles`): `ParticleSystem` keeps up to 512 particles in preallocated
 lists (swap-remove, no per-frame allocation) and drops bursts that do not fit. Emitters are named
 `EmitterSpec`s in `content/particles.toml`, reloaded with F5; budgets are in `tests/bench`.

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import functools
 import logging
+import math
 import operator
 import time
 import tomllib
-from math import floor
 from typing import TYPE_CHECKING
 
 import pygame
@@ -23,7 +23,7 @@ from emberwake.engine.physics import Body, Tile, TileSource
 from emberwake.engine.platform.documents import save_document
 from emberwake.engine.render.camera import Camera
 from emberwake.engine.render.chunks import ChunkLayer
-from emberwake.engine.render.frame import Flag, Layer, RenderFrame
+from emberwake.engine.render.frame import Flag, Layer, RenderFrame, ShaftCmd
 from emberwake.engine.render.particles import EmitterSpec, ParticleSystem, load_emitters
 from emberwake.engine.render.post import PostChain
 from emberwake.engine.render.software import SoftwareBackend
@@ -65,6 +65,8 @@ DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
 """Seconds per frame spent baking room art in the background."""
 GLOW_RADIUS = 64
+SHAFT_ANGLES = (-22, 0, 22)
+"""Degrees either side of straight up for a lit beacon's light shafts."""
 _ember = pygame.Color(palette.EMBER_WARM).lerp(palette.EMBER_HOT, 0.4)
 GLOW = (_ember.r, _ember.g, _ember.b)
 """Lantern and beacon light color."""
@@ -216,6 +218,7 @@ class GameplayScene(Scene):
             (Flag.VIGNETTE, video.vignette),
             (Flag.CRT, video.crt),
             (Flag.SHADOWS, video.shadows),
+            (Flag.SHAFTS, video.light_shafts),
         )
         return functools.reduce(operator.or_, (flag for flag, on in toggles if on), Flag(0))
 
@@ -463,13 +466,18 @@ class GameplayScene(Scene):
         size = self.grid.tile_size
 
         def occluded(x: float, y: float) -> bool:
-            return self.grid.get(floor((x + ox) / size), floor((y + oy) / size)) == Tile.SOLID
+            column, row = math.floor((x + ox) / size), math.floor((y + oy) / size)
+            return self.grid.get(column, row) == Tile.SOLID
 
         frame.occluded = occluded
         light = self.flicker(self.clock)
         for _, body, beacon in self.world.query(Body, Beacon):
             if beacon.lit:
-                frame.light(body.center_x - ox, body.y + 3 - oy, GLOW_RADIUS, GLOW, light)
+                bx, by = body.center_x - ox, body.y + 3 - oy
+                frame.light(bx, by, GLOW_RADIUS, GLOW, light)
+                for index, spread in enumerate(SHAFT_ANGLES):
+                    sway = math.sin(self.clock * 0.7 + index * 2.1) * 6
+                    frame.shaft(ShaftCmd(bx, by, 270 + spread + sway, 90, 36, GLOW, light * 0.8))
         for _, body, sprite in self.world.query(Body, Sprite):
             image = self.art.image(sprite.current, (round(body.width), round(body.height)))
             frame.sprite(image, round(body.x) - ox, round(body.y) - oy)

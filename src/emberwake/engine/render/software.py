@@ -8,6 +8,7 @@ import pygame
 
 from emberwake.engine.render.frame import Flag, Layer
 from emberwake.engine.render.shadows import shadow_mask
+from emberwake.engine.render.shafts import ShaftCache
 
 if TYPE_CHECKING:
     from emberwake.engine.render.frame import LightCmd, RenderFrame
@@ -23,6 +24,7 @@ class SoftwareBackend:
 
     def __init__(self) -> None:
         self._gradients: dict[tuple[int, tuple[int, int, int], int], pygame.Surface] = {}
+        self._shafts = ShaftCache()
 
     def render(self, frame: RenderFrame, canvas: pygame.Surface) -> None:
         """Draw the frame's sprites and lights onto `canvas`, which keeps what it already shows."""
@@ -30,6 +32,9 @@ class SoftwareBackend:
             if layer is Layer.ACTORS and Flag.LIGHTING in frame.flags:
                 for light in frame.lights:
                     self._light(canvas, light, frame)
+            if layer is Layer.ACTORS and Flag.SHAFTS in frame.flags:
+                for shaft in frame.shafts:
+                    self._shafts.draw(canvas, shaft)
             canvas.fblits([(c.image, (c.x, c.y)) for c in frame.sprites if c.layer is layer])
 
     def _light(self, canvas: pygame.Surface, light: LightCmd, frame: RenderFrame) -> None:
