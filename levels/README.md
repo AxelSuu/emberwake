@@ -17,7 +17,7 @@ rebuilt. Do not edit generated levels in LDtk; the next build overwrites them.
 | `src/defs.toml` | Entity types (size, pivot, fields) and level fields |
 | `src/world.toml` | Each room's top-left cell on the GridVania grid (20x11 tiles, 320x176 px) |
 | `src/<room>.txt` | The room's tiles, one character per 16 px tile; size in whole grid cells |
-| `src/<room>.toml` | Optional: what each marker is, its fields and wiring, plus level fields |
+| `src/<room>.toml` | Optional: what each marker is, its fields and wiring, plus level fields such as `Backdrop` (a preset in `content/backdrops.toml`, default `cavern`) |
 
 Rooms connect where their edges touch and the tiles there are open. Put a PlayerStart near each
 entrance: it is where the player respawns after a hazard death.

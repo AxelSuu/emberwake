@@ -120,6 +120,14 @@ Gameplay emits a backend-agnostic `RenderFrame` (draw commands per layer, lights
 
 Tiles are baked into 256x256 chunk surfaces; only visible chunks are drawn with `fblits`.
 
+Backdrops (M2, software path): the level field `Backdrop` names a preset in
+`content/backdrops.toml`, a sky gradient plus `ParallaxLayer`s that wrap horizontally and scroll
+at their factor. Far layers (factor up to 1) are blurred once at half resolution for HD-2D depth
+and drawn behind the world; near layers (factor above 1) are darkened and pass in front of it.
+Presets the world uses are built when the scene loads, so crossing rooms never stalls. A change
+of preset cross-fades over 0.5 s, and a room with a lit beacon warms up (additive tint, a preview
+of the M3 colour grade).
+
 ## World streaming (M2)
 
 [ADR 0014](adr/0014-world-coordinates-streamed-rooms.md). The simulation runs in world pixels
