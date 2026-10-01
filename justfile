@@ -55,16 +55,18 @@ sfx:
 art-watch:
     uv run python -m tools.pxl watch
 
-# Build the browser version into build/web
-web:
+web-stage:
     rm -rf build/web-src && mkdir -p build/web-src
     cp main.py build/web-src/
     cp -r src/emberwake content levels build/web-src/
+
+# Build the browser version into build/web
+web: web-stage
     uv run --group web pygbag --build build/web-src
     rm -rf build/web && mv build/web-src/build/web build/web
 
-# Serve the browser version on http://localhost:8000
-web-serve: web
+# Build and serve the browser version on http://localhost:8000 (needed on localhost: it serves /cdn)
+web-serve: web-stage
     uv run --group web pygbag build/web-src
 
 docs:
