@@ -104,6 +104,7 @@ class MenuScene(Overlay):
                 cont,
                 Button(t("menu.new"), lambda: self.manager.push(SlotScene(ctx, new=True))),
                 Button(t("menu.load"), lambda: self.manager.push(SlotScene(ctx, new=False))),
+                Button(t("menu.achievements"), self._achievements),
                 Button(t("menu.settings"), lambda: self.manager.push(SettingsScene(ctx))),
                 Button(t("menu.quit"), self._quit),
             ]
@@ -122,6 +123,11 @@ class MenuScene(Overlay):
     def _continue(self) -> None:
         if self.last is not None:
             start(self.ctx, self, self.last, new=False)
+
+    def _achievements(self) -> None:
+        from emberwake.game.scenes.achievements import AchievementsScene  # noqa: PLC0415
+
+        self.manager.push(AchievementsScene(self.ctx))
 
     def _back(self) -> None:
         self.manager.pop()

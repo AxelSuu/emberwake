@@ -1,0 +1,34 @@
+# Achievements by id. `event` is a counter fed by gameplay (Jumped, Dashed, Died, Killed,
+# BeaconLit, Collected = embers picked up); `rooms` counts different rooms entered instead.
+# Names and descriptions are strings: achievement.<id>.name and achievement.<id>.desc.
+
+[first_steps]
+event = "Jumped"
+count = 1
+
+[leaper]
+event = "Jumped"
+count = 100
+
+[dasher]
+event = "Dashed"
+count = 50
+
+[ember_collector]
+event = "Collected"
+count = 25
+
+[lightbringer]
+event = "BeaconLit"
+count = 1
+
+[explorer]
+rooms = 5
+
+[tenacious]
+event = "Died"
+count = 10
+
+[exterminator]
+event = "Killed"
+count = 5

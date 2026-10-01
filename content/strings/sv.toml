@@ -41,6 +41,7 @@ quit = "Avsluta till titel"
 continue = "Fortsätt"
 new = "Nytt spel"
 load = "Ladda spel"
+achievements = "Prestationer"
 settings = "Inställningar"
 quit = "Avsluta"
 back = "Tillbaka"
@@ -73,3 +74,46 @@ best = "Bäst {time}"
 deaths = "Dödsfall: {count}"
 embers = "Glöd: {count}"
 continue = "Fortsätt"
+
+[achievements]
+title = "Prestationer"
+back = "Tillbaka"
+jumps = "Hopp"
+dashes = "Rusher"
+deaths = "Dödsfall"
+embers = "Glöd"
+
+[achievement]
+unlocked = "Prestation: {name}"
+
+[achievement.first_steps]
+name = "Första stegen"
+desc = "Hoppa för första gången"
+
+[achievement.leaper]
+name = "Hoppare"
+desc = "Hoppa 100 gånger"
+
+[achievement.dasher]
+name = "Rusare"
+desc = "Rusa 50 gånger"
+
+[achievement.ember_collector]
+name = "Glödsamlare"
+desc = "Samla 25 glöd"
+
+[achievement.lightbringer]
+name = "Ljusbringare"
+desc = "Tänd ett fyrtorn igen"
+
+[achievement.explorer]
+name = "Upptäckare"
+desc = "Gå in i 5 olika rum"
+
+[achievement.tenacious]
+name = "Seg"
+desc = "Dö 10 gånger"
+
+[achievement.exterminator]
+name = "Utrotare"
+desc = "Besegra 5 fiender"

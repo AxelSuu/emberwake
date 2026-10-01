@@ -20,6 +20,7 @@ from emberwake.engine.platform.storage import FileStorage, default_storage
 from emberwake.engine.runner import Runner
 from emberwake.engine.scene import SceneManager
 from emberwake.game import paths
+from emberwake.game.achievements import Achievements, load_defs
 from emberwake.game.context import GameContext
 from emberwake.game.data.settings import SETTINGS_CODEC, SETTINGS_KEY, Settings
 from emberwake.game.scenes.boot import BootScene
@@ -60,6 +61,7 @@ async def main(argv: Sequence[str] | None = None) -> None:
         dev=options.dev,
         strings=load_strings(settings.language, warn=options.dev),
         audio=Audio(paths.sounds(), settings.audio),
+        achievements=Achievements.load(load_defs(paths.content("achievements.toml")), storage),
         slot=options.slot,
         new_game=options.new,
     )
@@ -83,5 +85,6 @@ async def main(argv: Sequence[str] | None = None) -> None:
         await runner.run()
     finally:
         scenes.close()
+        ctx.achievements.save()
         save_document(storage, SETTINGS_KEY, SETTINGS_CODEC, settings)
         pygame.quit()

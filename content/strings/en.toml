@@ -42,6 +42,7 @@ quit = "Quit to title"
 continue = "Continue"
 new = "New game"
 load = "Load game"
+achievements = "Achievements"
 settings = "Settings"
 quit = "Quit"
 back = "Back"
@@ -74,3 +75,46 @@ best = "Best {time}"
 deaths = "Deaths: {count}"
 embers = "Embers: {count}"
 continue = "Continue"
+
+[achievements]
+title = "Achievements"
+back = "Back"
+jumps = "Jumps"
+dashes = "Dashes"
+deaths = "Deaths"
+embers = "Embers"
+
+[achievement]
+unlocked = "Achievement: {name}"
+
+[achievement.first_steps]
+name = "First steps"
+desc = "Jump for the first time"
+
+[achievement.leaper]
+name = "Leaper"
+desc = "Jump 100 times"
+
+[achievement.dasher]
+name = "Dasher"
+desc = "Dash 50 times"
+
+[achievement.ember_collector]
+name = "Ember collector"
+desc = "Collect 25 embers"
+
+[achievement.lightbringer]
+name = "Lightbringer"
+desc = "Relight a beacon"
+
+[achievement.explorer]
+name = "Explorer"
+desc = "Enter 5 different rooms"
+
+[achievement.tenacious]
+name = "Tenacious"
+desc = "Die 10 times"
+
+[achievement.exterminator]
+name = "Exterminator"
+desc = "Defeat 5 enemies"
