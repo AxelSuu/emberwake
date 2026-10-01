@@ -4,8 +4,10 @@ import json
 from typing import TYPE_CHECKING
 
 import pytest
-from tools.ldtk_scaffold import build_project
+from tools.levels.ldtk import Json, build_project
+from tools.levels.source import Defs, Source, make_room
 
+from emberwake.engine.core.serde import from_data
 from emberwake.engine.physics import Tile
 from emberwake.engine.world.ldtk import load_project
 
@@ -13,13 +15,30 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 LEGEND = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
-ROOMS = {"Alpha": ["#####", "#P..#", "#=^.#", "#####"], "Beta": ["####", "#..#", "####"]}
+WALL, INSIDE = "#" * 20, "#" + "." * 18 + "#"
+ALPHA = [WALL, "#P" + "." * 17 + "#", "#=^" + "." * 16 + "#", *[INSIDE] * 7, WALL]
+BETA = [WALL, *[INSIDE] * 9, WALL]
+
+
+def project() -> Json:
+    defs = from_data(
+        Defs,
+        {
+            "level_fields": {"Generated": {"type": "Bool", "default": False}},
+            "entities": {"PlayerStart": {"color": "#f9c22b"}},
+        },
+    )
+    rooms = [
+        make_room("Alpha", (0, 0), "\n".join(ALPHA)),
+        make_room("Beta", (1, 0), "\n".join(BETA)),
+    ]
+    return build_project(Source(defs, rooms))
 
 
 @pytest.fixture
 def project_path(tmp_path: Path) -> Path:
     path = tmp_path / "world.ldtk"
-    path.write_text(json.dumps(build_project(ROOMS)))
+    path.write_text(json.dumps(project()))
     return path
 
 
@@ -27,14 +46,14 @@ def test_levels_and_layers(project_path: Path):
     project = load_project(project_path)
     alpha = project.level("Alpha")
     assert [level.identifier for level in project.all_levels] == ["Alpha", "Beta"]
-    assert (alpha.width, alpha.height, alpha.world_x) == (80, 64, 0)
+    assert (alpha.width, alpha.height, alpha.world_x) == (320, 176, 0)
     assert [layer.identifier for layer in alpha.layers] == ["Entities", "Collisions"]
     assert alpha.neighbours[0].dir == "e"
 
 
 def test_int_grid_to_tile_grid(project_path: Path):
     grid = load_project(project_path).level("Alpha").layer("Collisions").to_tile_grid(LEGEND)
-    assert (grid.width, grid.height, grid.tile_size) == (5, 4, 16)
+    assert (grid.width, grid.height, grid.tile_size) == (20, 11, 16)
     assert (grid.get(0, 0), grid.get(1, 2), grid.get(2, 2), grid.get(3, 2)) == (
         Tile.SOLID,
         Tile.ONE_WAY,
@@ -63,7 +82,7 @@ def test_missing_layer_and_level(project_path: Path):
 
 
 def test_external_levels(tmp_path: Path):
-    data = build_project(ROOMS)
+    data = project()
     data["externalLevels"] = True
     for level in data["levels"]:
         body = dict(level)
@@ -75,4 +94,4 @@ def test_external_levels(tmp_path: Path):
     path = tmp_path / "world.ldtk"
     path.write_text(json.dumps(data))
     alpha = load_project(path).level("Alpha")
-    assert alpha.layer("Collisions").columns == 5
+    assert alpha.layer("Collisions").columns == 20

@@ -17,3 +17,4 @@ Superseded records stay, marked as such.
 | [0010](0010-art-pipeline.md) | Art pipeline: Resurrect 64, 16 px, pixel DSL, generated normals |
 | [0011](0011-process.md) | Process: specs, ADRs, GitHub issues, CI gates |
 | [0012](0012-ecs-deferred-changes-resources.md) | ECS details: deferred structural changes, resources, phase schedule |
+| [0013](0013-text-first-level-source.md) | Text-first level source compiled to LDtk |

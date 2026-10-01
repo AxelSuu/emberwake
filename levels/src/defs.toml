@@ -1,0 +1,41 @@
+# Entity types and level fields of the generated LDtk project. Sizes in px; pivot (0, 0) is the
+# top-left corner, (0.5, 1) the bottom centre. Field types: Bool, Int, Float, String, EntityRef.
+
+[level_fields]
+Generated = { type = "Bool", default = false, doc = "Compiled from levels/src; rebuilt by --merge" }
+
+[entities.PlayerStart]
+color = "#f9c22b"
+max_count = 1
+doc = "Spawn point, and respawn point after a hazard death"
+
+[entities.Door]
+color = "#966c6c"
+size = [16, 48]
+pivot = [0.0, 0.0]
+resizable = true
+doc = "Solid while closed; opens while its sources are on"
+fields.Mode = { type = "String", default = "any", doc = "any or all of its sources" }
+fields.Invert = { type = "Bool", default = false, doc = "Open while unpowered instead" }
+
+[entities.Lever]
+color = "#fb6b1d"
+doc = "Interact to switch its targets"
+fields.Targets = { type = "EntityRef", array = true }
+fields.Mode = { type = "String", default = "toggle", doc = "toggle, momentary or once" }
+
+[entities.PressurePlate]
+color = "#ab947a"
+resizable = true
+doc = "On while something stands on it"
+fields.Targets = { type = "EntityRef", array = true }
+
+[entities.Beacon]
+color = "#fbff86"
+doc = "Relight to save and set the continue point"
+
+[entities.Ember]
+color = "#ea4f36"
+pivot = [0.5, 0.5]
+doc = "Collectible"
+fields.Value = { type = "Int", default = 1 }
