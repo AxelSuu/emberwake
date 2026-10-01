@@ -63,13 +63,14 @@ one are stacked (based on its branch); GitHub retargets them to `main` when the 
 
 ```python
 world = World()
-player = world.spawn(Body(...), Motor(), Facing(1))       # returns EntityId immediately
-world.add(player, Visual())                                # structural changes are deferred
-for eid, body, motor in world.query(Body, Motor): ...      # typed overloads for 1-4 types
-world.resource(Camera)                                     # singletons: grid, camera, input, bus
+player = world.spawn(Body(...), Motor(), Facing(1))  # returns EntityId immediately
+world.add(player, Visual())  # structural changes are deferred
+for eid, body, motor in world.query(Body, Motor):
+    ...  # typed overloads for 1-4 types
+world.resource(Camera)  # singletons: grid, camera, input, bus
 schedule = Schedule(["input", "logic", "physics", "post", "camera", "render_prep"])
 schedule.add("physics", player_system)
-schedule.run(world, dt)                                    # flushes spawns/despawns between phases
+schedule.run(world, dt)  # flushes spawns/despawns between phases
 ```
 
 - Stores: `dict[type, dict[EntityId, component]]`; queries iterate the smallest store.
@@ -166,13 +167,13 @@ persist = ["Switch"]                                             # saved per iid
 ```python
 @dataclass
 class SaveSlot:
-    room: str                         # last beacon's room
-    beacon: str                       # its iid
+    room: str  # last beacon's room
+    beacon: str  # its iid
     playtime: float
     flags: dict[str, int]
-    entities: dict[str, dict[str, Any]]   # iid -> persisted component data
-    discovered: list[str]             # room iids
-    stats: Stats                      # deaths, jumps, dashes, embers
+    entities: dict[str, dict[str, Any]]  # iid -> persisted component data
+    discovered: list[str]  # room iids
+    stats: Stats  # deaths, jumps, dashes, embers
 ```
 
 - `saves/slot_{1,2,3}.json` through `Storage` + `VersionedCodec` (atomic, backed up).
