@@ -7,7 +7,7 @@ from typing import Any
 
 from emberwake.engine.core.serde import VersionedCodec
 from emberwake.engine.input import Bindings
-from emberwake.game.actions import INTERACT_BUTTONS, INTERACT_KEYS, default_bindings
+from emberwake.game.actions import INTERACT_KEYS, default_bindings
 
 SETTINGS_KEY = "settings.json"
 
@@ -52,8 +52,6 @@ def _add_interact(data: dict[str, Any]) -> dict[str, Any]:
     controls = data.get("controls", {})
     if "keys" in controls:
         controls["keys"].setdefault("interact", list(INTERACT_KEYS))
-    if "buttons" in controls:
-        controls["buttons"].setdefault("interact", list(INTERACT_BUTTONS))
     return data
 
 
@@ -67,8 +65,14 @@ def _add_accessibility(data: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
+def _drop_gamepad(data: dict[str, Any]) -> dict[str, Any]:
+    """v4 -> v5: gamepad support was removed, so saved button bindings go."""
+    data.get("controls", {}).pop("buttons", None)
+    return data
+
+
 SETTINGS_CODEC = VersionedCodec(
     Settings,
-    version=4,
-    migrations={1: _add_interact, 2: _add_post_effects, 3: _add_accessibility},
+    version=5,
+    migrations={1: _add_interact, 2: _add_post_effects, 3: _add_accessibility, 4: _drop_gamepad},
 )

@@ -17,7 +17,7 @@ def primary(table: dict[str, list[str]], action: Action) -> str:
 
 
 def rebind(table: dict[str, list[str]], action: Action, new: str) -> Action | None:
-    """Make `new` the first input of `action` in `table`, one of ``Bindings.keys`` or ``.buttons``.
+    """Make `new` the first input of `action` in the ``Bindings.keys`` `table`.
 
     An input already bound elsewhere moves here. An action that would be left with nothing gets
     the input `action` just gave up (a swap). Returns the action that lost `new`, if any.
@@ -38,6 +38,6 @@ def rebind(table: dict[str, list[str]], action: Action, new: str) -> Action | No
 
 
 def reset(bindings: Bindings) -> None:
-    """Restore the default keys and buttons in place."""
+    """Restore the default keys in place."""
     defaults = default_bindings()
-    bindings.keys, bindings.buttons = defaults.keys, defaults.buttons
+    bindings.keys = defaults.keys

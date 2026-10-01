@@ -1,4 +1,4 @@
-"""UI toolkit: themed widgets with keyboard and gamepad focus navigation."""
+"""UI toolkit: themed widgets with keyboard focus navigation."""
 
 from emberwake.engine.ui.nav import Nav, Navigator
 from emberwake.engine.ui.root import UiRoot

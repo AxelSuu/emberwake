@@ -11,12 +11,12 @@ emberwake.engine     reusable, game-agnostic
   platform           desktop vs browser: storage, documents, display
   scene              scene stack
   runner             the main loop
-  input              per-tick action state, keyboard/gamepad mapper, replays
+  input              per-tick action state, keyboard mapper, replays
   physics            tile sources, sub-stepped kinematic collision
   render             camera, screen shake, chunked layers (later: backends, lighting, particles)
   world              LDtk loader, room graph, world grid, room streaming
   debug              fps overlay, time control (later: console, inspector window)
-  ui                 themed widgets with keyboard and gamepad focus navigation
+  ui                 themed widgets with keyboard focus navigation
   (planned) assets, audio
 ```
 
@@ -93,7 +93,7 @@ floating text and achievements stay decoupled.
 
 ## Input
 
-Devices never reach gameplay. `InputMapper` turns key and gamepad events into a set of held
+Devices never reach gameplay. `InputMapper` turns key events into a set of held
 actions, sampled once per tick (taps shorter than a tick still count for one tick).
 `InputState` derives `pressed`, `released` and buffered presses from consecutive frames. Because
 gameplay sees only these frames, recording them (`ReplayRecorder`, run-length encoded) is enough
@@ -174,8 +174,7 @@ entered. F4 shows room rects, names and load state.
 
 `engine.ui`: `Label`, `Button`, `Toggle`, `Slider`, `Selector`, `KeybindField`, and the containers
 `Panel` and `ScrollList`. A container keeps one focused child; up and down move it, left, right and
-accept go to the child (`Nav` actions). `Navigator` turns keyboard and gamepad events (d-pad,
-stick, A/B) into `Nav`, with hold-to-repeat; `UiRoot` lays a tree out, routes events (a listening
+accept go to the child (`Nav` actions). `Navigator` turns keyboard events into `Nav`, with hold-to-repeat; `UiRoot` lays a tree out, routes events (a listening
 `KeybindField` takes raw ones) and calls `on_back`. Focus highlights ease (`Widget.glow`) and the
 look comes from `content/ui.toml` (`Theme`, Resurrect 64 colors). Screens (menus, settings,
 rebinding) build on it in M4.
@@ -183,9 +182,9 @@ rebinding) build on it in M4.
 `SettingsScene` (overlay) lists video, audio, accessibility and language rows in a `ScrollList`.
 Widgets write straight into `ctx.settings`, so changes apply live (language rebuilds the rows;
 `GameplayScene.on_resume` re-reads effect flags, shake and reduce-flashes), and the file is saved
-on close and at quit. Settings are version 4 (accessibility group added).
+on close and at quit. Settings are version 5 (gamepad bindings removed).
 
-`PauseScene` is an overlay (Esc, gamepad Start): the scene below stops updating and stays drawn;
+`PauseScene` is an overlay (Esc): the scene below stops updating and stays drawn;
 Resume pops it, Settings pushes `SettingsScene`, Quit to title switches the whole stack (each
 scene's `on_exit` runs, so progress is saved). Gameplay drops held input when it resumes.
 

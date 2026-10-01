@@ -22,3 +22,4 @@ Superseded records stay, marked as such.
 | [0015](0015-entity-state-by-iid.md) | Prefabs from TOML, entity state keyed by LDtk iid |
 | [0016](0016-doors-and-signals.md) | Doors change collision tiles; signals settle in one ordered pass |
 | [0017](0017-saves-at-beacons.md) | Saves at beacons and on quit; replays never save |
+| [0018](0018-keyboard-only-for-now.md) | Keyboard only for now; gamepad support removed |

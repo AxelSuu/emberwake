@@ -18,14 +18,14 @@ just web           # browser build into build/web
 
 ## Controls
 
-| Action | Keyboard | Gamepad |
-|---|---|---|
-| Move | arrows / WASD | d-pad / left stick |
-| Jump | Space, Z, C | A |
-| Dash | X, Left Shift, K | X, B, RB |
-| Interact (levers) | Up, W, E | Y, d-pad up |
-| Drop through platform | Down + Jump | |
-| Pause menu | Esc | Start |
+| Action | Keyboard |
+|---|---|
+| Move | arrows / WASD |
+| Jump | Space, Z, C |
+| Dash | X, Left Shift, K |
+| Interact (levers) | Up, W, E |
+| Drop through platform | Down + Jump |
+| Pause menu | Esc |
 
 Bindings live in `settings.json` in the user data folder (Linux:
 `~/.local/share/emberwake/emberwake/`).

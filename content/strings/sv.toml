@@ -51,7 +51,6 @@ overwrite = "Skriv över plats {slot}? Tryck igen"
 [controls]
 title = "Kontroller"
 keyboard = "Tangentbord"
-gamepad = "Handkontroll"
 reset = "Återställ standard"
 back = "Tillbaka"
 moved = "{input} flyttades hit från {action}"

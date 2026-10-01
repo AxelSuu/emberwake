@@ -348,11 +348,6 @@ class GameplayScene(Scene):
                 self.manager.push(PauseScene(self.ctx))
             elif self.ctx.dev:
                 self._dev_key(event.key)
-        elif (
-            event.type == pygame.CONTROLLERBUTTONDOWN
-            and event.button == pygame.CONTROLLER_BUTTON_START
-        ):
-            self.manager.push(PauseScene(self.ctx))
         elif event.type == pygame.MOUSEMOTION and self.free_camera and event.buttons[0]:
             self.camera.x -= event.rel[0]
             self.camera.y -= event.rel[1]

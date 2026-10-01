@@ -11,16 +11,12 @@ from typing import TYPE_CHECKING, override
 import pygame
 
 from emberwake.engine.core.mathx import approach, clamp
-from emberwake.engine.input.mapper import BUTTONS
 from emberwake.engine.ui.nav import Nav
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
     from emberwake.engine.ui.theme import Theme
-
-BUTTON_NAMES = {code: name for name, code in BUTTONS.items()}
-"""Gamepad button code -> the name bindings use."""
 
 
 class Widget:
@@ -238,7 +234,7 @@ class Slider(Widget):
 
 
 class KeybindField(Widget):
-    """A binding shown as text; accept starts listening, and the next key or button replaces it."""
+    """A binding shown as text; accept starts listening, and the next key replaces it."""
 
     focusable = True
     extra = 80
@@ -270,10 +266,6 @@ class KeybindField(Widget):
             self.listening = False
             if event.key != pygame.K_ESCAPE:
                 self._bind(pygame.key.name(event.key))
-            return True
-        if event.type == pygame.CONTROLLERBUTTONDOWN:
-            self.listening = False
-            self._bind(BUTTON_NAMES.get(event.button, f"button {event.button}"))
             return True
         return False
 

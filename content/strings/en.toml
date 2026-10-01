@@ -52,7 +52,6 @@ overwrite = "Overwrite slot {slot}? Press again"
 [controls]
 title = "Controls"
 keyboard = "Keyboard"
-gamepad = "Gamepad"
 reset = "Reset to defaults"
 back = "Back"
 moved = "{input} moved here from {action}"

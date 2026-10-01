@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class UiRoot:
-    """One screen of widgets. Back (escape, gamepad B) calls `on_back`."""
+    """One screen of widgets. Back (escape) calls `on_back`."""
 
     def __init__(
         self, root: Container, theme: Theme, on_back: Callable[[], None] | None = None

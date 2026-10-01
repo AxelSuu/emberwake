@@ -68,7 +68,7 @@ class TitleScene(Scene):
     def handle(self, event: pygame.Event) -> None:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.manager.pop()
-        elif event.type in (pygame.KEYDOWN, pygame.CONTROLLERBUTTONDOWN):
+        elif event.type == pygame.KEYDOWN:
             self.manager.push(MenuScene(self.ctx))
 
     def update(self, dt: float) -> None:

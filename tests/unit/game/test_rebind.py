@@ -38,4 +38,3 @@ def test_reset_restores_defaults_in_place() -> None:
     rebind(bindings.keys, Action.JUMP, "q")
     reset(bindings)
     assert bindings.keys == default_bindings().keys
-    assert bindings.buttons == default_bindings().buttons
