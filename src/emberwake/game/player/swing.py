@@ -89,6 +89,8 @@ class Strikeable:
     """A down swing bounces off it like off an enemy."""
     solid: bool = False
     """A forward swing recoils off it like off a wall."""
+    struck: Direction | None = None
+    """How a swing struck it this tick, if one did, for systems that react after the strike."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -180,6 +182,8 @@ def strike_system(world: World, dt: float) -> None:
     """Pogo, recoil and `Struck` events for whatever an active swing touches."""
     bus, grid = world.resource(EventBus), world.resource(TileSource)
     tuning, player = world.resource(SwingTuning), world.resource(PlayerTuning)
+    for _, strikeable in world.query(Strikeable):
+        strikeable.struck = None
     for _, body, motor, swing, hitbox in world.query(Body, Motor, Swing, Hitbox):
         if not hitbox.active:
             continue
@@ -193,6 +197,7 @@ def strike_system(world: World, dt: float) -> None:
             if target in swing.struck or not overlap(area, target_body):
                 continue
             swing.struck.append(target)
+            strikeable.struck = swing.direction
             centre_y = target_body.y + target_body.height / 2
             bus.publish(Struck(target, swing.direction, target_body.center_x, centre_y))
             _react(swing, motor, tuning, player, bounce=strikeable.bouncy, solid=strikeable.solid)

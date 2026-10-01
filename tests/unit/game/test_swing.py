@@ -84,8 +84,8 @@ class Room:
         self.world.flush()
         return eid
 
-    def thing(self, x: float, y: float, **kinds: bool) -> EntityId:
-        eid = self.world.spawn(Body(x, y, 16, 16), Strikeable(**kinds))
+    def thing(self, x: float, y: float, *, bouncy: bool = False) -> EntityId:
+        eid = self.world.spawn(Body(x, y, 16, 16), Strikeable(bouncy=bouncy))
         self.world.flush()
         return eid
 
@@ -211,6 +211,15 @@ def test_strikeables_get_one_struck_per_swing_and_bouncy_ones_pogo() -> None:
     assert [event.target for event in room.struck] == [lamp]
     assert room.struck[0].direction is Direction.DOWN
     assert room.swing.bounced
+
+
+def test_a_strikeable_remembers_how_it_was_struck_for_that_tick_only() -> None:
+    room = Room()
+    crate = room.thing(115, FLOOR * 16 - 16)
+    room.swing_now()
+    assert room.world.get(crate, Strikeable).struck is Direction.FORWARD
+    room.tick()
+    assert room.world.get(crate, Strikeable).struck is None
 
 
 def test_a_dash_cancels_the_swing() -> None:
