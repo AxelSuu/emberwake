@@ -58,9 +58,16 @@ def project() -> Project:
     return from_data(Project, build_project(Source(DEFS, [room])))
 
 
-def test_committed_world_matches_the_prefabs():
+def test_committed_world_matches_the_prefabs_and_backdrops():
     world = load_project(ROOT / "levels/world.ldtk")
-    assert validate(world, load_prefabs(ROOT / "content/prefabs.toml")) == []
+    prefabs = load_prefabs(ROOT / "content/prefabs.toml")
+    backdrops = tomllib.loads((ROOT / "content/backdrops.toml").read_text())
+    assert validate(world, prefabs, backdrops=backdrops) == []
+
+
+def test_unknown_backdrops():
+    problems = validate(project(), GOOD, REGISTRY, backdrops={"ruins"})
+    assert problems == ["Hall: no backdrop [cavern]"]
 
 
 def test_a_matching_project_has_no_problems():

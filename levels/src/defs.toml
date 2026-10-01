@@ -3,6 +3,7 @@
 
 [level_fields]
 Generated = { type = "Bool", default = false, doc = "Compiled from levels/src; rebuilt by --merge" }
+Backdrop = { type = "String", default = "cavern", doc = "Preset in content/backdrops.toml" }
 
 [entities.PlayerStart]
 color = "#f9c22b"

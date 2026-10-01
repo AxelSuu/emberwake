@@ -52,6 +52,6 @@ Detailed plans: [M2 World](plans/m2-world.md).
 - [x] World coordinates, room graph, streaming, transitions (#17)
 - [x] Prefabs and LDtk entity spawning, state persisted by iid (#19)
 - [x] Interactables and signal wiring: levers, doors, plates, embers (#20)
-- [ ] Parallax and depth layers (#18)
+- [x] Parallax backdrops: presets, blurred far layers, darkened near layers, cross-fades (#18)
 - [x] Beacons and save slots: relight to save, continue, `--slot`, `--new` (#21)
 - [ ] Greybox world: five rooms around the test room (#65)

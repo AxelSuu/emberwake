@@ -1,2 +1,4 @@
+fields = { Backdrop = "ruins" }
+
 [entities.k]
 type = "Beacon"

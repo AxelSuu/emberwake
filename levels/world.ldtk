@@ -11,7 +11,7 @@
 	"iid": "87b725ab-f0a4-5a9b-ba96-4e58e071114b",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703.0,
-	"nextUid": 19,
+	"nextUid": 20,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -635,6 +635,48 @@
 				"allowedRefsEntityUid": null,
 				"allowedRefTags": [],
 				"tilesetUid": null
+			},
+			{
+				"identifier": "Backdrop",
+				"doc": "Preset in content/backdrops.toml",
+				"__type": "String",
+				"uid": 19,
+				"type": "F_String",
+				"isArray": false,
+				"canBeNull": false,
+				"arrayMinLength": null,
+				"arrayMaxLength": null,
+				"editorDisplayMode": "NameAndValue",
+				"editorDisplayScale": 1.0,
+				"editorDisplayPos": "Above",
+				"editorLinkStyle": "CurvedArrow",
+				"editorDisplayColor": null,
+				"editorAlwaysShow": false,
+				"editorShowInWorld": true,
+				"editorCutLongValues": true,
+				"editorTextSuffix": null,
+				"editorTextPrefix": null,
+				"useForSmartColor": false,
+				"exportToToc": false,
+				"searchable": false,
+				"min": null,
+				"max": null,
+				"regex": null,
+				"acceptFileTypes": null,
+				"defaultOverride": {
+					"id": "V_String",
+					"params": [
+						"cavern"
+					]
+				},
+				"textLanguageMode": null,
+				"symmetricalRef": false,
+				"autoChainRef": true,
+				"allowOutOfLevelRef": true,
+				"allowedRefs": "Any",
+				"allowedRefsEntityUid": null,
+				"allowedRefTags": [],
+				"tilesetUid": null
 			}
 		],
 		"tilesets": [],
@@ -673,6 +715,21 @@
 							"id": "V_Bool",
 							"params": [
 								true
+							]
+						}
+					]
+				},
+				{
+					"__identifier": "Backdrop",
+					"__type": "String",
+					"__value": "cavern",
+					"__tile": null,
+					"defUid": 19,
+					"realEditorValues": [
+						{
+							"id": "V_String",
+							"params": [
+								"cavern"
 							]
 						}
 					]
@@ -3463,6 +3520,21 @@
 							]
 						}
 					]
+				},
+				{
+					"__identifier": "Backdrop",
+					"__type": "String",
+					"__value": "ruins",
+					"__tile": null,
+					"defUid": 19,
+					"realEditorValues": [
+						{
+							"id": "V_String",
+							"params": [
+								"ruins"
+							]
+						}
+					]
 				}
 			],
 			"layerInstances": [
@@ -3831,6 +3903,21 @@
 							"id": "V_Bool",
 							"params": [
 								true
+							]
+						}
+					]
+				},
+				{
+					"__identifier": "Backdrop",
+					"__type": "String",
+					"__value": "cavern",
+					"__tile": null,
+					"defUid": 19,
+					"realEditorValues": [
+						{
+							"id": "V_String",
+							"params": [
+								"cavern"
 							]
 						}
 					]

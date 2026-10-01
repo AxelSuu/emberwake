@@ -23,7 +23,7 @@ from emberwake.engine.render.chunks import ChunkLayer
 from emberwake.engine.scene import Scene
 from emberwake.engine.world.ldtk import load_project
 from emberwake.engine.world.rooms import Room, RoomEntered, RoomGraph, RoomStreamer, WorldGrid
-from emberwake.engine.world.spawning import Spawner
+from emberwake.engine.world.spawning import Identity, Spawner
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
 from emberwake.game.beacons import Beacon, BeaconLit
@@ -34,6 +34,7 @@ from emberwake.game.interact import Interactable, Switch
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
+from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdrops
 from emberwake.game.render.fx import Flash, Sparks
 from emberwake.game.render.placeholder import EntityArt, LanternGlow, PlayerSprite, tile_painter
 from emberwake.game.schedule import gameplay_schedule
@@ -50,6 +51,7 @@ log = logging.getLogger(__name__)
 WORLD = "world.ldtk"
 FEEL = "feel.toml"
 PREFABS = "prefabs.toml"
+BACKDROPS = "backdrops.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
@@ -85,6 +87,7 @@ class GameplayScene(Scene):
         self.art = EntityArt()
         self.sparks = Sparks()
         self.flash = Flash()
+        self.backdrops = Backdrops(self._read_backdrops() or {}, ctx.canvas_size)
         self.time = TimeControl()
         self.hitstop = 0
         self.respawn_in = 0
@@ -96,6 +99,7 @@ class GameplayScene(Scene):
         self.jobs = Jobs()
         self.layers: dict[str, tuple[ChunkLayer, Iterator[None]]] = {}
         self._build_world(start)
+        self._show_backdrops()
         self.camera.snap(*self._camera_target())
 
     def _open_progress(self, room: str | None, replay: Replay | None) -> str:
@@ -187,6 +191,23 @@ class GameplayScene(Scene):
             log.error("Could not load %s: %s", PREFABS, error)
             return None
 
+    def _read_backdrops(self) -> dict[str, BackdropSpec] | None:
+        try:
+            return load_backdrops(paths.content(BACKDROPS))
+        except (OSError, tomllib.TOMLDecodeError, SerdeError) as error:
+            log.error("Could not load %s: %s", BACKDROPS, error)
+            return None
+
+    def _show_backdrops(self) -> None:
+        self.backdrops.prepare(self._backdrop(room) for room in self.rooms.graph.levels)
+        self.backdrops.show(self._backdrop(self.room), instantly=True)
+
+    def _backdrop(self, room: str) -> str | None:
+        name = self.rooms.graph.levels[room].field("Backdrop")
+        if name and name not in self.backdrops.specs:
+            log.warning("Room %s has unknown backdrop %r", room, name)
+        return name
+
     def _room_loaded(self, room: Room) -> None:
         layer = ChunkLayer(room.rect.topleft, room.rect.size, tile_painter(room.grid))
         job = layer.bake()
@@ -241,6 +262,9 @@ class GameplayScene(Scene):
         prefabs = self._read_prefabs()
         if prefabs is not None:
             self.spawner.prefabs = prefabs
+        backdrops = self._read_backdrops()
+        if backdrops is not None:
+            self.backdrops = Backdrops(backdrops, self.ctx.canvas_size)
         try:
             levels = load_project(self.world_path).all_levels
             graph = RoomGraph(levels)
@@ -253,6 +277,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(self.wiring)
             self.rooms.reload(graph)
             self.camera.bounds = graph.rects[self.room]
+        self._show_backdrops()
         log.info("Reloaded")
 
     # Input
@@ -315,6 +340,7 @@ class GameplayScene(Scene):
         self.progress.tick(dt)
         self.sparks.update(dt)
         self.flash.update(dt)
+        self.backdrops.update(self._room_lit(), dt)
         juice = self.feel.juice
         self.visual.update(juice.squash_recovery, dt)
         if self.hitstop > 0:
@@ -367,7 +393,15 @@ class GameplayScene(Scene):
         self.camera.glide_to(self.rooms.graph.rects[event.room])
         self.spawn_point = self._entry_point(event.room, (event.x, event.y))
         self.progress.discover(self.rooms.graph.levels[event.room].iid)
+        self.backdrops.show(self._backdrop(event.room))
         log.debug("Entered %s from %s", event.room, event.previous)
+
+    def _room_lit(self) -> bool:
+        """Whether the active room has a lit beacon."""
+        return any(
+            beacon.lit and identity.room == self.room
+            for _, identity, beacon in self.world.query(Identity, Beacon)
+        )
 
     def _on_beacon_lit(self, event: BeaconLit) -> None:
         juice = self.feel.juice
@@ -380,8 +414,9 @@ class GameplayScene(Scene):
 
     def draw(self, canvas: pygame.Surface, alpha: float) -> None:
         self.jobs.pump(BAKE_BUDGET)
-        canvas.fill(palette.INK)
         ox, oy = self.camera.offset(alpha)
+        room_top = self.rooms.graph.rects[self.room].top
+        self.backdrops.draw_far(canvas, (ox, oy), room_top)
         for layer, _ in self.layers.values():
             layer.draw(canvas, (ox, oy))
         for _, body, beacon in self.world.query(Body, Beacon):
@@ -397,6 +432,7 @@ class GameplayScene(Scene):
         if self.respawn_in == 0:
             self._draw_player(canvas, ox, oy, alpha)
         self.sparks.draw(canvas, (ox, oy))
+        self.backdrops.draw_near(canvas, (ox, oy), room_top)
         self.flash.draw(canvas)
         if self.show_colliders:
             self._draw_colliders(canvas, ox, oy)
