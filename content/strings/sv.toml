@@ -137,3 +137,29 @@ ember = "Glöd"
 mint = "Mynta"
 rose = "Ros"
 violet = "Violett"
+
+[shop]
+title = "Fixarens varor"
+back = "Tillbaka"
+wallet = "Glöd: {embers}"
+item = "{name}: {price} glöd"
+sold_out = "{name}: slutsåld"
+
+[shop.hp]
+name = "Segare mantel (+1 liv)"
+
+[shop.oil]
+name = "Lampolja (+25 glöd)"
+
+[dialogue]
+continue = "..."
+
+[dialogue.tinker]
+hello = "Ännu en lyktgubbe! Akta dig för mörkret, vän. Jag är Fixaren. Jag lagar det tidvattnet lämnade kvar."
+welcome_back = "Tillbaka igen? Lyktorna tackar dig."
+ask_shop = "Vad säljer du?"
+ask_city = "Vad hände med den här staden?"
+bye = "Hejdå."
+city = "Ljuset slocknade på en gång, och vattnet steg efteråt. Fyrar brinner fortfarande på sina håll. Hitta dem, så återvänder färgerna."
+shop = "Glöd är bra valuta. Titta bland mina varor."
+thanks = "Kom tillbaka när din lykta börjar ta slut."

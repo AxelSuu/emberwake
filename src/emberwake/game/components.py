@@ -28,6 +28,7 @@ class Sprite:
 from emberwake.game import (  # noqa: E402, F401
     beacons,
     combat,
+    dialogue,
     enemies,
     flares,
     interact,

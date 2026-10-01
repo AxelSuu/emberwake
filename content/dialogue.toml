@@ -1,0 +1,32 @@
+# Dialogue graphs (see engine/core/dialogue.py). `text` values are string keys.
+
+[tinker.start]
+text = "dialogue.tinker.hello"
+branches = [{ if = "met_tinker", goto = "again" }]
+set = { met_tinker = 1 }
+choices = [
+    { text = "dialogue.tinker.ask_shop", goto = "shop" },
+    { text = "dialogue.tinker.ask_city", goto = "city" },
+    { text = "dialogue.tinker.bye" },
+]
+
+[tinker.again]
+text = "dialogue.tinker.welcome_back"
+choices = [
+    { text = "dialogue.tinker.ask_shop", goto = "shop" },
+    { text = "dialogue.tinker.ask_city", goto = "city" },
+    { text = "dialogue.tinker.bye" },
+]
+
+[tinker.city]
+text = "dialogue.tinker.city"
+set = { tinker_told_story = 1 }
+next = "again"
+
+[tinker.shop]
+text = "dialogue.tinker.shop"
+action = "shop"
+next = "thanks"
+
+[tinker.thanks]
+text = "dialogue.tinker.thanks"

@@ -138,3 +138,29 @@ ember = "Ember"
 mint = "Mint"
 rose = "Rose"
 violet = "Violet"
+
+[shop]
+title = "The Tinker's wares"
+back = "Back"
+wallet = "Embers: {embers}"
+item = "{name}: {price} embers"
+sold_out = "{name}: sold out"
+
+[shop.hp]
+name = "Tougher cloak (+1 health)"
+
+[shop.oil]
+name = "Lantern oil (+25 ember)"
+
+[dialogue]
+continue = "..."
+
+[dialogue.tinker]
+hello = "Another lamplighter! Mind the dark, friend. I am the Tinker. I mend what the tide left behind."
+welcome_back = "Back again? The lanterns thank you."
+ask_shop = "What do you sell?"
+ask_city = "What happened to this city?"
+bye = "Goodbye."
+city = "The light went out all at once, and the water came up after. Beacons still burn in places. Find them, and the colors return."
+shop = "Embers are good coin. Look through my wares."
+thanks = "Come back when your lantern runs low."

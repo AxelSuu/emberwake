@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from emberwake.engine.ui import Button, Label, Panel, ScrollList, Widget
-from emberwake.game.scenes.menu import Overlay
+from emberwake.game.scenes.overlay import Overlay
 
 if TYPE_CHECKING:
     from emberwake.game.context import GameContext

@@ -66,3 +66,9 @@ Brain = { kind = "gloomcrawler" }
 [wisp_eater.components]
 Sprite = { image = "wisp_eater" }
 Brain = { kind = "wisp_eater" }
+
+[tinker]
+[tinker.components]
+Sprite = { image = "tinker" }
+Interactable = { prompt = "talk" }
+Npc = { dialogue = "tinker" }

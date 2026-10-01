@@ -286,6 +286,14 @@ class EntityArt:
         image.fill(palette.EMBER_CORE, rect.inflate(-2, -2))
 
     @staticmethod
+    def _tinker(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(PLANK_DARK, (rect.centerx - 4, rect.bottom - 11, 8, 11))
+        image.fill(PLANK, (rect.centerx - 3, rect.bottom - 10, 6, 9))
+        pygame.draw.circle(image, PLANK_LIGHT, (rect.centerx, rect.bottom - 13), 3)
+        image.fill(LANTERN_FRAME, (rect.centerx - 5, rect.bottom - 16, 10, 2))
+        image.fill(palette.EMBER_HOT, (rect.centerx + 4, rect.bottom - 8, 2, 3))
+
+    @staticmethod
     def _ember(image: pygame.Surface, rect: pygame.Rect) -> None:
         cx, cy = rect.center
         diamond = [(cx, cy - 4), (cx + 3, cy), (cx, cy + 4), (cx - 3, cy)]

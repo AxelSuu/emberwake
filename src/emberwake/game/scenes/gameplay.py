@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 import pygame
 
 from emberwake.engine.core.cutscene import CutscenePlayer
+from emberwake.engine.core.dialogue import DialogueError, Graph, load_dialogues
 from emberwake.engine.core.jobs import Jobs
 from emberwake.engine.core.serde import SerdeError
 from emberwake.engine.debug.time_control import TimeControl
@@ -41,6 +42,7 @@ from emberwake.game.combat import Damaged, Health, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
 from emberwake.game.cosmetics import Cosmetics, load_cosmetics
 from emberwake.game.data.save import SaveSlot, load_slot
+from emberwake.game.dialogue import Talk
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.flares import Flare, FlareKit
 from emberwake.game.interact import Collected, Interactable, Switch
@@ -52,9 +54,11 @@ from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdro
 from emberwake.game.render.fx import Flash
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
 from emberwake.game.render.toast import Toasts
+from emberwake.game.scenes.dialogue import DialogueScene
 from emberwake.game.scenes.pause import PauseScene
 from emberwake.game.scenes.results import ResultsScene, RunFinished
 from emberwake.game.schedule import gameplay_schedule
+from emberwake.game.shop import EMBER_PER_UPGRADE, HP_PER_UPGRADE
 from emberwake.game.signals import Receiver, Wiring
 
 if TYPE_CHECKING:
@@ -69,9 +73,12 @@ log = logging.getLogger(__name__)
 WORLD = "world.ldtk"
 FEEL = "feel.toml"
 PREFABS = "prefabs.toml"
+UP_HP = "up_hp"
+UP_OIL = "up_oil"
 BACKDROPS = "backdrops.toml"
 PARTICLES = "particles.toml"
 COSMETICS = "cosmetics.toml"
+DIALOGUE = "dialogue.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
@@ -109,6 +116,7 @@ class GameplayScene(Scene):
         self.camera.shake.intensity = ctx.settings.video.screen_shake
         self.visual = PlayerVisual()
         self.cosmetics = self._read_cosmetics()
+        self.dialogues = self._read_dialogues()
         self.sprite = PlayerSprite()
         self.glow = GLOW
         self.flicker = Flicker()
@@ -209,11 +217,19 @@ class GameplayScene(Scene):
             bus.subscribe(RunFinished, self._on_run_finished),
             bus.subscribe(Collected, self._on_collected),
             bus.subscribe(Damaged, self._on_damaged),
+            bus.subscribe(Talk, self._on_talk),
             *self._track_achievements(bus),
             bus.subscribe(Killed, self._on_killed),
             bus.subscribe(BeaconLit, self._on_beacon_lit),
             *self.progress.subscribe(bus),
         ]
+
+    def _read_dialogues(self) -> dict[str, Graph]:
+        try:
+            return load_dialogues(paths.content(DIALOGUE))
+        except (OSError, tomllib.TOMLDecodeError, SerdeError, DialogueError) as error:
+            log.error("Could not load %s: %s", DIALOGUE, error)
+            return {}
 
     def _read_cosmetics(self) -> Cosmetics:
         try:
@@ -240,14 +256,38 @@ class GameplayScene(Scene):
         if assist.invulnerable:
             self.world.get(self.player, Health).invulnerable = 1.0
         if assist.no_ember_drain:
-            self.world.get(self.player, Ember).current = self.feel.light.ember_max
+            ember = self.world.get(self.player, Ember)
+            ember.current = ember.max
         if assist.infinite_dashes:
             self.motor.dash_charges = max(self.motor.dash_charges, self.feel.player.dash_charges)
+
+    def _apply_upgrades(self) -> None:
+        """Raise the player's maximums for upgrades bought since they were last applied."""
+        if not self.world.has(self.player, Ember):
+            return
+        health, ember = self.world.get(self.player, Health), self.world.get(self.player, Ember)
+        hp, most = self._maximums()
+        if hp > health.max:
+            health.current += hp - health.max
+            health.max = hp
+        if most > ember.max:
+            ember.current += most - ember.max
+            ember.max = most
+
+    def _on_talk(self, event: Talk) -> None:
+        graph = self.dialogues.get(event.dialogue)
+        if graph is None:
+            log.warning("No dialogue %r", event.dialogue)
+            return
+        self.manager.push(
+            DialogueScene(self.ctx, graph, self.progress, lambda: self.progress.save(self.spawner))
+        )
 
     def on_resume(self) -> None:
         """Apply settings changed in an overlay and drop input held while it was open."""
         settings = self.ctx.settings
         self._apply_settings()
+        self._apply_upgrades()
         self.mapper.bind(settings.controls)
         self.mapper.release_all()
         self.frame.flags = self._effects()
@@ -353,9 +393,16 @@ class GameplayScene(Scene):
 
     def _new_player(self) -> tuple[Body, Motor, Ember, Health, Hurtbox]:
         body, motor = new_player(*self.spawn_point, self.feel.player)
-        foes = self.feel.enemies
-        health = Health(foes.player_hp, iframes=foes.player_iframes)
-        return body, motor, Ember(self.feel.light.ember_max), health, Hurtbox(Team.PLAYER)
+        hp, most = self._maximums()
+        health = Health(hp, iframes=self.feel.enemies.player_iframes)
+        return body, motor, Ember(most, max=most), health, Hurtbox(Team.PLAYER)
+
+    def _maximums(self) -> tuple[int, float]:
+        """The player's health and ember capacity, with the shop upgrades bought so far."""
+        flags = self.progress.data.flags
+        hp = self.feel.enemies.player_hp + flags.get(UP_HP, 0) * HP_PER_UPGRADE
+        most = self.feel.light.ember_max + flags.get(UP_OIL, 0) * EMBER_PER_UPGRADE
+        return hp, most
 
     def reload(self) -> None:
         """Re-read feel.toml, prefabs and the levels, keeping the player where it is."""
@@ -649,7 +696,7 @@ class GameplayScene(Scene):
         if not self.world.has(self.player, Ember):
             return
         ember = self.world.get(self.player, Ember)
-        fraction = ember.current / self.feel.light.ember_max
+        fraction = ember.current / ember.max
         x, y, width = 6, 6, 40
         canvas.fill(palette.INK, (x - 1, y - 1, width + 2, 5))
         color = palette.EMBER_HOT if fraction > 0.25 else palette.EMBER_COOL

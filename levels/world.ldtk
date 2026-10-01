@@ -11,7 +11,7 @@
 	"iid": "87b725ab-f0a4-5a9b-ba96-4e58e071114b",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703.0,
-	"nextUid": 30,
+	"nextUid": 31,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -765,6 +765,41 @@
 				"limitBehavior": "MoveLastOne",
 				"pivotX": 0.5,
 				"pivotY": 0.5,
+				"fieldDefs": []
+			},
+			{
+				"identifier": "Tinker",
+				"uid": 30,
+				"tags": [],
+				"exportToToc": false,
+				"allowOutOfBounds": false,
+				"doc": "NPC who talks and sells upgrades for embers",
+				"width": 16,
+				"height": 16,
+				"resizableX": false,
+				"resizableY": false,
+				"minWidth": null,
+				"maxWidth": null,
+				"minHeight": null,
+				"maxHeight": null,
+				"keepAspectRatio": false,
+				"tileOpacity": 1.0,
+				"fillOpacity": 0.08,
+				"lineOpacity": 1.0,
+				"hollow": false,
+				"color": "#FBB954",
+				"renderMode": "Cross",
+				"showName": true,
+				"tilesetId": null,
+				"tileRenderMode": "FitInside",
+				"tileRect": null,
+				"uiTileRect": null,
+				"nineSliceBorders": [],
+				"maxCount": 0,
+				"limitScope": "PerLevel",
+				"limitBehavior": "MoveLastOne",
+				"pivotX": 0.5,
+				"pivotY": 1.0,
 				"fieldDefs": []
 			}
 		],
@@ -7606,6 +7641,31 @@
 							"defUid": 25,
 							"px": [
 								488,
+								160
+							],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "Tinker",
+							"__grid": [
+								34,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FBB954",
+							"__worldX": 552,
+							"__worldY": 864,
+							"iid": "4659902b-6b12-55cd-a984-c91211c677e5",
+							"width": 16,
+							"height": 16,
+							"defUid": 30,
+							"px": [
+								552,
 								160
 							],
 							"fieldInstances": []

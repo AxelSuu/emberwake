@@ -45,6 +45,8 @@ class Ember:
 
     current: float = 100.0
     in_light: bool = True
+    max: float = 100.0
+    """The most it can hold; shop upgrades raise it."""
 
 
 @component
@@ -98,7 +100,7 @@ def ember_system(world: World, dt: float) -> None:
         centre_y = body.y + body.height / 2
         ember.in_light = light_at(world, body.center_x, centre_y, lantern=False) > 0
         rate = tuning.refill if ember.in_light else -tuning.drain
-        ember.current = min(max(ember.current + rate * dt, 0.0), tuning.ember_max)
+        ember.current = min(max(ember.current + rate * dt, 0.0), ember.max)
         if ember.current <= 0:
             motor.dead = True
             bus.publish(Died(body.center_x, body.bottom))
