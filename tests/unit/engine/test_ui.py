@@ -14,6 +14,7 @@ from emberwake.engine.ui import (
     Nav,
     Navigator,
     Panel,
+    Row,
     ScrollList,
     Selector,
     Slider,
@@ -189,6 +190,17 @@ def test_scroll_list_keeps_the_focused_row_in_view():
     assert lst.index == 8
     assert view.contains(rows[8].rect)
     assert not view.colliderect(rows[0].rect)
+
+
+def test_rows_take_focus_to_scroll_and_ignore_accept():
+    rows = [Row(f"tip {i}", "Space") for i in range(6)]
+    lst = ScrollList(rows, rows=2)
+    root = UiRoot(Panel([lst]), THEME)
+    root.center((320, 180))
+    root.press(Nav.DOWN)
+    root.press(Nav.ACCEPT)
+    assert lst.index == 1
+    assert rows[0].preferred(THEME)[0] > Row("tip 0").preferred(THEME)[0]
 
 
 def test_layout_stacks_children_and_draws_without_error():
