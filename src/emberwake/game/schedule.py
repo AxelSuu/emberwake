@@ -10,6 +10,7 @@ from emberwake.game.enemies import enemy_system
 from emberwake.game.flares import flare_system
 from emberwake.game.interact import interact_system, pickup_system, plate_system, trigger_system
 from emberwake.game.light import ember_system, lightform_system
+from emberwake.game.player.kindle import kindle_system
 from emberwake.game.player.swing import strike_system, swing_system
 from emberwake.game.player.system import player_system
 from emberwake.game.render.sprites import sprite_system
@@ -40,6 +41,7 @@ def gameplay_schedule() -> Schedule:
     schedule = Schedule(PHASES)
     schedule.add("logic", interact_system)
     schedule.add("logic", swing_system)
+    schedule.add("logic", kindle_system)
     schedule.add("logic", beacon_system)
     schedule.add("logic", enemy_system)
     schedule.add("logic", npc_system)
