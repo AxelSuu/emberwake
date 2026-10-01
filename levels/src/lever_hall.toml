@@ -1,0 +1,9 @@
+[entities.a]
+type = "Lever"
+fields = { Targets = ["b"] }
+
+[entities.b]
+type = "Door"
+
+[entities.e]
+type = "Ember"
