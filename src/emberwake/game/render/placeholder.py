@@ -230,6 +230,50 @@ class EntityArt:
         image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.top + 1, 2, 3))
 
     @staticmethod
+    def _lightform(image: pygame.Surface, rect: pygame.Rect) -> None:
+        for x in range(rect.left, rect.right, 4):
+            image.fill(ROCK_EDGE, (x, rect.top, 2, 1))
+            image.fill(ROCK_EDGE, (x, rect.bottom - 1, 2, 1))
+
+    @staticmethod
+    def _lightform_lit(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(palette.EMBER_WARM, (rect.left, rect.top, rect.width, 3))
+        image.fill(palette.EMBER_CORE, (rect.left, rect.top, rect.width, 1))
+
+    @staticmethod
+    def _brazier(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(LANTERN_FRAME, (rect.centerx - 5, rect.bottom - 6, 10, 2))
+        image.fill(ROCK_EDGE, (rect.centerx - 3, rect.bottom - 4, 6, 4))
+        image.fill(palette.EMBER_WARM, (rect.centerx - 3, rect.bottom - 10, 6, 4))
+        image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.bottom - 9, 2, 3))
+
+    @staticmethod
+    def _clockrat(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(PLANK_DARK, (rect.left + 1, rect.bottom - 7, rect.width - 2, 6))
+        image.fill(PLANK_LIGHT, (rect.left + 2, rect.bottom - 8, rect.width - 6, 2))
+        image.fill(SPIKE_TIP, (rect.right - 4, rect.bottom - 6, 2, 2))
+        image.fill(ROCK_EDGE, (rect.left + 2, rect.bottom - 1, 2, 1))
+        image.fill(ROCK_EDGE, (rect.right - 5, rect.bottom - 1, 2, 1))
+
+    @staticmethod
+    def _gloomcrawler(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(CLOAK_DARK, (rect.left, rect.bottom - 6, rect.width, 5))
+        image.fill(CLOAK_SHADE, (rect.left + 2, rect.bottom - 7, rect.width - 4, 2))
+        image.fill(EYES, (rect.right - 5, rect.bottom - 5, 2, 1))
+        image.fill(EYES, (rect.right - 9, rect.bottom - 5, 2, 1))
+
+    @staticmethod
+    def _wisp_eater(image: pygame.Surface, rect: pygame.Rect) -> None:
+        pygame.draw.circle(image, CLOAK_SHADE, rect.center, rect.width // 2 - 1)
+        pygame.draw.circle(image, CLOAK_DARK, rect.center, rect.width // 2 - 3)
+        image.fill(EYES, (rect.centerx - 2, rect.centery - 1, 4, 2))
+
+    @staticmethod
+    def _flare(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(palette.EMBER_WARM, rect)
+        image.fill(palette.EMBER_CORE, rect.inflate(-2, -2))
+
+    @staticmethod
     def _ember(image: pygame.Surface, rect: pygame.Rect) -> None:
         cx, cy = rect.center
         diamond = [(cx, cy - 4), (cx + 3, cy), (cx, cy + 4), (cx - 3, cy)]

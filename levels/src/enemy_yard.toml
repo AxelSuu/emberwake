@@ -1,0 +1,12 @@
+[entities.c]
+type = "Clockrat"
+[entities.g]
+type = "Gloomcrawler"
+[entities.w]
+type = "WispEater"
+[entities.B]
+type = "Brazier"
+[entities.L]
+type = "Lightform"
+[entities.k]
+type = "Beacon"

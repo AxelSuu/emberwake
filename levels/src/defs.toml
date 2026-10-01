@@ -39,3 +39,32 @@ color = "#ea4f36"
 pivot = [0.5, 0.5]
 doc = "Collectible"
 fields.Value = { type = "Int", default = 1 }
+
+[entities.Lightform]
+color = "#8ff8e2"
+size = [32, 8]
+pivot = [0.0, 0.0]
+resizable = true
+doc = "A one-way platform that exists only while light reaches it"
+
+[entities.Brazier]
+color = "#f9c22b"
+doc = "A fixed light source"
+
+[entities.Clockrat]
+color = "#b33831"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Patrols, turns at ledges, charges at the player on sight"
+
+[entities.Gloomcrawler]
+color = "#45293f"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Shadow creature: burns in light and flees strong light"
+
+[entities.WispEater]
+color = "#8ff8e2"
+size = [16, 16]
+pivot = [0.5, 0.5]
+doc = "Flier drawn to light; swoops at the player"

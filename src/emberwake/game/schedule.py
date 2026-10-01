@@ -5,7 +5,10 @@ from __future__ import annotations
 from emberwake.engine.ecs import Schedule
 from emberwake.game.beacons import beacon_system
 from emberwake.game.combat import combat_system
+from emberwake.game.enemies import enemy_system
+from emberwake.game.flares import flare_system
 from emberwake.game.interact import interact_system, pickup_system, plate_system, trigger_system
+from emberwake.game.light import ember_system, lightform_system
 from emberwake.game.player.system import player_system
 from emberwake.game.render.sprites import sprite_system
 from emberwake.game.rooms import room_system
@@ -18,6 +21,9 @@ POST = (
     plate_system,
     pickup_system,
     combat_system,
+    flare_system,
+    lightform_system,
+    ember_system,
     signal_system,
     door_system,
 )
@@ -28,6 +34,7 @@ def gameplay_schedule() -> Schedule:
     schedule = Schedule(PHASES)
     schedule.add("logic", interact_system)
     schedule.add("logic", beacon_system)
+    schedule.add("logic", enemy_system)
     schedule.add("physics", player_system)
     for system in POST:
         schedule.add("post", system)

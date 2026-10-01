@@ -63,6 +63,7 @@ down = "Ner"
 jump = "Hoppa"
 dash = "Dasha"
 interact = "Interagera"
+flare = "Kasta bloss"
 
 [results]
 title = "Resultat"

@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 import pygame
 
+from emberwake.engine.core.cutscene import CutscenePlayer
 from emberwake.engine.core.jobs import Jobs
 from emberwake.engine.core.serde import SerdeError
 from emberwake.engine.debug.time_control import TimeControl
@@ -19,7 +20,7 @@ from emberwake.engine.ecs import World
 from emberwake.engine.ecs.prefabs import Prefab, load_prefabs
 from emberwake.engine.input import InputMapper, InputState
 from emberwake.engine.input.replay import REPLAY_CODEC, Replay, ReplayPlayer, ReplayRecorder
-from emberwake.engine.physics import Body, Tile, TileSource
+from emberwake.engine.physics import Body, PropWorld, Tile, TileSource
 from emberwake.engine.platform.documents import save_document
 from emberwake.engine.render.camera import Camera
 from emberwake.engine.render.chunks import ChunkLayer
@@ -35,10 +36,13 @@ from emberwake.engine.world.spawning import Identity, Spawner
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
 from emberwake.game.beacons import Beacon, BeaconLit
+from emberwake.game.combat import Damaged, Health, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
 from emberwake.game.data.save import SaveSlot, load_slot
 from emberwake.game.feel import Feel, diff, load_feel
+from emberwake.game.flares import Flare, FlareKit
 from emberwake.game.interact import Collected, Interactable, Switch
+from emberwake.game.light import Ember, LightSource
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
@@ -106,6 +110,7 @@ class GameplayScene(Scene):
         self.backend = SoftwareBackend()
         self.art = EntityArt()
         self.particles = ParticleSystem()
+        self.cutscenes = CutscenePlayer()
         self.texts = FloatingTexts()
         self.texts.muted = ctx.settings.accessibility.reduce_flashes
         self.emitters = self._read_emitters() or {}
@@ -159,9 +164,11 @@ class GameplayScene(Scene):
         self.spawn_point = self._continue_point(start, self.progress.data.beacon)
         self.camera.bounds = self.rooms.graph.rects[start]
         resources = (self.actions, self.ctx.bus, self.grid, self.wiring, self.rooms, self.spawner)
-        for resource in (*resources, self.feel.player, self.feel.rooms):
+        tunings = (self.feel.player, self.feel.rooms, self.feel.light, self.feel.enemies)
+        for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
+        self.world.insert_resource(FlareKit(PropWorld(self.grid, (0, 0, 1, 1))))
         self.schedule = gameplay_schedule()
         self.player = self.world.spawn(*self._new_player())
         self.world.flush()
@@ -192,6 +199,8 @@ class GameplayScene(Scene):
             bus.subscribe(RoomEntered, self._on_room_entered),
             bus.subscribe(RunFinished, self._on_run_finished),
             bus.subscribe(Collected, self._on_collected),
+            bus.subscribe(Damaged, self._on_damaged),
+            bus.subscribe(Killed, self._on_killed),
             bus.subscribe(BeaconLit, self._on_beacon_lit),
             *self.progress.subscribe(bus),
         ]
@@ -302,8 +311,11 @@ class GameplayScene(Scene):
             return near
         return min(starts, key=lambda p: (p[0] - near[0]) ** 2 + (p[1] - near[1]) ** 2)
 
-    def _new_player(self) -> tuple[Body, Motor]:
-        return new_player(*self.spawn_point, self.feel.player)
+    def _new_player(self) -> tuple[Body, Motor, Ember, Health, Hurtbox]:
+        body, motor = new_player(*self.spawn_point, self.feel.player)
+        foes = self.feel.enemies
+        health = Health(foes.player_hp, iframes=foes.player_iframes)
+        return body, motor, Ember(self.feel.light.ember_max), health, Hurtbox(Team.PLAYER)
 
     def reload(self) -> None:
         """Re-read feel.toml, prefabs and the levels, keeping the player where it is."""
@@ -314,6 +326,8 @@ class GameplayScene(Scene):
             self.feel = feel
             self.world.insert_resource(feel.player)
             self.world.insert_resource(feel.rooms)
+            self.world.insert_resource(feel.light)
+            self.world.insert_resource(feel.enemies)
             self.camera.retune(feel.camera)
         prefabs = self._read_prefabs()
         if prefabs is not None:
@@ -346,6 +360,8 @@ class GameplayScene(Scene):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.manager.push(PauseScene(self.ctx))
+            elif event.key == pygame.K_RETURN and self.cutscenes.active:
+                self.cutscenes.skip()
             elif self.ctx.dev:
                 self._dev_key(event.key)
         elif event.type == pygame.MOUSEMOTION and self.free_camera and event.buttons[0]:
@@ -386,7 +402,8 @@ class GameplayScene(Scene):
                     return frame
             log.info("Replay finished, live input")
             self.replay = None
-        return self.mapper.sample()
+        held = self.mapper.sample()
+        return frozenset() if self.cutscenes.active else held
 
     # Simulation
 
@@ -395,6 +412,7 @@ class GameplayScene(Scene):
             return
         self.clock += dt
         self.progress.tick(dt)
+        self.cutscenes.update(dt)
         self.particles.update(dt)
         self.texts.update(dt)
         self.flash.update(dt)
@@ -467,6 +485,20 @@ class GameplayScene(Scene):
     def _on_run_finished(self, event: RunFinished) -> None:
         self.manager.push(ResultsScene(self.ctx, event.result))
 
+    def _on_damaged(self, event: Damaged) -> None:
+        hurt_player = event.target == self.player
+        if hurt_player:
+            self.hitstop = max(self.hitstop, self.feel.juice.dash_hitstop + 1)
+            self.camera.shake.add(self.feel.juice.dash_trauma)
+        color = pygame.Color(palette.EMBER_COOL if hurt_player else palette.MIST)
+        self.texts.spawn(f"-{event.amount}", event.x, event.y - 8, (color.r, color.g, color.b))
+
+    def _on_killed(self, event: Killed) -> None:
+        if event.target == self.player and not self.motor.dead:
+            self.motor.dead = True
+            body = self.body
+            self.ctx.bus.publish(Died(body.center_x, body.bottom))
+
     def _on_collected(self, event: Collected) -> None:
         body, color = self.body, pygame.Color(palette.EMBER_HOT)
         self.texts.spawn(f"+{event.value}", body.center_x, body.y - 4, (color.r, color.g, color.b))
@@ -505,6 +537,12 @@ class GameplayScene(Scene):
                 for index, spread in enumerate(SHAFT_ANGLES):
                     sway = math.sin(self.clock * 0.7 + index * 2.1) * 6
                     frame.shaft(ShaftCmd(bx, by, 270 + spread + sway, 90, 36, GLOW, light * 0.8))
+        for eid, body, source in self.world.query(Body, LightSource):
+            fx, fy = body.center_x - ox, body.y + body.height / 2 - oy
+            frame.light(fx, fy, round(source.radius), GLOW, light * source.strength)
+            if self.world.has(eid, Flare):
+                image = self.art.image("flare", (round(body.width), round(body.height)))
+                frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
         for _, body, sprite in self.world.query(Body, Sprite):
             image = self.art.image(sprite.current, (round(body.width), round(body.height)))
             frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
@@ -520,11 +558,23 @@ class GameplayScene(Scene):
         self.backdrops.draw_near(canvas, (ox, oy), room_top)
         self.post.apply(canvas, self.frame.flags, self.backdrops.grade())
         self.flash.draw(canvas)
+        self._draw_ember(canvas)
         if self.show_colliders:
             self._draw_colliders(canvas, ox, oy)
         if self.show_rooms:
             self._draw_rooms(canvas, ox, oy)
             self._draw_wires(canvas, ox, oy)
+
+    def _draw_ember(self, canvas: pygame.Surface) -> None:
+        """A small bar of the player's ember in the top left corner."""
+        if not self.world.has(self.player, Ember):
+            return
+        ember = self.world.get(self.player, Ember)
+        fraction = ember.current / self.feel.light.ember_max
+        x, y, width = 6, 6, 40
+        canvas.fill(palette.INK, (x - 1, y - 1, width + 2, 5))
+        color = palette.EMBER_HOT if fraction > 0.25 else palette.EMBER_COOL
+        canvas.fill(color, (x, y, round(width * fraction), 3))
 
     @staticmethod
     def _at(

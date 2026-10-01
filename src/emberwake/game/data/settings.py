@@ -7,7 +7,7 @@ from typing import Any
 
 from emberwake.engine.core.serde import VersionedCodec
 from emberwake.engine.input import Bindings
-from emberwake.game.actions import INTERACT_KEYS, default_bindings
+from emberwake.game.actions import FLARE_KEYS, INTERACT_KEYS, default_bindings
 
 SETTINGS_KEY = "settings.json"
 
@@ -65,6 +65,14 @@ def _add_accessibility(data: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
+def _add_flare(data: dict[str, Any]) -> dict[str, Any]:
+    """v5 -> v6: bind the new flare action in saved controls."""
+    keys = data.get("controls", {}).get("keys")
+    if keys is not None:
+        keys.setdefault("flare", list(FLARE_KEYS))
+    return data
+
+
 def _drop_gamepad(data: dict[str, Any]) -> dict[str, Any]:
     """v4 -> v5: gamepad support was removed, so saved button bindings go."""
     data.get("controls", {}).pop("buttons", None)
@@ -73,6 +81,12 @@ def _drop_gamepad(data: dict[str, Any]) -> dict[str, Any]:
 
 SETTINGS_CODEC = VersionedCodec(
     Settings,
-    version=5,
-    migrations={1: _add_interact, 2: _add_post_effects, 3: _add_accessibility, 4: _drop_gamepad},
+    version=6,
+    migrations={
+        1: _add_interact,
+        2: _add_post_effects,
+        3: _add_accessibility,
+        4: _drop_gamepad,
+        5: _add_flare,
+    },
 )
