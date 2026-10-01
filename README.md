@@ -8,7 +8,7 @@ A pixel-art action-platformer about carrying light into the dark. Built with
 ```sh
 uv sync            # install (needs uv: https://docs.astral.sh/uv/)
 just run --dev     # play, F1 toggles the debug overlay, F11 fullscreen
-just check         # ruff, ty, import contracts
+just check         # ruff, ty, import contracts, level and palette checks
 just test          # headless test suite
 just web           # browser build into build/web
 ```
