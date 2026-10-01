@@ -10,7 +10,7 @@ from emberwake.engine.physics import Body, Tile, TileGrid, TileSource
 from emberwake.engine.world.rooms import WorldGrid
 from emberwake.game.actions import Action
 from emberwake.game.combat import Health, Hitbox, Hurtbox, Killed, Knockback, Team, combat_system
-from emberwake.game.enemies import Brain, EnemyTuning
+from emberwake.game.enemies import Brain, EnemyTuning, enemy_system
 from emberwake.game.light import LightTuning
 from emberwake.game.player.controller import Motor
 from emberwake.game.player.swing import (
@@ -220,3 +220,19 @@ def test_a_dash_cancels_the_swing() -> None:
     room.tick()
     assert room.swing.tick == 0
     assert not room.hitbox.active
+
+
+def test_a_knocked_enemy_staggers_without_hurting_then_recovers() -> None:
+    room = Room()
+    rat = room.enemy(115)
+    room.swing_now()
+    enemy_system(room.world, STEP)
+    room.world.flush()
+    brain = room.world.get(rat, Brain)
+    assert brain.stagger > 0
+    assert not room.world.get(rat, Hitbox).active
+    for _ in range(round(TUNING.stagger * 60) + 2):
+        enemy_system(room.world, STEP)
+        room.world.flush()
+    assert brain.stagger <= 0
+    assert room.world.get(rat, Hitbox).active

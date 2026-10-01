@@ -20,12 +20,15 @@ from emberwake.engine.ecs import EntityId, World, component
 from emberwake.engine.physics import Body, Tile, move, overlaps
 from emberwake.engine.world.rooms import WorldGrid
 from emberwake.game.beacons import Beacon
-from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team
+from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Knockback, Team
 from emberwake.game.interact import player_body
 from emberwake.game.light import LightSource, LightTuning, falloff, light_at
+from emberwake.game.player.swing import SwingTuning
 
 GRAVITY = 600.0
 MAX_FALL = 300.0
+STAGGER_DRAG = 6.0
+"""Share of a knock's speed lost per second."""
 STANDABLE = frozenset({Tile.SOLID, Tile.ONE_WAY})
 
 
@@ -79,6 +82,10 @@ class Brain:
     home: tuple[float, float] = (0.0, 0.0)
     target: tuple[float, float] = (0.0, 0.0)
     """Where a swoop is heading."""
+    stagger: float = 0.0
+    """Seconds left of being knocked about; the brain waits and contact does not hurt."""
+    push: tuple[float, float] = (0.0, 0.0)
+    """Velocity of the knock, px/s, decaying while staggered."""
 
 
 @dataclass(slots=True)
@@ -304,12 +311,45 @@ def enemy_system(world: World, dt: float) -> None:
             continue
         hitbox = world.get(eid, Hitbox)
         hitbox.hit.clear()
+        if _stagger(world, eid, body, brain, kind, dt):
+            hitbox.active = False
+            continue
+        hitbox.active = True
         ctx = Ctx(world, eid, body, brain, tuning, grid, player)
         state = kind.fsm.step(ctx, brain.state, dt, brain.time)
         brain.time = brain.time + dt if state == brain.state else 0.0
         brain.state = state
         if kind.shadow:
             _burn(ctx, health, bus, dt)
+
+
+def _stagger(  # noqa: PLR0917
+    world: World, eid: EntityId, body: Body, brain: Brain, kind: Kind, dt: float
+) -> bool:
+    """Take a fresh `Knockback` and slide with it; returns whether the enemy is staggered."""
+    knock = world.find(eid, Knockback)
+    if knock is not None:
+        world.remove(eid, Knockback)
+        brain.push = (knock.vx, knock.vy)
+        tuning = world.resource(SwingTuning) if world.has_resource(SwingTuning) else SwingTuning()
+        brain.stagger = tuning.stagger
+        if not kind.flier:
+            brain.vy = knock.vy
+    if brain.stagger <= 0:
+        return False
+    brain.stagger -= dt
+    vx, vy = brain.push
+    grid = world.resource(WorldGrid)
+    if kind.flier:
+        move(grid, body, vx * dt, vy * dt)
+    else:
+        brain.vy = min(brain.vy + GRAVITY * dt, MAX_FALL)
+        contacts = move(grid, body, vx * dt, brain.vy * dt)
+        if contacts.ground or contacts.ceiling:
+            brain.vy = 0.0
+    fade = max(1.0 - STAGGER_DRAG * dt, 0.0)
+    brain.push = (vx * fade, vy * fade)
+    return True
 
 
 def _equip(world: World, eid: EntityId, kind: Kind, tuning: EnemyTuning) -> None:
