@@ -1,16 +1,16 @@
 from __future__ import annotations
 
+import shutil
+import subprocess
 import wave
 from itertools import pairwise
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import pytest
 from tools.sfx.__main__ import main
 from tools.sfx.build import build, build_file
+from tools.sfx.ogg import encoder
 from tools.sfx.synth import RATE, Params, SfxError, from_table, render, variant_pitches
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 PRESET = """
 [blip]
@@ -102,3 +102,58 @@ def test_cli_builds_repo_presets(tmp_path: Path) -> None:
     assert main(["--out", str(tmp_path)]) == 0
     assert (tmp_path / "player" / "jump.wav").exists()
     assert (tmp_path / "player" / "jump_3.wav").exists()
+
+
+def fake_encoder(monkeypatch: pytest.MonkeyPatch, *, fail: bool = False) -> list[list[str]]:
+    calls: list[list[str]] = []
+
+    def run(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        calls.append(cmd)
+        if not fail:
+            Path(cmd[-1] if cmd[0] == "ffmpeg" else cmd[3]).write_bytes(b"OggS")
+        return subprocess.CompletedProcess(cmd, 1 if fail else 0, "", "boom")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    return calls
+
+
+def test_encoder_prefers_ffmpeg(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(shutil, "which", lambda tool: f"/bin/{tool}")
+    assert encoder() == "ffmpeg"
+    monkeypatch.setattr(shutil, "which", lambda tool: "/bin/oggenc" if tool == "oggenc" else None)
+    assert encoder() == "oggenc"
+    monkeypatch.setattr(shutil, "which", lambda tool: None)
+    assert encoder() is None
+
+
+@pytest.mark.parametrize("tool", ["ffmpeg", "oggenc"])
+def test_ogg_replaces_the_wav(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, tool: str) -> None:
+    calls = fake_encoder(monkeypatch)
+    source = tmp_path / "ui.toml"
+    source.write_text(PRESET)
+    written = build_file(source, tmp_path / "out", ogg=tool)
+    assert [p.name for p in written] == ["blip.ogg", "blip_1.ogg", "blip_2.ogg"]
+    assert all(p.exists() for p in written)
+    assert not list((tmp_path / "out").glob("**/*.wav"))
+    assert len(calls) == 3
+
+
+def test_a_failing_encoder_is_reported(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_encoder(monkeypatch, fail=True)
+    (tmp_path / "ui.toml").write_text(PRESET)
+    messages: list[str] = []
+    assert build(tmp_path, tmp_path / "out", messages.append, ogg="ffmpeg") == 1
+    assert "boom" in messages[0]
+
+
+def test_cli_ogg_modes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(shutil, "which", lambda tool: None)
+    assert main(["--out", str(tmp_path), "--ogg", "always"]) == 1
+    assert main(["--out", str(tmp_path), "--ogg", "auto"]) == 0
+    assert (tmp_path / "player" / "jump.wav").exists()
+    fake_encoder(monkeypatch)
+    monkeypatch.setattr(shutil, "which", lambda tool: "/bin/ffmpeg")
+    assert main(["--out", str(tmp_path / "o"), "--ogg", "auto"]) == 0
+    assert (tmp_path / "o" / "player" / "jump.ogg").exists()
+    assert main(["--out", str(tmp_path / "n"), "--ogg", "never"]) == 0
+    assert (tmp_path / "n" / "player" / "jump.wav").exists()

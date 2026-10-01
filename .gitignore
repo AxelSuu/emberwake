@@ -18,5 +18,6 @@ site/
 
 # Generated game assets and user data
 /assets/build/
+/assets/sfx/
 /saves/
 *.log

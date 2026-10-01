@@ -6,6 +6,7 @@ import tomllib
 import zlib
 from typing import TYPE_CHECKING
 
+from tools.sfx.ogg import to_ogg
 from tools.sfx.synth import SfxError, from_table, render, variant_pitches, write_wav
 
 if TYPE_CHECKING:
@@ -13,8 +14,11 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-def build_file(source: Path, out: Path) -> list[Path]:
-    """Write ``<name>.wav`` and ``<name>_1.wav``... for each ``[sound]`` table in `source`."""
+def build_file(source: Path, out: Path, ogg: str | None = None) -> list[Path]:
+    """Write ``<name>.wav`` and ``<name>_1.wav``... for each ``[sound]`` table in `source`.
+
+    With an `ogg` encoder name, each WAV is converted to ``.ogg`` and removed.
+    """
     try:
         data = tomllib.loads(source.read_text())
     except tomllib.TOMLDecodeError as error:
@@ -31,17 +35,19 @@ def build_file(source: Path, out: Path) -> list[Path]:
             suffix = f"_{index}" if index else ""
             path = out / source.stem / f"{key}{suffix}.wav"
             write_wav(path, render(params, pitch=pitch, seed=seed + index))
-            written.append(path)
+            written.append(to_ogg(path, ogg) if ogg else path)
     return written
 
 
-def build(src: Path, out: Path, report: Callable[[str], None] = print) -> int:
+def build(
+    src: Path, out: Path, report: Callable[[str], None] = print, ogg: str | None = None
+) -> int:
     """Build every preset file; returns how many failed."""
     failures = 0
     for source in sorted(src.glob("*.toml")):
         try:
-            report(f"{source} -> {len(build_file(source, out))} files")
-        except SfxError as error:
+            report(f"{source} -> {len(build_file(source, out, ogg))} files")
+        except (SfxError, OSError) as error:
             report(f"error: {error}")
             failures += 1
     return failures
