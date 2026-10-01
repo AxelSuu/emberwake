@@ -1,0 +1,8 @@
+# English, the fallback language. Keys are dotted: [title] press_any_key is title.press_any_key.
+# Every other language must define the same keys (a test checks it).
+
+[boot]
+made_with = "made with pygame-ce"
+
+[title]
+press_any_key = "press any key"

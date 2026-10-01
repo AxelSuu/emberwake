@@ -1,0 +1,7 @@
+# Svenska. Samma nycklar som en.toml.
+
+[boot]
+made_with = "gjort med pygame-ce"
+
+[title]
+press_any_key = "tryck på valfri tangent"
