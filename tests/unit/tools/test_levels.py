@@ -229,7 +229,7 @@ def put(text: str, x: int, y: int, chars: str) -> str:
             '[entities.x]\ntype = "Lever"\nfields = { Targets = ["Nowhere:y"] }',
             "not a single entity marker",
         ),
-        (ROOM, "fields = { Backdrop = 'x' }", "unknown level fields"),
+        (ROOM, "fields = { Weather = 'x' }", "unknown level fields"),
     ],
 )
 def test_compile_errors(text: str, toml: str, message: str):

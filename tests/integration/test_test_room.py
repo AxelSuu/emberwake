@@ -82,3 +82,4 @@ def test_east_exit_leads_to_the_east_passage(ctx: GameContext):
     assert scene.room == "East_Passage"
     assert scene.motor.grounded
     assert not scene.motor.dead
+    assert (scene.backdrops.previous, scene.backdrops.current) == ("cavern", "ruins")

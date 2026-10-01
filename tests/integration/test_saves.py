@@ -74,6 +74,7 @@ def test_relighting_saves_and_continues_at_the_beacon(ctx: GameContext, storage:
     assert beacon is not None
     assert beacon.lit
     assert scene.flash.left > 0
+    assert scene.backdrops.warmth > 0
     saved = load_slot(storage, ctx.slot)
     assert saved is not None
     assert saved.room == DEFAULT_ROOM
