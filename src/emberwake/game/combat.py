@@ -73,7 +73,7 @@ class Hitbox:
     flip: bool = False
     """Mirror the offset across the body's centre, for an attacker facing left."""
     active: bool = False
-    hit: set[int] = field(default_factory=set)
+    hit: list[int] = field(default_factory=list)
     """Entities already hurt by this activation."""
 
     def activate(self) -> None:
@@ -138,7 +138,7 @@ def combat_system(world: World, dt: float) -> None:
                 continue
             if not overlap(area, body):
                 continue
-            hitbox.hit.add(target)
+            hitbox.hit.append(target)
             health.current = max(health.current - hitbox.damage, 0)
             health.invulnerable = health.iframes
             side = 1.0 if body.center_x >= owner.center_x else -1.0

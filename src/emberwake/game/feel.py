@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from emberwake.engine.core.serde import from_data, to_data
 from emberwake.engine.render.camera import CameraTuning
+from emberwake.game.enemies import EnemyTuning
 from emberwake.game.light import LightTuning
 from emberwake.game.player.tuning import PlayerTuning
 from emberwake.game.rooms import RoomTuning
@@ -42,6 +43,7 @@ class Feel:
     juice: JuiceTuning = field(default_factory=JuiceTuning)
     rooms: RoomTuning = field(default_factory=RoomTuning)
     light: LightTuning = field(default_factory=LightTuning)
+    enemies: EnemyTuning = field(default_factory=EnemyTuning)
 
 
 def load_feel(path: Path) -> Feel:

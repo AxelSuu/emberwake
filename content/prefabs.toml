@@ -51,3 +51,18 @@ Lightform = {}
 [brazier.components]
 Sprite = { image = "brazier" }
 LightSource = { radius = 72.0 }
+
+[clockrat]
+[clockrat.components]
+Sprite = { image = "clockrat" }
+Brain = { kind = "clockrat" }
+
+[gloomcrawler]
+[gloomcrawler.components]
+Sprite = { image = "gloomcrawler" }
+Brain = { kind = "gloomcrawler" }
+
+[wisp_eater]
+[wisp_eater.components]
+Sprite = { image = "wisp_eater" }
+Brain = { kind = "wisp_eater" }
