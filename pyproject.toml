@@ -59,6 +59,10 @@ ignore = [
 # serde.alias returns a dataclasses.Field, like field() itself.
 extend-immutable-calls = ["emberwake.engine.core.serde.alias"]
 
+[tool.ruff.lint.flake8-type-checking]
+# serde resolves dataclass annotations at runtime, so their imports must be real.
+runtime-evaluated-decorators = ["dataclasses.dataclass"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 

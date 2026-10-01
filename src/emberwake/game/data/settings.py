@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from emberwake.engine.core.serde import VersionedCodec
+from emberwake.engine.input import Bindings
+from emberwake.game.actions import default_bindings
 
 SETTINGS_KEY = "settings.json"
 
@@ -28,6 +30,7 @@ class AudioSettings:
 class Settings:
     video: VideoSettings = field(default_factory=VideoSettings)
     audio: AudioSettings = field(default_factory=AudioSettings)
+    controls: Bindings = field(default_factory=default_bindings)
     language: str = "en"
 
 

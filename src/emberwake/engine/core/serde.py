@@ -28,12 +28,10 @@ import dataclasses
 import functools
 import types
 import typing
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Literal, Union, get_args, get_origin, get_type_hints
-
-if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+from typing import Any, Literal, Union, get_args, get_origin, get_type_hints
 
 type Data = bool | int | float | str | list[Data] | dict[str, Data] | None
 
