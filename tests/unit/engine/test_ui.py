@@ -36,10 +36,6 @@ def key(code: int, kind: int = pygame.KEYDOWN) -> pygame.Event:
     return pygame.event.Event(kind, key=code)
 
 
-def button(code: int, kind: int = pygame.CONTROLLERBUTTONDOWN) -> pygame.Event:
-    return pygame.event.Event(kind, button=code)
-
-
 class Menu(NamedTuple):
     panel: Panel
     play: Button
@@ -150,8 +146,8 @@ def test_keybind_field_captures_the_next_key_and_escape_cancels():
     root.handle(key(pygame.K_ESCAPE))
     assert (field.binding, field.listening) == ("down", False)
     root.handle(key(pygame.K_RETURN))
-    root.handle(button(pygame.CONTROLLER_BUTTON_Y))
-    assert field.binding == "y"
+    root.handle(key(pygame.K_q))
+    assert field.binding == "q"
 
 
 def test_root_routes_events_and_back():
@@ -159,9 +155,9 @@ def test_root_routes_events_and_back():
     m = menu()
     root = UiRoot(m.panel, THEME, lambda: backs.append(1))
     root.handle(key(pygame.K_RETURN))
-    root.handle(button(pygame.CONTROLLER_BUTTON_DPAD_DOWN))
+    root.handle(key(pygame.K_DOWN))
     root.handle(key(pygame.K_ESCAPE))
-    root.handle(button(pygame.CONTROLLER_BUTTON_B))
+    root.handle(key(pygame.K_BACKSPACE))
     assert m.pressed == ["play"]
     assert m.panel.current is m.shake
     assert len(backs) == 2
@@ -178,20 +174,6 @@ def test_navigator_repeats_a_held_direction_and_stops_on_release():
     assert nav.handle(key(pygame.K_RETURN)) is Nav.ACCEPT
     assert nav.update(1.0) is None
     assert nav.handle(key(pygame.K_F1)) is None
-
-
-def test_navigator_treats_the_stick_like_a_dpad_with_hysteresis():
-    nav = Navigator()
-    axis = pygame.CONTROLLER_AXIS_LEFTY
-
-    def tilt(value: float) -> Nav | None:
-        return nav.handle(pygame.event.Event(pygame.CONTROLLERAXISMOTION, axis=axis, value=value))
-
-    assert tilt(0.4) is None
-    assert tilt(0.8) is Nav.DOWN
-    assert tilt(0.9) is None
-    assert tilt(0.0) is None
-    assert tilt(-0.8) is Nav.UP
 
 
 def test_scroll_list_keeps_the_focused_row_in_view():

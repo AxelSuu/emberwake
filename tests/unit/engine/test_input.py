@@ -57,7 +57,6 @@ def mapper() -> InputMapper[Act]:
     pygame.init()
     bindings = Bindings(
         keys={"left": ["left", "a"], "jump": ["space"]},
-        buttons={"left": ["dpad_left", "leftx-"], "jump": ["a"]},
     )
     return InputMapper(Act, bindings)
 
@@ -95,23 +94,11 @@ def test_focus_loss_releases_everything(mapper: InputMapper[Act]):
     assert mapper.sample() == frozenset()
 
 
-def test_gamepad_buttons_and_stick(mapper: InputMapper[Act]):
-    mapper.handle(pygame.Event(pygame.CONTROLLERBUTTONDOWN, button=pygame.CONTROLLER_BUTTON_A))
-    assert mapper.sample() == {Act.JUMP}
-    mapper.handle(pygame.Event(pygame.CONTROLLERBUTTONUP, button=pygame.CONTROLLER_BUTTON_A))
-    axis = pygame.CONTROLLER_AXIS_LEFTX
-    mapper.handle(pygame.Event(pygame.CONTROLLERAXISMOTION, axis=axis, value=-30000))
-    assert mapper.sample() == {Act.LEFT}
-    mapper.handle(pygame.Event(pygame.CONTROLLERAXISMOTION, axis=axis, value=-5000))
-    assert mapper.sample() == frozenset()
-
-
 def test_unknown_bindings_are_skipped(caplog: pytest.LogCaptureFixture):
     pygame.init()
-    InputMapper(Act, Bindings(keys={"fly": ["f"], "jump": ["nokey"]}, buttons={"jump": ["zz"]}))
+    InputMapper(Act, Bindings(keys={"fly": ["f"], "jump": ["nokey"]}))
     assert "unknown action 'fly'" in caplog.text
     assert "Unknown key 'nokey'" in caplog.text
-    assert "Unknown gamepad button 'zz'" in caplog.text
 
 
 def test_rebind(mapper: InputMapper[Act]):

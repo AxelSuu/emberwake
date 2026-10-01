@@ -1,4 +1,4 @@
-"""Controls overlay: rebind keyboard and gamepad actions, with conflict handling and reset."""
+"""Controls overlay: rebind keyboard actions, with conflict handling and reset."""
 
 from __future__ import annotations
 
@@ -56,17 +56,16 @@ class ControlsScene(Scene):
         ctx = self.ctx
         controls = ctx.settings.controls
         rows: list[Widget] = []
-        tables = (("controls.keyboard", controls.keys), ("controls.gamepad", controls.buttons))
-        for heading, table in tables:
-            rows.append(Label(ctx.t(heading), dim=True))
-            rows.extend(
-                KeybindField(
-                    ctx.t(LABELS[action]),
-                    primary(table, action),
-                    lambda name, table=table, action=action: self._bind(table, action, name),
-                )
-                for action in Action
+        table = controls.keys
+        rows.append(Label(ctx.t("controls.keyboard"), dim=True))
+        rows.extend(
+            KeybindField(
+                ctx.t(LABELS[action]),
+                primary(table, action),
+                lambda name, action=action: self._bind(table, action, name),
             )
+            for action in Action
+        )
         rows.append(Button(ctx.t("controls.reset"), self._reset))
         list_ = ScrollList(rows, VISIBLE_ROWS)
         back = Button(ctx.t("controls.back"), self.close)
