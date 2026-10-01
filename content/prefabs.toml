@@ -1,0 +1,22 @@
+# Entity templates. An LDtk entity spawns the prefab named after its identifier in snake_case
+# (PressurePlate -> pressure_plate). `components` gives field values (missing ones use code
+# defaults), `fields` maps LDtk fields to "Component.field", and `persist` lists components saved
+# per entity. Every spawned entity also gets Identity (iid, room) and Body (its LDtk rect).
+# Check with `uv run python -m tools.levels validate`.
+
+[player_start]
+
+[door]
+components = { Sprite = { image = "door" } }
+
+[lever]
+components = { Sprite = { image = "lever" } }
+
+[pressure_plate]
+components = { Sprite = { image = "plate" } }
+
+[beacon]
+components = { Sprite = { image = "beacon" } }
+
+[ember]
+components = { Sprite = { image = "ember" } }

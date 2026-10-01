@@ -33,6 +33,8 @@ CLOAK_DARK = pygame.Color("#323353")
 EYES = pygame.Color("#8ff8e2")
 LANTERN_FRAME = pygame.Color("#625565")
 
+MISSING = pygame.Color("#f04f78")
+
 SPRITE_SIZE = (14, 22)
 LANTERN = (12.5, 13.5)
 """Lantern centre in the right-facing sprite, from its top-left."""
@@ -185,3 +187,56 @@ class LanternGlow:
         image = self._images[min(int(flicker * self.LEVELS), self.LEVELS - 1)]
         rect = image.get_rect(center=(round(center[0]), round(center[1])))
         canvas.blit(image, rect, special_flags=pygame.BLEND_RGB_ADD)
+
+
+class EntityArt:
+    """Placeholder images for `Sprite` names, sized to the entity's body and cached."""
+
+    def __init__(self) -> None:
+        self._cache: dict[tuple[str, int, int], pygame.Surface] = {}
+
+    def image(self, name: str, size: tuple[int, int]) -> pygame.Surface:
+        key = (name, *size)
+        if key not in self._cache:
+            image = pygame.Surface(size, pygame.SRCALPHA).convert_alpha()
+            painter = getattr(self, f"_{name}", None)
+            if painter is None:
+                pygame.draw.rect(image, MISSING, image.get_rect(), 1)
+            else:
+                painter(image, image.get_rect())
+            self._cache[key] = image
+        return self._cache[key]
+
+    @staticmethod
+    def _door(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(PLANK_DARK, rect)
+        image.fill(PLANK, rect.inflate(-4, -2))
+        for y in range(rect.top + 6, rect.bottom - 2, 8):
+            image.fill(PLANK_DARK, (rect.left + 2, y, rect.width - 4, 1))
+        image.fill(LANTERN_FRAME, (rect.right - 5, rect.centery - 1, 2, 3))
+
+    @staticmethod
+    def _lever(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 4, rect.bottom - 3, 8, 3))
+        base, tip = (rect.centerx, rect.bottom - 3), (rect.centerx + 4, rect.top + 5)
+        pygame.draw.line(image, POST, base, tip, 2)
+        image.fill(palette.EMBER_WARM, (rect.centerx + 3, rect.top + 3, 3, 3))
+
+    @staticmethod
+    def _plate(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.left + 1, rect.bottom - 3, rect.width - 2, 3))
+        image.fill(PLANK_LIGHT, (rect.left + 2, rect.bottom - 4, rect.width - 4, 1))
+
+    @staticmethod
+    def _beacon(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 3, rect.top + 6, 6, rect.height - 6))
+        image.fill(ROCK_LIGHT, (rect.centerx - 3, rect.top + 6, 1, rect.height - 6))
+        image.fill(LANTERN_FRAME, (rect.centerx - 4, rect.top + 4, 8, 2))
+        image.fill(palette.EMBER_COOL, (rect.centerx - 2, rect.top + 1, 4, 3))
+
+    @staticmethod
+    def _ember(image: pygame.Surface, rect: pygame.Rect) -> None:
+        cx, cy = rect.center
+        diamond = [(cx, cy - 4), (cx + 3, cy), (cx, cy + 4), (cx - 3, cy)]
+        pygame.draw.polygon(image, palette.EMBER_WARM, diamond)
+        image.fill(palette.EMBER_CORE, (cx - 1, cy - 1, 2, 2))
