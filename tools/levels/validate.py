@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import emberwake.game.components  # noqa: F401  (registers the components prefabs name)
+import emberwake.game.components  # noqa: F401  (registers every game component)
 from emberwake.engine.core.serde import SerdeError
 from emberwake.engine.ecs import COMPONENTS
 from emberwake.engine.ecs.prefabs import build, check

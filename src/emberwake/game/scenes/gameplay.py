@@ -28,10 +28,12 @@ from emberwake.game import palette, paths
 from emberwake.game.actions import Action
 from emberwake.game.components import Sprite
 from emberwake.game.feel import Feel, diff, load_feel
+from emberwake.game.interact import Interactable, Switch
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.render.placeholder import EntityArt, LanternGlow, PlayerSprite, tile_painter
 from emberwake.game.schedule import gameplay_schedule
+from emberwake.game.signals import Receiver, Wiring
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
@@ -49,6 +51,8 @@ DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
 """Seconds per frame spent baking room art in the background."""
 DEBUG_RED = pygame.Color("#e83b3b")
+WIRE_ON = pygame.Color("#1ebc73")
+WIRE_OFF = pygame.Color("#b33831")
 
 
 class GameplayScene(Scene):
@@ -86,8 +90,10 @@ class GameplayScene(Scene):
         self.world = World()
         self.spawner = Spawner(self.world, self._read_prefabs() or {}, WorldState())
         self.grid = WorldGrid()
+        levels = load_project(self.world_path).all_levels
+        self.wiring = Wiring.from_levels(levels, self.spawner.prefabs)
         self.rooms = RoomStreamer(
-            RoomGraph(load_project(self.world_path).all_levels),
+            RoomGraph(levels),
             self.grid,
             "Collisions",
             COLLISIONS,
@@ -100,6 +106,8 @@ class GameplayScene(Scene):
         self.world.insert_resource(self.actions)
         self.world.insert_resource(ctx.bus)
         self.world.insert_resource(self.grid, key=TileSource)
+        self.world.insert_resource(self.grid)
+        self.world.insert_resource(self.wiring)
         self.world.insert_resource(self.rooms)
         self.world.insert_resource(self.spawner)
         self.world.insert_resource(self.feel.player)
@@ -200,12 +208,15 @@ class GameplayScene(Scene):
         if prefabs is not None:
             self.spawner.prefabs = prefabs
         try:
-            graph = RoomGraph(load_project(self.world_path).all_levels)
+            levels = load_project(self.world_path).all_levels
+            graph = RoomGraph(levels)
             if self.room not in graph.levels:
                 raise KeyError(self.room)
         except (OSError, KeyError, SerdeError, ValueError) as error:
             log.error("Could not reload %s: %s", self.world_path.name, error)
         else:
+            self.wiring = Wiring.from_levels(levels, self.spawner.prefabs)
+            self.world.insert_resource(self.wiring)
             self.rooms.reload(graph)
             self.camera.bounds = graph.rects[self.room]
         log.info("Reloaded")
@@ -329,14 +340,19 @@ class GameplayScene(Scene):
         for layer, _ in self.layers.values():
             layer.draw(canvas, (ox, oy))
         for _, body, sprite in self.world.query(Body, Sprite):
-            image = self.art.image(sprite.image, (round(body.width), round(body.height)))
+            image = self.art.image(sprite.current, (round(body.width), round(body.height)))
             canvas.blit(image, (round(body.x) - ox, round(body.y) - oy))
+        for _, body, interactable in self.world.query(Body, Interactable):
+            if interactable.in_range:
+                above = (round(body.center_x) - ox, round(body.y) - oy - 3)
+                canvas.blit(self.art.prompt, self.art.prompt.get_rect(midbottom=above))
         if self.respawn_in == 0:
             self._draw_player(canvas, ox, oy, alpha)
         if self.show_colliders:
             self._draw_colliders(canvas, ox, oy)
         if self.show_rooms:
             self._draw_rooms(canvas, ox, oy)
+            self._draw_wires(canvas, ox, oy)
 
     def _draw_player(self, canvas: pygame.Surface, ox: int, oy: int, alpha: float) -> None:
         p, body, visual = self.motor, self.body, self.visual
@@ -380,3 +396,16 @@ class GameplayScene(Scene):
             pygame.draw.rect(canvas, color, rect.move(-ox, -oy), 1)
             text = font.render(f"{name} ({state})", False, color, "black")
             canvas.blit(text, (rect.x - ox + 3, rect.y - oy + 3))
+
+    def _draw_wires(self, canvas: pygame.Surface, ox: int, oy: int) -> None:
+        for _, body, switch in self.world.query(Body, Switch):
+            start = (body.center_x - ox, body.y + body.height / 2 - oy)
+            for iid in switch.targets:
+                eid = self.spawner.resolve(iid)
+                target = None if eid is None else self.world.find(eid, Body)
+                if target is None:
+                    continue
+                receiver = self.world.find(eid, Receiver) if eid is not None else None
+                color = WIRE_ON if receiver is not None and receiver.powered else WIRE_OFF
+                end = (target.center_x - ox, target.y + target.height / 2 - oy)
+                pygame.draw.line(canvas, color, start, end)
