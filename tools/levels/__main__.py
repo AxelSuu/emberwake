@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import tomllib
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -38,9 +39,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     check = commands.add_parser("validate", help="check entities and fields against prefabs")
     check.add_argument("--world", type=Path, default=ROOT / "levels/world.ldtk")
     check.add_argument("--prefabs", type=Path, default=ROOT / "content/prefabs.toml")
+    check.add_argument("--backdrops", type=Path, default=ROOT / "content/backdrops.toml")
     args = parser.parse_args(argv)
     if args.command == "validate":
-        return _validate(args.world, args.prefabs)
+        return _validate(args.world, args.prefabs, args.backdrops)
 
     out: Path = args.out
     if out.exists() and not (args.merge or args.force):
@@ -60,12 +62,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 0
 
 
-def _validate(world: Path, prefabs: Path) -> int:
-    problems = validate(load_project(world), load_prefabs(prefabs))
+def _validate(world: Path, prefabs: Path, backdrops: Path) -> int:
+    presets = tomllib.loads(backdrops.read_text(encoding="utf-8"))
+    problems = validate(load_project(world), load_prefabs(prefabs), backdrops=presets)
     for problem in problems:
         print(f"error: {problem}", file=sys.stderr)
     if not problems:
-        print(f"{world.name}: every entity matches {prefabs.name}")
+        print(f"{world.name}: entities match {prefabs.name}, backdrops exist")
     return 1 if problems else 0
 
 

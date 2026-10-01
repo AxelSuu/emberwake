@@ -1,4 +1,4 @@
-"""Check that every LDtk entity spawns: it has a prefab, and its fields fit the prefab."""
+"""Check that every LDtk entity spawns (it has a prefab its fields fit) and backdrops exist."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from emberwake.engine.ecs.prefabs import build, check
 from emberwake.engine.world.spawning import prefab_name
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Collection, Mapping
 
     from emberwake.engine.ecs import Registry
     from emberwake.engine.ecs.prefabs import Prefab
@@ -19,7 +19,10 @@ if TYPE_CHECKING:
 
 
 def validate(
-    project: Project, prefabs: Mapping[str, Prefab], registry: Registry = COMPONENTS
+    project: Project,
+    prefabs: Mapping[str, Prefab],
+    registry: Registry = COMPONENTS,
+    backdrops: Collection[str] | None = None,
 ) -> list[str]:
     """Problems found, one line each; empty when every entity would spawn."""
     problems = [
@@ -29,6 +32,9 @@ def validate(
     ]
     missing: set[str] = set()
     for level in project.all_levels:
+        backdrop = level.field("Backdrop")
+        if backdrops is not None and backdrop and backdrop not in backdrops:
+            problems.append(f"{level.identifier}: no backdrop [{backdrop}]")
         for entity in level.entities():
             name = prefab_name(entity.identifier)
             prefab = prefabs.get(name)
