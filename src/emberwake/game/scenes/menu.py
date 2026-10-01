@@ -2,19 +2,16 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
-import pygame
-
-from emberwake.engine.scene import Scene
-from emberwake.engine.ui import Button, Label, Panel, UiRoot
+from emberwake.engine.ui import Button, Label, Panel
 from emberwake.game.data.save import SLOTS, SaveSlot, load_slot
 from emberwake.game.scenes.gameplay import GameplayScene
-from emberwake.game.scenes.settings import SHADE, SettingsScene, load_ui_theme
+from emberwake.game.scenes.overlay import Overlay
+from emberwake.game.scenes.settings import SettingsScene
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
+    from emberwake.engine.scene import Scene
     from emberwake.game.context import GameContext
 
 
@@ -25,29 +22,6 @@ def describe(ctx: GameContext, slot: int, save: SaveSlot | None) -> str:
     minutes = int(save.playtime // 60)
     room = save.room.replace("_", " ")
     return ctx.t("menu.slot", slot=slot, room=room, h=minutes // 60, m=minutes % 60)
-
-
-class Overlay(Scene):
-    """A panel drawn over the scene below, shaded, with back handled by the panel."""
-
-    blocks_draw: ClassVar[bool] = False
-
-    def __init__(self, ctx: GameContext, panel: Panel, on_back: Callable[[], None]) -> None:
-        self.ctx = ctx
-        self.ui = UiRoot(panel, load_ui_theme(), on_back)
-        self.ui.center(ctx.canvas_size)
-
-    def handle(self, event: pygame.Event) -> None:
-        self.ui.handle(event)
-
-    def update(self, dt: float) -> None:
-        self.ui.update(dt)
-
-    def draw(self, canvas: pygame.Surface, alpha: float) -> None:
-        shade = pygame.Surface(canvas.get_size())
-        shade.set_alpha(SHADE)
-        canvas.blit(shade, (0, 0))
-        self.ui.draw(canvas)
 
 
 def start(ctx: GameContext, scene: Scene, slot: int, *, new: bool) -> None:

@@ -1,0 +1,15 @@
+# What the Tinker sells, for embers. Each purchase raises the price by `step`; `flag` counts how
+# many were bought (the game applies them when it spawns the player).
+# Names are strings: shop.<id>.name and shop.<id>.desc.
+
+[items.hp]
+price = 10
+step = 10
+max = 3
+flag = "up_hp"
+
+[items.oil]
+price = 8
+step = 6
+max = 4
+flag = "up_oil"

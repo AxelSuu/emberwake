@@ -68,3 +68,9 @@ color = "#8ff8e2"
 size = [16, 16]
 pivot = [0.5, 0.5]
 doc = "Flier drawn to light; swoops at the player"
+
+[entities.Tinker]
+color = "#fbb954"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "NPC who talks and sells upgrades for embers"

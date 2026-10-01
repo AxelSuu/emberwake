@@ -10,3 +10,5 @@ type = "Brazier"
 type = "Lightform"
 [entities.k]
 type = "Beacon"
+[entities.t]
+type = "Tinker"
