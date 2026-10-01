@@ -14,9 +14,13 @@ class Flash:
         self.color = color
         self.strength = strength
         self.left = self.duration = 0.0
+        self.muted = False
+        """Reduce-flashes setting: never show."""
         self._surface: pygame.Surface | None = None
 
     def start(self, duration: float) -> None:
+        if self.muted:
+            return
         self.left = self.duration = duration
 
     def update(self, dt: float) -> None:

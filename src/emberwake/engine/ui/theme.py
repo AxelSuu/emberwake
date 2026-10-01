@@ -64,7 +64,12 @@ def _font(size: int) -> pygame.font.Font:
 
 @functools.lru_cache(maxsize=512)
 def _render(size: int, text: str, color: str) -> pygame.Surface:
-    return _font(size).render(text, False, _color(color))
+    try:
+        return _font(size).render(text, False, _color(color))
+    except pygame.error:
+        _font.cache_clear()  # the font module was restarted
+        pygame.font.init()
+        return _font(size).render(text, False, _color(color))
 
 
 def load_theme(path: Path) -> Theme:

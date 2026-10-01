@@ -25,3 +25,10 @@ def test_v1_without_controls_gets_defaults():
     loaded = SETTINGS_CODEC.load({"version": 1, "data": {"language": "sv"}})
     assert loaded.controls == Settings().controls
     assert loaded.language == "sv"
+
+
+def test_v3_settings_load_with_default_accessibility():
+    raw = {"version": 3, "data": {"language": "sv", "video": {"crt": True}}}
+    loaded = SETTINGS_CODEC.load(raw)
+    assert (loaded.language, loaded.video.crt) == ("sv", True)
+    assert loaded.accessibility.reduce_flashes is False

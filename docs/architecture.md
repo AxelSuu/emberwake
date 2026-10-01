@@ -180,6 +180,11 @@ stick, A/B) into `Nav`, with hold-to-repeat; `UiRoot` lays a tree out, routes ev
 look comes from `content/ui.toml` (`Theme`, Resurrect 64 colors). Screens (menus, settings,
 rebinding) build on it in M4.
 
+`SettingsScene` (overlay) lists video, audio, accessibility and language rows in a `ScrollList`.
+Widgets write straight into `ctx.settings`, so changes apply live (language rebuilds the rows;
+`GameplayScene.on_resume` re-reads effect flags, shake and reduce-flashes), and the file is saved
+on close and at quit. Settings are version 4 (accessibility group added).
+
 ## Localization (M4)
 
 Player-facing text goes through `ctx.t("key", name=value)` (`engine.core.i18n.Strings`). Tables

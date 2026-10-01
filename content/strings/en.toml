@@ -6,3 +6,27 @@ made_with = "made with pygame-ce"
 
 [title]
 press_any_key = "press any key"
+
+[language]
+name = "English"
+
+[settings]
+title = "Settings"
+back = "Back"
+video = "Video"
+audio = "Audio"
+accessibility = "Accessibility"
+language = "Language"
+fullscreen = "Fullscreen"
+vsync = "VSync (next start)"
+shake = "Screen shake"
+bloom = "Bloom"
+grading = "Color grading"
+vignette = "Vignette"
+crt = "CRT lines"
+shadows = "Shadows"
+shafts = "Light shafts"
+master = "Master volume"
+music = "Music"
+sfx = "Effects"
+reduce_flashes = "Reduce flashes"

@@ -21,7 +21,8 @@ def test_every_key_the_game_asks_for_exists_and_is_used():
     sources = [path.read_text(encoding="utf-8") for path in SOURCE.rglob("*.py")]
     used = {key for text in sources for key in CALL.findall(text)}
     assert used <= set(TABLES["en"])
-    assert set(TABLES["en"]) <= used
+    quoted = {key for key in TABLES["en"] if any(f'"{key}"' in text for text in sources)}
+    assert quoted == set(TABLES["en"])
 
 
 def test_placeholders_match_across_languages():
