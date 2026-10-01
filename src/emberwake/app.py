@@ -55,6 +55,8 @@ async def main(argv: Sequence[str] | None = None) -> None:
         bus=EventBus(),
         canvas_size=CANVAS_SIZE,
         dev=options.dev,
+        slot=options.slot,
+        new_game=options.new,
     )
     scenes = SceneManager()
     if options.replay:
