@@ -22,6 +22,6 @@
 - [x] Scene stack, async runner, debug overlay, boot and title scenes
 - [x] Docs, ADRs
 - [x] CI workflow
-- [ ] Verify the pygbag build in a browser (`just web-serve`)
-- [ ] Spike: pymunk and numpy availability in pygbag
-- [ ] GitHub repo, labels, milestones and issues (needs go-ahead)
+- [ ] Verify the pygbag build in a browser (#1)
+- [ ] Spike: pymunk and numpy availability in pygbag (#2)
+- [x] GitHub repo, labels, milestones, issues and project board
