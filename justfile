@@ -60,6 +60,7 @@ web-stage: sfx
     cp main.py build/web-src/
     cp -r src/emberwake content levels build/web-src/
     if [ -d assets ]; then cp -r assets build/web-src/; fi
+    if [ -n "$(find build/web-src -name "*.wav" 2>/dev/null)" ]; then echo "warning: pygbag rejects WAV; leaving sounds out (install ffmpeg or oggenc)"; find build/web-src -name "*.wav" -delete; fi
 
 # Build the browser version into build/web
 web: web-stage
