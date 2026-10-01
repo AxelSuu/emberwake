@@ -1,0 +1,17 @@
+# Animation clips by name. Frames index the sprite's sheet; events and hitboxes are keyed by the
+# position within `frames` (0 is the first). Boxes are [x, y, w, h] from the sprite's top left.
+
+[player_run]
+frames = [0, 1, 2, 3]
+ms = 90
+events = { 1 = "footstep", 3 = "footstep" }
+
+[player_idle]
+frames = [0]
+ms = 200
+
+[player_dash]
+frames = [0, 1]
+ms = 60
+loop = false
+hitboxes = { 0 = [[0, 4, 20, 10]] }
