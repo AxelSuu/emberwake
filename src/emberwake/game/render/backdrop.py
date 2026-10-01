@@ -2,7 +2,7 @@
 
 Far layers (factor up to 1) draw behind the world, blurred once for depth; near layers (factor
 above 1) pass in front of it, darkened. Switching presets cross-fades, and a room with a lit
-beacon warms up, a preview of the colour grade in M3.
+beacon warms up. Each preset carries a colour grade that the post chain applies.
 """
 
 from __future__ import annotations
@@ -18,6 +18,7 @@ import pygame
 from emberwake.engine.core.mathx import approach
 from emberwake.engine.core.serde import from_data
 from emberwake.engine.render.parallax import ParallaxLayer, wrap_blur
+from emberwake.engine.render.post import Grade
 from emberwake.game import palette
 
 if TYPE_CHECKING:
@@ -47,8 +48,18 @@ class LayerSpec:
 
 
 @dataclass(slots=True)
+class GradeSpec:
+    """The room's colour grade: see `Grade`."""
+
+    multiply: tuple[int, int, int] = (255, 255, 255)
+    add: tuple[int, int, int] = (0, 0, 0)
+    saturation: float = 1.0
+
+
+@dataclass(slots=True)
 class BackdropSpec:
     sky: tuple[str, str] = (palette.INK, palette.PLUM)
+    grade: GradeSpec = field(default_factory=GradeSpec)
     layers: list[LayerSpec] = field(default_factory=list)
 
 
@@ -130,8 +141,24 @@ class Backdrops:
             previous.draw_far(self._buffer, offset, room_top)
             self._buffer.set_alpha(round(255 * self.fade / FADE))
             canvas.blit(self._buffer, (0, 0))
+
+    def grade(self) -> Grade:
+        """The colour grade now: the room's, cross-faded from the previous room's, plus warmth."""
+        grade = self._grade_of(self.current)
+        if self.fade > 0:
+            grade = self._grade_of(self.previous).lerp(grade, 1.0 - self.fade / FADE)
         if self.warmth > 0:
-            canvas.fill([round(c * self.warmth) for c in WARM], special_flags=pygame.BLEND_RGB_ADD)
+            r, g, b = (
+                min(a + round(w * self.warmth), 255) for a, w in zip(grade.add, WARM, strict=True)
+            )
+            grade = Grade(grade.multiply, (r, g, b), grade.saturation)
+        return grade
+
+    def _grade_of(self, name: str | None) -> Grade:
+        spec = self.specs.get(name) if name is not None else None
+        if spec is None:
+            return Grade()
+        return Grade(spec.grade.multiply, spec.grade.add, spec.grade.saturation)
 
     def draw_near(self, canvas: pygame.Surface, offset: tuple[int, int], room_top: int) -> None:
         current = self.get(self.current)

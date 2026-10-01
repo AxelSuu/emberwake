@@ -9,6 +9,7 @@ from emberwake.game.render.backdrop import (
     Backdrop,
     Backdrops,
     BackdropSpec,
+    GradeSpec,
     LayerSpec,
     load_backdrops,
 )
@@ -54,13 +55,12 @@ def test_cross_fades_between_presets():
 
 
 def test_warmth_eases_in_and_out():
-    backdrops, canvas = Backdrops(SPECS, SIZE), pygame.Surface(SIZE)
+    backdrops = Backdrops(SPECS, SIZE)
     backdrops.show("blue", instantly=True)
     backdrops.update(warm=True, dt=0.1)
     assert 0 < backdrops.warmth < 1
     backdrops.update(warm=True, dt=10)
-    backdrops.draw_far(canvas, (0, 0), 0)
-    assert canvas.get_at((1, 1)).r > pygame.Color(BLUE).r
+    assert backdrops.grade().add[0] > 0
     backdrops.update(warm=False, dt=10)
     assert backdrops.warmth == 0
 
@@ -72,3 +72,18 @@ def test_missing_presets_draw_ink(name: str | None):
     backdrops.draw_far(canvas, (0, 0), 0)
     backdrops.draw_near(canvas, (0, 0), 0)
     assert canvas.get_at((1, 1)) == pygame.Color(palette.INK)
+
+
+def test_grade_cross_fades_and_warms():
+    specs = {
+        "a": BackdropSpec(grade=GradeSpec(multiply=(100, 100, 100))),
+        "b": BackdropSpec(grade=GradeSpec(multiply=(200, 200, 200))),
+    }
+    backdrops = Backdrops(specs, SIZE)
+    backdrops.show("a", instantly=True)
+    assert backdrops.grade().multiply == (100, 100, 100)
+    backdrops.show("b")
+    backdrops.update(warm=False, dt=FADE / 2)
+    assert backdrops.grade().multiply == (150, 150, 150)
+    backdrops.update(warm=False, dt=FADE)
+    assert backdrops.grade().multiply == (200, 200, 200)

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import functools
 import logging
+import operator
 import time
 import tomllib
 from typing import TYPE_CHECKING
@@ -20,8 +22,9 @@ from emberwake.engine.physics import Body, Tile, TileSource
 from emberwake.engine.platform.documents import save_document
 from emberwake.engine.render.camera import Camera
 from emberwake.engine.render.chunks import ChunkLayer
-from emberwake.engine.render.frame import Layer, RenderFrame
+from emberwake.engine.render.frame import Flag, Layer, RenderFrame
 from emberwake.engine.render.particles import EmitterSpec, ParticleSystem, load_emitters
+from emberwake.engine.render.post import PostChain
 from emberwake.engine.render.software import SoftwareBackend
 from emberwake.engine.scene import Scene
 from emberwake.engine.world.ldtk import load_project
@@ -92,7 +95,8 @@ class GameplayScene(Scene):
         self.visual = PlayerVisual()
         self.sprite = PlayerSprite()
         self.flicker = Flicker()
-        self.frame = RenderFrame()
+        self.frame = RenderFrame(flags=self._effects())
+        self.post = PostChain(ctx.canvas_size)
         self.backend = SoftwareBackend()
         self.art = EntityArt()
         self.particles = ParticleSystem()
@@ -201,6 +205,17 @@ class GameplayScene(Scene):
         except (OSError, tomllib.TOMLDecodeError, SerdeError) as error:
             log.error("Could not load %s: %s", PREFABS, error)
             return None
+
+    def _effects(self) -> Flag:
+        video = self.ctx.settings.video
+        toggles = (
+            (Flag.LIGHTING, True),
+            (Flag.BLOOM, video.bloom),
+            (Flag.GRADING, video.grading),
+            (Flag.VIGNETTE, video.vignette),
+            (Flag.CRT, video.crt),
+        )
+        return functools.reduce(operator.or_, (flag for flag, on in toggles if on), Flag(0))
 
     def _read_emitters(self) -> dict[str, EmitterSpec] | None:
         try:
@@ -459,6 +474,7 @@ class GameplayScene(Scene):
         self.backend.render(frame, canvas)
         self.particles.draw(canvas, (ox, oy))
         self.backdrops.draw_near(canvas, (ox, oy), room_top)
+        self.post.apply(canvas, self.frame.flags, self.backdrops.grade())
         self.flash.draw(canvas)
         if self.show_colliders:
             self._draw_colliders(canvas, ox, oy)
