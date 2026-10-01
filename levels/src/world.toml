@@ -21,3 +21,6 @@ cell = [8, 0]
 
 [rooms.Return_Hall]
 cell = [4, 0]
+
+[rooms.Enemy_Yard]
+cell = [0, 4]

@@ -35,6 +35,7 @@ from emberwake.engine.world.spawning import Identity, Spawner
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
 from emberwake.game.beacons import Beacon, BeaconLit
+from emberwake.game.combat import Damaged, Health, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
 from emberwake.game.data.save import SaveSlot, load_slot
 from emberwake.game.feel import Feel, diff, load_feel
@@ -160,7 +161,8 @@ class GameplayScene(Scene):
         self.spawn_point = self._continue_point(start, self.progress.data.beacon)
         self.camera.bounds = self.rooms.graph.rects[start]
         resources = (self.actions, self.ctx.bus, self.grid, self.wiring, self.rooms, self.spawner)
-        for resource in (*resources, self.feel.player, self.feel.rooms, self.feel.light):
+        tunings = (self.feel.player, self.feel.rooms, self.feel.light, self.feel.enemies)
+        for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
         self.schedule = gameplay_schedule()
@@ -193,6 +195,8 @@ class GameplayScene(Scene):
             bus.subscribe(RoomEntered, self._on_room_entered),
             bus.subscribe(RunFinished, self._on_run_finished),
             bus.subscribe(Collected, self._on_collected),
+            bus.subscribe(Damaged, self._on_damaged),
+            bus.subscribe(Killed, self._on_killed),
             bus.subscribe(BeaconLit, self._on_beacon_lit),
             *self.progress.subscribe(bus),
         ]
@@ -303,9 +307,11 @@ class GameplayScene(Scene):
             return near
         return min(starts, key=lambda p: (p[0] - near[0]) ** 2 + (p[1] - near[1]) ** 2)
 
-    def _new_player(self) -> tuple[Body, Motor, Ember]:
+    def _new_player(self) -> tuple[Body, Motor, Ember, Health, Hurtbox]:
         body, motor = new_player(*self.spawn_point, self.feel.player)
-        return body, motor, Ember(self.feel.light.ember_max)
+        foes = self.feel.enemies
+        health = Health(foes.player_hp, iframes=foes.player_iframes)
+        return body, motor, Ember(self.feel.light.ember_max), health, Hurtbox(Team.PLAYER)
 
     def reload(self) -> None:
         """Re-read feel.toml, prefabs and the levels, keeping the player where it is."""
@@ -317,6 +323,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.player)
             self.world.insert_resource(feel.rooms)
             self.world.insert_resource(feel.light)
+            self.world.insert_resource(feel.enemies)
             self.camera.retune(feel.camera)
         prefabs = self._read_prefabs()
         if prefabs is not None:
@@ -469,6 +476,20 @@ class GameplayScene(Scene):
 
     def _on_run_finished(self, event: RunFinished) -> None:
         self.manager.push(ResultsScene(self.ctx, event.result))
+
+    def _on_damaged(self, event: Damaged) -> None:
+        hurt_player = event.target == self.player
+        if hurt_player:
+            self.hitstop = max(self.hitstop, self.feel.juice.dash_hitstop + 1)
+            self.camera.shake.add(self.feel.juice.dash_trauma)
+        color = pygame.Color(palette.EMBER_COOL if hurt_player else palette.MIST)
+        self.texts.spawn(f"-{event.amount}", event.x, event.y - 8, (color.r, color.g, color.b))
+
+    def _on_killed(self, event: Killed) -> None:
+        if event.target == self.player and not self.motor.dead:
+            self.motor.dead = True
+            body = self.body
+            self.ctx.bus.publish(Died(body.center_x, body.bottom))
 
     def _on_collected(self, event: Collected) -> None:
         body, color = self.body, pygame.Color(palette.EMBER_HOT)

@@ -25,5 +25,5 @@ class Sprite:
 
 
 # Modules defining components, imported for their registration.
-from emberwake.game import beacons, combat, interact, light, signals  # noqa: E402, F401
+from emberwake.game import beacons, combat, enemies, interact, light, signals  # noqa: E402, F401
 from emberwake.game.player import controller  # noqa: E402, F401
