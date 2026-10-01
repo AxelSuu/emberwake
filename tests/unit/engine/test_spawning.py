@@ -20,6 +20,8 @@ from emberwake.game import paths
 if TYPE_CHECKING:
     import pytest
 
+    from emberwake.engine.world.ldtk import EntityInstance
+
 REGISTRY = Registry()
 REGISTRY.register(Identity)
 
@@ -166,3 +168,81 @@ def test_retired_entities_never_respawn():
     s.world.flush()
     assert len(entities(s, "ember")) == 1
     assert s.resolve(iid) is None
+
+
+class Gate:
+    """Lets in the LDtk identifiers in `open`."""
+
+    def __init__(self, *open_: str) -> None:
+        self.open = set(open_)
+
+    def __call__(self, entity: EntityInstance) -> bool:
+        return entity.identifier in self.open
+
+
+def gated(gate: Gate, state: WorldState | None = None) -> Spawner:
+    return Spawner(World(), PREFABS, state or WorldState(), REGISTRY, gate)
+
+
+def test_the_gate_holds_entities_back_until_regate_lets_them_in():
+    gate = Gate("Lever", "Door")
+    s, r = gated(gate), room()
+    s.spawn_room(r)
+    s.world.flush()
+    assert entities(s, "ember") == []
+    s.regate(r)
+    s.world.flush()
+    assert entities(s, "ember") == []
+    gate.open.add("Ember")
+    s.regate(r)
+    s.regate(r)
+    s.world.flush()
+    assert len(entities(s, "ember")) == 2
+
+
+def test_regate_saves_what_it_despawns_and_restores_it():
+    gate = Gate("Lever")
+    state = WorldState()
+    s, r = gated(gate, state), room()
+    s.spawn_room(r)
+    s.world.flush()
+    ((lever, _, wired, _),) = entities(s, "lever")
+    assert wired is not None
+    wired.on = True
+    gate.open.clear()
+    s.regate(r)
+    s.world.flush()
+    assert entities(s, "lever") == []
+    assert s.resolve(lever.iid) is None
+    assert state.entities[lever.iid]["Wired"]["on"]
+    gate.open.add("Lever")
+    s.regate(r)
+    s.world.flush()
+    ((_, _, restored, _),) = entities(s, "lever")
+    assert restored is not None
+    assert restored.on
+
+
+def test_killed_and_retired_entities_stay_away_when_the_gate_changes():
+    gate = Gate("Ember")
+    s, r = gated(gate), room()
+    s.spawn_room(r)
+    s.world.flush()
+    first, second = (eid for eid, i in s.world.query(Identity) if i.prefab == "ember")
+    s.retire(first)
+    s.world.despawn(second)
+    s.world.flush()
+    gate.open.clear()
+    s.regate(r)
+    gate.open.add("Ember")
+    s.regate(r)
+    s.world.flush()
+    assert entities(s, "ember") == []
+
+
+def test_unloading_forgets_what_was_held_back():
+    s, r = gated(Gate()), room()
+    s.spawn_room(r)
+    assert s.held
+    s.despawn_room(r)
+    assert not s.held
