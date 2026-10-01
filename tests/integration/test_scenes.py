@@ -9,6 +9,7 @@ from emberwake.engine.runner import Runner
 from emberwake.engine.scene import SceneManager
 from emberwake.game.scenes.boot import BootScene
 from emberwake.game.scenes.gameplay import GameplayScene
+from emberwake.game.scenes.menu import MenuScene
 from emberwake.game.scenes.pause import PauseScene
 from emberwake.game.scenes.settings import SettingsScene
 from emberwake.game.scenes.title import TitleScene
@@ -45,12 +46,12 @@ def key(scenes: SceneManager, code: int) -> None:
     scenes.update(STEP)
 
 
-def test_any_key_on_title_starts_gameplay(ctx: GameContext):
+def test_any_key_on_title_opens_the_menu(ctx: GameContext):
     scenes = SceneManager()
     scenes.push(TitleScene(ctx))
     scenes.apply_pending()
     key(scenes, pygame.K_SPACE)
-    assert isinstance(scenes.top, GameplayScene)
+    assert isinstance(scenes.top, MenuScene)
 
 
 def test_escape_pauses_gameplay_and_escape_again_resumes(ctx: GameContext):
