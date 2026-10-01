@@ -44,8 +44,8 @@ keeps `vy` at most `-jump_speed`; releasing early multiplies upward velocity by 
 
 **One-way platforms.** Solid only from above. Down + jump while standing on one drops through it.
 
-**Wall slide.** In the air, falling, and pushing into a wall: fall speed is capped at
-`wall_slide_max`.
+**Wall slide.** In the air, falling, and pushing into a wall: fall speed approaches
+`wall_slide_max` (at the gravity rate, so a fast fall eases into the slide) and stays there.
 
 **Wall jump.** Jump pressed in the air, without coyote time, within `wall_jump_reach` px of a
 wall: `vx = wall_jump_speed` away from the wall, `vy = -jump_speed`, and horizontal intent is
@@ -102,7 +102,7 @@ for our 16 px tiles.
 - [ ] Jump pressed up to `coyote` ticks after walking off a ledge still jumps; one tick later it does not.
 - [ ] Jump pressed up to `jump_buffer` ticks before landing jumps on the landing tick.
 - [ ] Rising into a ceiling edge overlapping by at most `corner_correction` px slides past it.
-- [ ] Wall slide never falls faster than `wall_slide_max`.
+- [ ] Wall slide slows the fall to `wall_slide_max` within a few ticks and then never exceeds it.
 - [ ] A wall jump moves away from the wall and gains height.
 - [ ] A horizontal dash travels about 4.5 tiles, and the charge refills only after landing.
 - [ ] Down + jump on a one-way platform drops through it. Jumping up through one works.
