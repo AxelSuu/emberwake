@@ -149,3 +149,20 @@ def test_bad_field_values_skip_the_entity(caplog: pytest.LogCaptureFixture):
     s.world.flush()
     assert entities(s, "ember") == []
     assert "Cannot spawn Ember" in caplog.text
+
+
+def test_retired_entities_never_respawn():
+    state = WorldState()
+    s, r = spawner(state), room()
+    s.spawn_room(r)
+    s.world.flush()
+    (ember, _), *_ = [(eid, i) for eid, i in s.world.query(Identity) if i.prefab == "ember"]
+    iid = s.world.get(ember, Identity).iid
+    s.retire(ember)
+    s.despawn_room(r)
+    s.world.flush()
+    assert state.removed == [iid]
+    s.spawn_room(r)
+    s.world.flush()
+    assert len(entities(s, "ember")) == 1
+    assert s.resolve(iid) is None

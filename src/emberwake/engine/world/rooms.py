@@ -141,14 +141,28 @@ class WorldGrid:
 
     def get(self, column: int, row: int) -> Tile:
         """Tile at a world cell."""
+        room = self._room(column, row)
+        if room is None:
+            return Tile.EMPTY
+        left, top = room.cell
+        return room.grid.get(column - left, row - top)
+
+    def set(self, column: int, row: int, tile: Tile) -> bool:
+        """Change a world cell; returns whether a loaded room owns it."""
+        room = self._room(column, row)
+        if room is None:
+            return False
+        left, top = room.cell
+        room.grid.set(column - left, row - top, tile)
+        return True
+
+    def _room(self, column: int, row: int) -> Room | None:
         room = self._last
         if room is None or not _owns(room, column, row):
             room = next((r for r in self.rooms if _owns(r, column, row)), None)
-            if room is None:
-                return Tile.EMPTY
-            self._last = room
-        left, top = room.cell
-        return room.grid.get(column - left, row - top)
+            if room is not None:
+                self._last = room
+        return room
 
     def void(self, x: float, y: float) -> bool:
         """Whether (`x`, `y`) is below every loaded room spanning `x`, or no room spans it."""

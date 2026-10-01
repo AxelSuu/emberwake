@@ -42,9 +42,15 @@ class Identity:
 
 @dataclass(slots=True)
 class WorldState:
-    """Persisted component data by entity iid: ``{iid: {component name: data}}``."""
+    """What changed in the world, by entity iid.
+
+    Attributes:
+        entities: Persisted component data, ``{iid: {component name: data}}``.
+        removed: Entities taken out of play for good (a collected pickup); they never respawn.
+    """
 
     entities: dict[str, dict[str, Any]] = field(default_factory=dict)
+    removed: list[str] = field(default_factory=list)
 
 
 def prefab_name(identifier: str) -> str:
@@ -76,7 +82,7 @@ class Spawner:
     def spawn_room(self, room: Room) -> None:
         """Queue a spawn for every entity of `room` that has a prefab and is not live yet."""
         for entity in room.level.entities():
-            if entity.iid in self.ids:
+            if entity.iid in self.ids or entity.iid in self.state.removed:
                 continue
             name = prefab_name(entity.identifier)
             prefab = self.prefabs.get(name)
@@ -97,10 +103,17 @@ class Spawner:
     def despawn_room(self, room: Room) -> None:
         """Save and queue a despawn for every entity spawned from `room`."""
         for eid, identity in list(self.world.query(Identity)):
-            if identity.room == room.name:
+            if identity.room == room.name and identity.iid not in self.state.removed:
                 self._save(eid, identity)
                 self.world.despawn(eid)
                 del self.ids[identity.iid]
+
+    def retire(self, eid: EntityId) -> None:
+        """Take a spawned entity out of play for good: despawn it and never spawn it again."""
+        identity = self.world.get(eid, Identity)
+        self.state.removed.append(identity.iid)
+        self.ids.pop(identity.iid, None)
+        self.world.despawn(eid)
 
     def snapshot_all(self) -> None:
         """Save the persisted components of every live entity, for writing a save file."""
