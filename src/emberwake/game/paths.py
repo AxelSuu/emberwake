@@ -32,3 +32,7 @@ def levels(name: str) -> Path:
 
 def sounds() -> Path:
     return data_root() / "assets" / "sfx"
+
+
+def sprites() -> Path:
+    return data_root() / "assets" / "sprites"

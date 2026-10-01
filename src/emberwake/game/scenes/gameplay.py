@@ -54,6 +54,7 @@ from emberwake.game.player.swing import Swing, SwingHit, SwingStarted
 from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
 from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdrops
+from emberwake.game.render.bank import SpriteBank
 from emberwake.game.render.fx import Flash
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
 from emberwake.game.render.swing_fx import arm, lantern_point, trail
@@ -147,6 +148,7 @@ class GameplayScene(Scene):
         self.post = PostChain(ctx.canvas_size)
         self.backend = SoftwareBackend()
         self.art = EntityArt()
+        self.bank = SpriteBank(paths.sprites())
         self.particles = ParticleSystem()
         self.cutscenes = CutscenePlayer()
         self.toasts = Toasts()
@@ -498,6 +500,7 @@ class GameplayScene(Scene):
         emitters = self._read_emitters()
         if emitters is not None:
             self.emitters = emitters
+        self.bank.reload()
         backdrops = self._read_backdrops()
         if backdrops is not None:
             self.backdrops = Backdrops(backdrops, self.ctx.canvas_size)
@@ -815,10 +818,12 @@ class GameplayScene(Scene):
                 image = self.art.image("flare", (round(body.width), round(body.height)))
                 frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
         for eid, body, sprite in self.world.query(Body, Sprite):
-            image = self.art.image(sprite.current, (round(body.width), round(body.height)))
+            size = (round(body.width), round(body.height))
+            image = self.bank.image(sprite.current, self.clock)
+            image = image or self.art.image(sprite.current, size)
             if eid in self.flashes:
                 image = flashed(image, self.flashes[eid] / HIT_FLASH)
-            frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
+            frame.sprite(*self._at(image, (body.center_x - ox, body.bottom - oy)))
         for _, body, interactable in self.world.query(Body, Interactable):
             if interactable.in_range:
                 above = (round(body.center_x) - ox, round(body.y) - oy - 3)
