@@ -25,3 +25,18 @@ def test_four_shadowed_lights_in_a_cave(benchmark: BenchmarkFixture):
     benchmark(backend.render, frame, canvas)
     if benchmark.stats is not None:
         assert benchmark.stats.stats.median < BUDGET
+
+
+DARK_BUDGET = 4e-3
+
+
+def test_a_dark_room_with_a_dozen_lamps(benchmark: BenchmarkFixture):
+    """Lamps stand still, so their shadows are cast once; the cost is the light map."""
+    backend, canvas = SoftwareBackend(), pygame.Surface((640, 360))
+    frame = RenderFrame(flags=Flag.LIGHTING | Flag.SHADOWS, ambient=(78, 68, 102))
+    frame.occluded = lambda x, y: int(x) % 80 < 10 or y > 300
+    for i in range(12):
+        frame.light(30 + i * 52, 120 + (i % 3) * 60, 72, (251, 107, 29), 0.8, key=i)
+    benchmark(backend.render, frame, canvas)
+    if benchmark.stats is not None:
+        assert benchmark.stats.stats.median < DARK_BUDGET

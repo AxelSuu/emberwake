@@ -112,10 +112,20 @@ and the player mirrored as a kinematic body.
 ## Rendering (planned, M3)
 
 Gameplay emits a backend-agnostic `RenderFrame` (`engine.render.frame`): sprites sorted into
-layers (`WORLD`, `ACTORS`, `FOREGROUND`, `OVERLAY`), lights, and effect flags, all in screen px.
-`SoftwareBackend` draws it today for entities, the player and lights; lights shine on everything
-below `ACTORS`. Backdrops, chunk layers, particles and the flash still draw straight to the canvas
-and move into the frame as the GL backend needs them.
+layers (`WORLD`, `ACTORS`, `GLOW`, `FOREGROUND`, `OVERLAY`), lights, an ambient level and effect
+flags, all in screen px. Backdrops, chunk layers, particles and the flash still draw straight to
+the canvas and move into the frame as the GL backend needs them.
+
+Darkness (`SoftwareBackend`): the frame's `ambient` is how lit a place is where no light reaches.
+Every light adds a pool to a light map filled with the ambient (tinted a little toward the
+light's color, shadows cut out), and the canvas, with everything drawn so far, is multiplied by
+it. A faint additive haze around each light follows, then the `GLOW` layer at full brightness:
+gameplay queues every sprite's emissive pixels (colors in `palette.EMISSIVE`, the flame ramp and
+mint) there, so eyes, flames and embers shine in the dark. Rooms take their ambient from their
+backdrop preset (`ambient`, `ambient_lit` once a beacon burns), the brightness setting lifts it,
+and every light flickers on its own phase. Lights that do not move pass a `key`, and their
+shadows are cast once until `WorldGrid.version` changes (doors, lightforms, streaming); lights off
+screen are skipped and only the six biggest cast shadows.
 
 Post effects (`engine.render.post`): `PostChain` runs bloom, a colour `Grade`, vignette and CRT
 scanlines on the finished canvas, each behind its `Flag` and its toggle in `settings.video`. Rooms
