@@ -49,6 +49,7 @@ quit = "Avsluta till titel"
 continue = "Fortsätt"
 new = "Nytt spel"
 load = "Ladda spel"
+trials = "Prövningar"
 achievements = "Prestationer"
 settings = "Inställningar"
 quit = "Avsluta"
@@ -76,6 +77,7 @@ flare = "Kasta bloss"
 
 [results]
 title = "Resultat"
+medal = "Medalj: {medal}"
 new_best = "Nytt rekord!"
 time = "Tid {time}"
 best = "Bäst {time}"
@@ -163,3 +165,20 @@ bye = "Hejdå."
 city = "Ljuset slocknade på en gång, och vattnet steg efteråt. Fyrar brinner fortfarande på sina håll. Hitta dem, så återvänder färgerna."
 shop = "Glöd är bra valuta. Titta bland mina varor."
 thanks = "Kom tillbaka när din lykta börjar ta slut."
+
+[medal]
+gold = "Guld"
+silver = "Silver"
+bronze = "Brons"
+
+[trials]
+title = "Prövningar"
+back = "Tillbaka"
+row = "{name}: {best}{medal}"
+none = "ingen tid än"
+
+[trial.sprint]
+name = "Spurt"
+
+[trial.pits]
+name = "Groparna"

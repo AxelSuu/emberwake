@@ -294,6 +294,13 @@ class EntityArt:
         image.fill(palette.EMBER_HOT, (rect.centerx + 4, rect.bottom - 8, 2, 3))
 
     @staticmethod
+    def _goal(image: pygame.Surface, rect: pygame.Rect) -> None:
+        for y in range(rect.top, rect.bottom, 8):
+            image.fill(palette.EMBER_CORE, (rect.left + 2, y, 3, 4))
+            image.fill(palette.MIST, (rect.left + 5, y + 4, 3, 4))
+        image.fill(palette.EMBER_HOT, (rect.left, rect.top, 2, rect.height))
+
+    @staticmethod
     def _ember(image: pygame.Surface, rect: pygame.Rect) -> None:
         cx, cy = rect.center
         diamond = [(cx, cy - 4), (cx + 3, cy), (cx, cy + 4), (cx - 3, cy)]

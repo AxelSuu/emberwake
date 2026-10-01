@@ -24,6 +24,8 @@ class RunResult:
     """Seconds, in simulated time."""
     deaths: int = 0
     embers: int = 0
+    medal: str = ""
+    """``"gold"``, ``"silver"``, ``"bronze"`` or nothing."""
 
 
 @dataclass(slots=True)

@@ -50,6 +50,7 @@ quit = "Quit to title"
 continue = "Continue"
 new = "New game"
 load = "Load game"
+trials = "Trials"
 achievements = "Achievements"
 settings = "Settings"
 quit = "Quit"
@@ -77,6 +78,7 @@ flare = "Throw flare"
 
 [results]
 title = "Results"
+medal = "Medal: {medal}"
 new_best = "New best!"
 time = "Time {time}"
 best = "Best {time}"
@@ -164,3 +166,20 @@ bye = "Goodbye."
 city = "The light went out all at once, and the water came up after. Beacons still burn in places. Find them, and the colors return."
 shop = "Embers are good coin. Look through my wares."
 thanks = "Come back when your lantern runs low."
+
+[medal]
+gold = "Gold"
+silver = "Silver"
+bronze = "Bronze"
+
+[trials]
+title = "Trials"
+back = "Back"
+row = "{name}: {best}{medal}"
+none = "no time yet"
+
+[trial.sprint]
+name = "Sprint"
+
+[trial.pits]
+name = "The Pits"
