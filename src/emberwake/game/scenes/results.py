@@ -22,6 +22,9 @@ if TYPE_CHECKING:
     from emberwake.game.context import GameContext
 
 
+MEDAL_KEYS = {"gold": "medal.gold", "silver": "medal.silver", "bronze": "medal.bronze"}
+
+
 @dataclass(frozen=True, slots=True)
 class RunFinished:
     """Published when a run (a trial, a finished game) ends; the gameplay scene shows results."""
@@ -49,6 +52,8 @@ class ResultsScene(Scene):
             Label(t("results.deaths", count=result.deaths), dim=True),
             Label(t("results.embers", count=result.embers), dim=True),
         ]
+        if result.medal:
+            rows.insert(1, Label(t("results.medal", medal=t(MEDAL_KEYS[result.medal]))))
         if self.new_best:
             rows.insert(1, Label(t("results.new_best")))
         rows.append(Button(t("results.continue"), self._close))

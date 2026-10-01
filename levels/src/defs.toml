@@ -74,3 +74,10 @@ color = "#fbb954"
 size = [16, 16]
 pivot = [0.5, 1.0]
 doc = "NPC who talks and sells upgrades for embers"
+
+[entities.Goal]
+color = "#30e1b9"
+size = [16, 48]
+pivot = [0.0, 0.0]
+resizable = true
+doc = "Trial finish line"

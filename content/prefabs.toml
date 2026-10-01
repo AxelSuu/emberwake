@@ -72,3 +72,8 @@ Brain = { kind = "wisp_eater" }
 Sprite = { image = "tinker" }
 Interactable = { prompt = "talk" }
 Npc = { dialogue = "tinker" }
+
+[goal]
+[goal.components]
+Sprite = { image = "goal" }
+Goal = {}

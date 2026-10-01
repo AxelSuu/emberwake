@@ -24,3 +24,9 @@ cell = [4, 0]
 
 [rooms.Enemy_Yard]
 cell = [0, 4]
+
+[rooms.Trial_Sprint]
+cell = [0, 6]
+
+[rooms.Trial_Pits]
+cell = [0, 8]

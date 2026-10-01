@@ -14,6 +14,7 @@ from emberwake.game.player.system import player_system
 from emberwake.game.render.sprites import sprite_system
 from emberwake.game.rooms import room_system
 from emberwake.game.signals import door_system, signal_system
+from emberwake.game.trials import goal_system
 
 PHASES = ("input", "logic", "physics", "post", "camera", "render_prep")
 POST = (
@@ -22,6 +23,7 @@ POST = (
     plate_system,
     pickup_system,
     combat_system,
+    goal_system,
     flare_system,
     lightform_system,
     ember_system,

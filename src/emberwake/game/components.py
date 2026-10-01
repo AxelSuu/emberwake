@@ -34,5 +34,6 @@ from emberwake.game import (  # noqa: E402, F401
     interact,
     light,
     signals,
+    trials,
 )
 from emberwake.game.player import controller  # noqa: E402, F401

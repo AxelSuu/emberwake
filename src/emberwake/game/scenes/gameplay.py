@@ -41,6 +41,7 @@ from emberwake.game.beacons import Beacon, BeaconLit
 from emberwake.game.combat import Damaged, Health, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
 from emberwake.game.cosmetics import Cosmetics, load_cosmetics
+from emberwake.game.data.records import RunResult, format_time, load_records
 from emberwake.game.data.save import SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
 from emberwake.game.feel import Feel, diff, load_feel
@@ -60,6 +61,16 @@ from emberwake.game.scenes.results import ResultsScene, RunFinished
 from emberwake.game.schedule import gameplay_schedule
 from emberwake.game.shop import EMBER_PER_UPGRADE, HP_PER_UPGRADE
 from emberwake.game.signals import Receiver, Wiring
+from emberwake.game.trials import (
+    Ghost,
+    GoalReached,
+    Trial,
+    load_ghost,
+    load_trials,
+    medal_for,
+    record_key,
+    save_ghost,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
@@ -79,6 +90,7 @@ BACKDROPS = "backdrops.toml"
 PARTICLES = "particles.toml"
 COSMETICS = "cosmetics.toml"
 DIALOGUE = "dialogue.toml"
+TRIALS = "trials.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
@@ -102,9 +114,12 @@ class GameplayScene(Scene):
         room: str | None = None,
         replay: Replay | None = None,
         world_path: Path | None = None,
+        trial: str | None = None,
     ) -> None:
-        """Continue from the save slot, or play `room` (or a replay) without loading or saving."""
+        """Continue from the save slot, or play `room`, a replay or a `trial` without saving."""
         self.ctx = ctx
+        self._init_trial(trial)
+        room = self.trial.room if self.trial else room
         self.world_path = world_path or paths.levels(WORLD)
         start = self._open_progress(room, replay)
         self.feel = self._read_feel() or Feel()
@@ -146,6 +161,8 @@ class GameplayScene(Scene):
         self._build_world(start)
         self._show_backdrops()
         self.camera.snap(*self._camera_target())
+        if self.trial is not None:
+            self._begin_attempt()
 
     def _open_progress(self, room: str | None, replay: Replay | None) -> str:
         """Load the slot unless a room or replay was asked for; return the starting room."""
@@ -218,11 +235,49 @@ class GameplayScene(Scene):
             bus.subscribe(Collected, self._on_collected),
             bus.subscribe(Damaged, self._on_damaged),
             bus.subscribe(Talk, self._on_talk),
+            bus.subscribe(GoalReached, self._on_goal),
             *self._track_achievements(bus),
             bus.subscribe(Killed, self._on_killed),
             bus.subscribe(BeaconLit, self._on_beacon_lit),
             *self.progress.subscribe(bus),
         ]
+
+    def _init_trial(self, trial: str | None) -> None:
+        self.trial_id = trial
+        self.trial = self._read_trials()[trial] if trial else None
+        self.trial_time = 0.0
+        self.trial_deaths = 0
+        self.trial_done = False
+        self.ghost: Ghost | None = None
+
+    def _read_trials(self) -> dict[str, Trial]:
+        try:
+            return load_trials(paths.content(TRIALS))
+        except (OSError, tomllib.TOMLDecodeError, SerdeError) as error:
+            log.error("Could not load %s: %s", TRIALS, error)
+            return {}
+
+    def _begin_attempt(self) -> None:
+        """Start recording this attempt, and bring the saved ghost to the start line."""
+        self.recorder = ReplayRecorder[Action](self.room)
+        self.ghost = None
+        if self.trial_id is None:
+            return
+        replay = load_ghost(self.ctx.storage, self.trial_id)
+        if replay is not None and replay.ticks:
+            self.ghost = Ghost(replay, self.spawn_point, self.feel.player)
+
+    def _on_goal(self, _: GoalReached) -> None:
+        if self.trial is None or self.trial_id is None or self.trial_done:
+            return
+        self.trial_done = True
+        key, seconds = record_key(self.trial_id), self.trial_time
+        before = load_records(self.ctx.storage).runs.get(key)
+        if before is None or seconds < before.best_time:
+            save_ghost(self.ctx.storage, self.trial_id, self.recorder.replay)
+        medal = medal_for(self.trial, seconds)
+        result = RunResult(key, seconds, deaths=self.trial_deaths, medal=medal)
+        self.ctx.bus.publish(RunFinished(result))
 
     def _read_dialogues(self) -> dict[str, Graph]:
         try:
@@ -285,6 +340,11 @@ class GameplayScene(Scene):
 
     def on_resume(self) -> None:
         """Apply settings changed in an overlay and drop input held while it was open."""
+        if self.trial_done:
+            from emberwake.game.scenes.title import TitleScene  # noqa: PLC0415
+
+            self.manager.switch(TitleScene(self.ctx))
+            return
         settings = self.ctx.settings
         self._apply_settings()
         self._apply_upgrades()
@@ -490,7 +550,7 @@ class GameplayScene(Scene):
             log.info("Replay finished, live input")
             self.replay = None
         held = self.mapper.sample()
-        return frozenset() if self.cutscenes.active else held
+        return frozenset() if self.cutscenes.active or self.trial_done else held
 
     # Simulation
 
@@ -514,13 +574,19 @@ class GameplayScene(Scene):
 
         frame = self._sample()
         self.actions.advance(frame)
-        self.recorder.record(frame)
         if self.respawn_in > 0:
             self.respawn_in -= 1
             if self.respawn_in == 0:
                 self.world.add(self.player, *self._new_player())
+                if self.trial is not None:
+                    self._begin_attempt()
+        self.recorder.record(frame)
         self._assist()
         self.schedule.run(self.world, dt)
+        if self.trial is not None and not self.trial_done:
+            self.trial_time += dt
+        if self.ghost is not None:
+            self.ghost.update(self.grid, dt)
         if not self.free_camera:
             self.camera.update(*self._camera_target(), self.motor.facing, dt)
 
@@ -554,6 +620,7 @@ class GameplayScene(Scene):
         self.hitstop = max(self.hitstop, juice.death_hitstop)
         self.camera.shake.add(juice.death_trauma)
         self.respawn_in = juice.respawn_delay
+        self.trial_deaths += 1
 
     # Rooms
 
@@ -684,12 +751,20 @@ class GameplayScene(Scene):
         self.post.apply(canvas, self.frame.flags, self.backdrops.grade())
         self.flash.draw(canvas)
         self._draw_ember(canvas)
+        self._draw_trial_timer(canvas)
         self.toasts.draw(canvas)
         if self.show_colliders:
             self._draw_colliders(canvas, ox, oy)
         if self.show_rooms:
             self._draw_rooms(canvas, ox, oy)
             self._draw_wires(canvas, ox, oy)
+
+    def _draw_trial_timer(self, canvas: pygame.Surface) -> None:
+        if self.trial is None:
+            return
+        font = self._hud_font = getattr(self, "_hud_font", None) or pygame.font.Font(None, 16)
+        text = font.render(format_time(self.trial_time), False, palette.MIST)
+        canvas.blit(text, text.get_rect(midtop=(canvas.get_width() // 2, 6)))
 
     def _draw_ember(self, canvas: pygame.Surface) -> None:
         """A small bar of the player's ember in the top left corner."""
@@ -718,6 +793,17 @@ class GameplayScene(Scene):
         lx, ly = self.sprite.lantern_offset(p.facing, visual.scale_x, visual.scale_y)
         self.frame.light(feet[0] + lx, feet[1] + ly, GLOW_RADIUS, self.glow, light)
         image = self.sprite.image(p.facing, visual.scale_x, visual.scale_y)
+        self.frame.sprite(*self._at(image, feet))
+        self._queue_ghost(ox, oy)
+
+    def _queue_ghost(self, ox: int, oy: int) -> None:
+        ghost = self.ghost
+        if ghost is None or ghost.finished:
+            return
+        body, motor = ghost.body, ghost.motor
+        image = self.sprite.image(motor.facing, 1.0, 1.0).copy()
+        image.set_alpha(110)
+        feet = (body.x + body.width / 2 - ox, body.y + body.height - oy)
         self.frame.sprite(*self._at(image, feet))
 
     def _draw_colliders(self, canvas: pygame.Surface, ox: int, oy: int) -> None:

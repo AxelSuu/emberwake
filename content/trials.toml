@@ -1,0 +1,15 @@
+# Trials: a room, a finish line (the Goal entity) and the times for each medal, in seconds.
+# A bot that runs and jumps at every edge finishes in about 3 s, so gold is just above that.
+# Names are strings: trial.<id>.name.
+
+[sprint]
+room = "Trial_Sprint"
+gold = 3.4
+silver = 4.2
+bronze = 6.0
+
+[pits]
+room = "Trial_Pits"
+gold = 3.6
+silver = 4.6
+bronze = 6.5
