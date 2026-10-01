@@ -13,6 +13,8 @@
 | M8 | Depth | More abilities, NPC dialogue and shop, map screen, Trials + ghosts, achievements, skins |
 | M9 | Ship | PyInstaller builds, itch.io desktop + web demo, polish, performance pass |
 
+Detailed plans: [M2 World](plans/m2-world.md).
+
 ## M0 status
 
 - [x] Project renamed to `emberwake` (was `pygame`, which shadowed the library)

@@ -12,6 +12,8 @@ nav:
   - Architecture: architecture.md
   - Art bible: art-bible.md
   - Roadmap: roadmap.md
+  - Plans:
+      - M2 World: plans/m2-world.md
   - Decisions: adr/index.md
   - Specs: specs/index.md
   - API reference:
