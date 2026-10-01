@@ -19,6 +19,7 @@ build-backend = "uv_build"
 dev = [
     "hypothesis>=6.140",
     "import-linter>=2.5",
+    "jsonschema>=4.25",
     "prek>=0.2",
     "pytest>=8.4",
     "pytest-cov>=7.0",
@@ -74,6 +75,7 @@ python-version = "3.12"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
+pythonpath = ["."]
 filterwarnings = ["ignore:no fast renderer available"]
 
 [tool.coverage.run]
