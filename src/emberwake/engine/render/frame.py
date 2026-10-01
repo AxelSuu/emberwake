@@ -32,6 +32,7 @@ class Flag(IntFlag):
     VIGNETTE = auto()
     CRT = auto()
     SHADOWS = auto()
+    SHAFTS = auto()
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,12 +64,33 @@ class LightCmd:
     shadows: bool = True
 
 
+@dataclass(frozen=True, slots=True)
+class ShaftCmd:
+    """A soft beam of light from screen `(x, y)` along `angle` degrees (0 right, 90 down).
+
+    Attributes:
+        length: Reach in px.
+        width: Width at the far end in px; the beam starts narrow.
+        color: RGB at full strength.
+        intensity: 0 to 1.
+    """
+
+    x: float
+    y: float
+    angle: float
+    length: int
+    width: int
+    color: tuple[int, int, int]
+    intensity: float = 1.0
+
+
 @dataclass(slots=True)
 class RenderFrame:
     """Everything to draw this frame, in screen px."""
 
     sprites: list[SpriteCmd] = field(default_factory=list)
     lights: list[LightCmd] = field(default_factory=list)
+    shafts: list[ShaftCmd] = field(default_factory=list)
     flags: Flag = Flag.LIGHTING
     occluded: Callable[[float, float], bool] | None = None
     """Whether a screen px point blocks light; set per frame by gameplay."""
@@ -92,8 +114,13 @@ class RenderFrame:
         """Queue a light centred at `(x, y)`."""
         self.lights.append(LightCmd(x, y, radius, color, intensity, shadows))
 
+    def shaft(self, cmd: ShaftCmd) -> None:
+        """Queue a light shaft; drawn after the lights, over the world layer."""
+        self.shafts.append(cmd)
+
     def clear(self) -> None:
         """Forget every command, keeping the flags."""
         self.sprites.clear()
         self.lights.clear()
+        self.shafts.clear()
         self.occluded = None

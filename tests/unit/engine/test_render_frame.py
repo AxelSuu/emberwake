@@ -3,7 +3,7 @@ from __future__ import annotations
 import pygame
 import pytest
 
-from emberwake.engine.render.frame import Flag, Layer, RenderFrame
+from emberwake.engine.render.frame import Flag, Layer, RenderFrame, ShaftCmd
 from emberwake.engine.render.shadows import shadow_mask, visible_outline
 from emberwake.engine.render.software import SoftwareBackend
 
@@ -109,3 +109,28 @@ def test_light_does_not_pass_a_wall_and_a_free_light_is_unmasked():
     assert mask is not None
     assert mask.get_at((16, 16)).r > 200
     assert mask.get_at((30, 16)).r < 60
+
+
+def test_a_shaft_lights_along_its_angle_and_fades_with_distance():
+    def shaft(angle: float, intensity: float = 1.0) -> pygame.Surface:
+        frame = RenderFrame(flags=Flag.SHAFTS)
+        frame.shaft(ShaftCmd(20, 20, angle, 40, 12, (255, 255, 255), intensity))
+        target = pygame.Surface((80, 80))
+        target.fill(BLACK)
+        SoftwareBackend().render(frame, target)
+        return target
+
+    right, down = shaft(0), shaft(90)
+    assert right.get_at((45, 20)).r > 0
+    assert right.get_at((20, 45)).r == 0
+    assert down.get_at((20, 45)).r > 0
+    assert right.get_at((28, 20)).r > right.get_at((52, 20)).r
+    assert shaft(0, 0.0).get_at((45, 20)).r == 0
+
+
+def test_shafts_need_their_flag():
+    frame = RenderFrame(flags=Flag.LIGHTING)
+    frame.shaft(ShaftCmd(20, 20, 0, 40, 12, (255, 255, 255)))
+    target = canvas()
+    SoftwareBackend().render(frame, target)
+    assert target.get_at((30, 20)) == BLACK
