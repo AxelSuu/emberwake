@@ -87,6 +87,12 @@ class SceneManager:
         """Clear the whole stack and start `scene`."""
         self._pending.append(lambda: self._switch(scene))
 
+    def close(self) -> None:
+        """Exit every scene, top first, dropping queued changes (on quit)."""
+        self._pending.clear()
+        while self._stack:
+            self._pop(resume=False)
+
     def apply_pending(self) -> None:
         """Apply queued stack changes. Called automatically by `update`."""
         while self._pending:

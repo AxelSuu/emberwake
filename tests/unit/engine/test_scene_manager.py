@@ -137,3 +137,15 @@ def test_scene_can_request_changes_during_update(log: list[str]):
         "next.enter",
         "next.update",
     ]
+
+
+def test_close_exits_every_scene_top_first(log: list[str]):
+    manager = SceneManager()
+    manager.push(Recorder("a", log))
+    manager.push(Recorder("b", log))
+    manager.apply_pending()
+    manager.push(Recorder("c", log))
+    log.clear()
+    manager.close()
+    assert log == ["b.exit", "a.exit"]
+    assert not manager

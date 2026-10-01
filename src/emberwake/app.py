@@ -74,5 +74,6 @@ async def main(argv: Sequence[str] | None = None) -> None:
     try:
         await runner.run()
     finally:
+        scenes.close()
         save_document(storage, SETTINGS_KEY, SETTINGS_CODEC, settings)
         pygame.quit()
