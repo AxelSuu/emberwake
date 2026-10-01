@@ -9,6 +9,7 @@ import pygame
 
 from emberwake import __version__
 from emberwake.cli import parse_args
+from emberwake.engine.audio import Audio
 from emberwake.engine.core.events import EventBus
 from emberwake.engine.core.log import configure_logging
 from emberwake.engine.debug.overlay import DebugOverlay
@@ -18,6 +19,7 @@ from emberwake.engine.platform.documents import load_document, save_document
 from emberwake.engine.platform.storage import FileStorage, default_storage
 from emberwake.engine.runner import Runner
 from emberwake.engine.scene import SceneManager
+from emberwake.game import paths
 from emberwake.game.context import GameContext
 from emberwake.game.data.settings import SETTINGS_CODEC, SETTINGS_KEY, Settings
 from emberwake.game.scenes.boot import BootScene
@@ -57,6 +59,7 @@ async def main(argv: Sequence[str] | None = None) -> None:
         canvas_size=CANVAS_SIZE,
         dev=options.dev,
         strings=load_strings(settings.language, warn=options.dev),
+        audio=Audio(paths.sounds(), settings.audio),
         slot=options.slot,
         new_game=options.new,
     )
@@ -74,6 +77,7 @@ async def main(argv: Sequence[str] | None = None) -> None:
         fps_cap=settings.video.fps_cap,
         overlay=DebugOverlay() if options.dev else None,
         max_frames=options.frames,
+        on_frame=ctx.audio.update,
     )
     try:
         await runner.run()

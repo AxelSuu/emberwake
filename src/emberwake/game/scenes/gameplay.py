@@ -421,6 +421,7 @@ class GameplayScene(Scene):
     # Juice
 
     def _on_jumped(self, event: Jumped) -> None:
+        self.ctx.audio.sfx("player/jump")
         self.visual.stretch(self.feel.juice.stretch)
         if event.wall:
             self.camera.shake.add(self.feel.juice.wall_jump_trauma)
@@ -428,11 +429,13 @@ class GameplayScene(Scene):
     def _on_landed(self, event: Landed) -> None:
         juice, max_fall = self.feel.juice, self.feel.player.max_fall
         impact = min(event.speed / max_fall, 1.0)
+        self.ctx.audio.sfx("player/land", impact)
         self.visual.squash(juice.squash * impact)
         if impact >= juice.hard_landing:
             self.camera.shake.add(juice.hard_landing_trauma)
 
     def _on_dashed(self, _: Dashed) -> None:
+        self.ctx.audio.sfx("player/dash")
         self.hitstop = max(self.hitstop, self.feel.juice.dash_hitstop)
         self.camera.shake.add(self.feel.juice.dash_trauma)
 

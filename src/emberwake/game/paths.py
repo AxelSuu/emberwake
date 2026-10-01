@@ -28,3 +28,7 @@ def content(name: str) -> Path:
 
 def levels(name: str) -> Path:
     return data_root() / "levels" / name
+
+
+def sounds() -> Path:
+    return data_root() / "assets" / "sfx"
