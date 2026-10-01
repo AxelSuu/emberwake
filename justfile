@@ -48,17 +48,18 @@ autotile *args:
     uv run python -m tools.autotile {{args}}
 
 # Generate sound effects from sfx/*.toml into assets/sfx/
-sfx:
-    uv run python -m tools.sfx
+sfx *args:
+    uv run python -m tools.sfx {{args}}
 
 # Recompile sprites whenever they change
 art-watch:
     uv run python -m tools.pxl watch
 
-web-stage:
+web-stage: sfx
     rm -rf build/web-src && mkdir -p build/web-src
     cp main.py build/web-src/
     cp -r src/emberwake content levels build/web-src/
+    if [ -d assets ]; then cp -r assets build/web-src/; fi
 
 # Build the browser version into build/web
 web: web-stage
