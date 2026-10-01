@@ -35,6 +35,10 @@ cov:
 art:
     uv run python -m tools.pxl build
 
+# Pack assets/ into albedo, normal and emissive atlases under build/atlas/
+atlas:
+    uv run python -m tools.atlas
+
 # Recompile sprites whenever they change
 art-watch:
     uv run python -m tools.pxl watch
