@@ -22,6 +22,10 @@ fix:
 test *args:
     SDL_VIDEODRIVER=dummy uv run pytest {{args}}
 
+# Time the benchmarks and check their budgets
+bench *args:
+    SDL_VIDEODRIVER=dummy uv run pytest tests/bench --benchmark-enable {{args}}
+
 cov:
     SDL_VIDEODRIVER=dummy uv run pytest --cov --cov-report=term-missing
 

@@ -22,6 +22,7 @@ dev = [
     "jsonschema>=4.25",
     "prek>=0.2",
     "pytest>=8.4",
+    "pytest-benchmark>=5.3",
     "pytest-cov>=7.0",
     "ruff>=0.14",
     "ty>=0.0.1",
@@ -78,7 +79,7 @@ python-version = "3.12"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
+addopts = ["-ra", "--strict-markers", "--import-mode=importlib", "--benchmark-disable"]
 pythonpath = ["."]
 filterwarnings = ["ignore:no fast renderer available"]
 
