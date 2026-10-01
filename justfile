@@ -43,6 +43,10 @@ atlas:
 normals:
     uv run python -m tools.normals
 
+# Expand 4 source tiles into a 47-tile blob set: just autotile art/tiles/ground.png
+autotile *args:
+    uv run python -m tools.autotile {{args}}
+
 # Recompile sprites whenever they change
 art-watch:
     uv run python -m tools.pxl watch
