@@ -28,6 +28,8 @@ class Flag(IntFlag):
     BLOOM = auto()
     GRADING = auto()
     DEPTH_OF_FIELD = auto()
+    VIGNETTE = auto()
+    CRT = auto()
 
 
 @dataclass(frozen=True, slots=True)

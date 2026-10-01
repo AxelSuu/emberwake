@@ -116,6 +116,11 @@ layers (`WORLD`, `ACTORS`, `FOREGROUND`, `OVERLAY`), lights, and effect flags, a
 below `ACTORS`. Backdrops, chunk layers, particles and the flash still draw straight to the canvas
 and move into the frame as the GL backend needs them.
 
+Post effects (`engine.render.post`): `PostChain` runs bloom, a colour `Grade`, vignette and CRT
+scanlines on the finished canvas, each behind its `Flag` and its toggle in `settings.video`. Rooms
+carry a grade in `content/backdrops.toml`; it cross-fades with the backdrop and warms once a
+beacon is lit.
+
 Particles (`engine.render.particles`): `ParticleSystem` keeps up to 512 particles in preallocated
 lists (swap-remove, no per-frame allocation) and drops bursts that do not fit. Emitters are named
 `EmitterSpec`s in `content/particles.toml`, reloaded with F5; budgets are in `tests/bench`.

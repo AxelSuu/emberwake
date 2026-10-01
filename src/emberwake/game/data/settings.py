@@ -18,6 +18,10 @@ class VideoSettings:
     vsync: bool = True
     fps_cap: int = 0
     screen_shake: float = 1.0
+    bloom: bool = True
+    grading: bool = True
+    vignette: bool = True
+    crt: bool = False
 
 
 @dataclass(slots=True)
@@ -45,4 +49,11 @@ def _add_interact(data: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
-SETTINGS_CODEC = VersionedCodec(Settings, version=2, migrations={1: _add_interact})
+def _add_post_effects(data: dict[str, Any]) -> dict[str, Any]:
+    """v2 -> v3: post effect toggles; missing ones take their defaults on load."""
+    return data
+
+
+SETTINGS_CODEC = VersionedCodec(
+    Settings, version=3, migrations={1: _add_interact, 2: _add_post_effects}
+)
