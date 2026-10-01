@@ -20,7 +20,7 @@ class RoomTuning:
     """Upward speed (px/s) given when entering a room through its floor, so it is not lost."""
 
 
-def room_system(world: World, _: float) -> None:
+def room_system(world: World, dt: float) -> None:
     """Make the room holding the player's centre active and publish `RoomEntered`."""
     streamer = world.resource(RoomStreamer)
     graph = streamer.graph

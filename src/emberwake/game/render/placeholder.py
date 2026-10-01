@@ -189,11 +189,20 @@ class LanternGlow:
         canvas.blit(image, rect, special_flags=pygame.BLEND_RGB_ADD)
 
 
+def _prompt() -> pygame.Surface:
+    """A small up arrow: press up (or interact) here."""
+    image = pygame.Surface((7, 6), pygame.SRCALPHA).convert_alpha()
+    arrow = [(3, 0), (6, 3), (4, 3), (4, 5), (2, 5), (2, 3), (0, 3)]
+    pygame.draw.polygon(image, palette.MIST, arrow)
+    return image
+
+
 class EntityArt:
     """Placeholder images for `Sprite` names, sized to the entity's body and cached."""
 
     def __init__(self) -> None:
         self._cache: dict[tuple[str, int, int], pygame.Surface] = {}
+        self.prompt = _prompt()
 
     def image(self, name: str, size: tuple[int, int]) -> pygame.Surface:
         key = (name, *size)
@@ -240,3 +249,21 @@ class EntityArt:
         diamond = [(cx, cy - 4), (cx + 3, cy), (cx, cy + 4), (cx - 3, cy)]
         pygame.draw.polygon(image, palette.EMBER_WARM, diamond)
         image.fill(palette.EMBER_CORE, (cx - 1, cy - 1, 2, 2))
+
+    @staticmethod
+    def _door_open(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(PLANK_DARK, (rect.left, rect.top, rect.width, 2))
+        image.fill(PLANK_DARK, (rect.left, rect.top, 2, rect.height))
+        image.fill(PLANK_DARK, (rect.right - 2, rect.top, 2, rect.height))
+
+    @staticmethod
+    def _lever_on(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 4, rect.bottom - 3, 8, 3))
+        base, tip = (rect.centerx, rect.bottom - 3), (rect.centerx - 4, rect.top + 5)
+        pygame.draw.line(image, POST, base, tip, 2)
+        image.fill(palette.EMBER_HOT, (rect.centerx - 6, rect.top + 3, 3, 3))
+
+    @staticmethod
+    def _plate_down(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.left + 1, rect.bottom - 2, rect.width - 2, 2))
+        image.fill(palette.EMBER_HOT, (rect.left + 2, rect.bottom - 3, rect.width - 4, 1))

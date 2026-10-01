@@ -78,6 +78,15 @@ Behavior: FSMs (player, simple enemies), behavior trees (bosses), generator coro
 | Prop | Transform, PhysicsBody, Sprite |
 | Pickup | Trigger, Pickup, Bob |
 
+Mechanisms ([ADR 0016](adr/0016-doors-and-signals.md), `game/interact.py`, `game/signals.py`):
+`Trigger` tracks player overlap, `Interactable` marks the nearest thing in reach and the
+interact action uses it, `Switch` (toggle, momentary, once) lists receiver iids, a
+`PressurePlate`'s switch follows its trigger, and a `Pickup` retires on touch. `Wiring` knows
+every receiver's sources across the world, so `signal_system` powers `Receiver`s (any or all,
+optionally inverted) in one pass in iid order, reading saved state for switches in unloaded
+rooms. A `Door` sets its cells solid or empty in the `WorldGrid` and waits for the doorway to
+clear before closing. F4 draws the wires, green when powered.
+
 Systems talk through the `EventBus` (`EnemyKilled`, `PlayerHurt`, ...) so score, sfx, particles,
 floating text and achievements stay decoupled.
 

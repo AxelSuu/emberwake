@@ -6,3 +6,6 @@ cell = [0, 0]
 
 [rooms.East_Passage]
 cell = [4, 2]
+
+[rooms.Lever_Hall]
+cell = [5, 2]

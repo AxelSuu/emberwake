@@ -55,8 +55,8 @@ one has no prefab or its fields do not fit.
 | Entity | Meaning |
 |---|---|
 | PlayerStart | Spawn point; after a hazard death the one nearest the room's entrance (pivot: bottom centre) |
-| Door | Solid while closed; opens while its sources are on |
-| Lever | Interact to switch its targets |
+| Door | Solid while closed; opens while its sources are on (Mode any/all, Invert) |
+| Lever | Interact to switch its targets (Mode toggle/momentary/once) |
 | PressurePlate | On while something stands on it |
 | Beacon | Relight to save and set the continue point |
 | Ember | Collectible |

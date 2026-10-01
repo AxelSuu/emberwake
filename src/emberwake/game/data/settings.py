@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from emberwake.engine.core.serde import VersionedCodec
 from emberwake.engine.input import Bindings
-from emberwake.game.actions import default_bindings
+from emberwake.game.actions import INTERACT_BUTTONS, INTERACT_KEYS, default_bindings
 
 SETTINGS_KEY = "settings.json"
 
@@ -34,4 +35,14 @@ class Settings:
     language: str = "en"
 
 
-SETTINGS_CODEC = VersionedCodec(Settings, version=1)
+def _add_interact(data: dict[str, Any]) -> dict[str, Any]:
+    """v1 -> v2: bind the new interact action in saved controls."""
+    controls = data.get("controls", {})
+    if "keys" in controls:
+        controls["keys"].setdefault("interact", list(INTERACT_KEYS))
+    if "buttons" in controls:
+        controls["buttons"].setdefault("interact", list(INTERACT_BUTTONS))
+    return data
+
+
+SETTINGS_CODEC = VersionedCodec(Settings, version=2, migrations={1: _add_interact})

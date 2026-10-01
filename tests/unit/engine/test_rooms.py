@@ -67,6 +67,15 @@ def test_world_grid_routes_cells_to_rooms():
     assert grid.get(20, 0) is Tile.EMPTY
 
 
+def test_world_grid_set_changes_the_owning_room():
+    grid = WorldGrid()
+    grid.add(room("B"))
+    assert grid.set(21, 1, Tile.SOLID)
+    assert grid.get(21, 1) is Tile.SOLID
+    assert grid.rooms[0].grid.get(1, 1) is Tile.SOLID
+    assert not grid.set(1, 1, Tile.SOLID)
+
+
 def test_world_grid_rejects_misaligned_rooms():
     level = GRAPH.levels["A"]
     shifted = Level(level.identifier, level.iid, 8, 0, level.width, level.height)
