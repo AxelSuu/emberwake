@@ -229,13 +229,19 @@ def put(text: str, x: int, y: int, chars: str) -> str:
             '[entities.x]\ntype = "Lever"\nfields = { Targets = ["Nowhere:y"] }',
             "not a single entity marker",
         ),
-        (put(ROOM, 5, 9, "P"), "", "more than 1"),
         (ROOM, "fields = { Backdrop = 'x' }", "unknown level fields"),
     ],
 )
 def test_compile_errors(text: str, toml: str, message: str):
     with pytest.raises(SourceError, match=message):
         build_project(Source(DEFS, [make_room("Bad", (0, 0), text, room_file(toml))]))
+
+
+def test_max_count_per_level():
+    defs = copy.deepcopy(DEFS)
+    defs.entities["PlayerStart"].max_count = 1
+    with pytest.raises(SourceError, match="more than 1 PlayerStart"):
+        build_project(Source(defs, [make_room("Bad", (0, 0), put(ROOM, 5, 9, "P"))]))
 
 
 def test_ambiguous_ref_is_an_error():

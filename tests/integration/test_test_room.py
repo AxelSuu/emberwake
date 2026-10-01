@@ -2,15 +2,22 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 
 from emberwake.engine.input import InputState
+from emberwake.engine.input.replay import Replay
+from emberwake.engine.scene import SceneManager
 from emberwake.engine.world.ldtk import load_project
 from emberwake.game import paths
 from emberwake.game.actions import Action
 from emberwake.game.feel import load_feel
 from emberwake.game.player.controller import new_player, step, wall_side
-from emberwake.game.scenes.gameplay import COLLISIONS, DEFAULT_ROOM, WORLD
+from emberwake.game.scenes.gameplay import COLLISIONS, DEFAULT_ROOM, WORLD, GameplayScene
+
+if TYPE_CHECKING:
+    from emberwake.game.context import GameContext
 
 TS = 16
 DT = 1 / 60
@@ -62,3 +69,16 @@ def test_dash_gap_needs_a_dash(dash_after: int | None, crosses: bool):
         if motor.dead or (motor.grounded and body.x > 77 * TS - 8):
             break
     assert (not motor.dead) is crosses
+
+
+def test_east_exit_leads_to_the_east_passage(ctx: GameContext):
+    scenes = SceneManager()
+    scene = GameplayScene(ctx, replay=Replay(DEFAULT_ROOM, 0, [(90, ["right"])]))
+    scenes.push(scene)
+    body = scene.body
+    body.x, body.y = 77 * TS, 30 * TS - body.height
+    for _ in range(90):
+        scenes.update(DT)
+    assert scene.room == "East_Passage"
+    assert scene.motor.grounded
+    assert not scene.motor.dead

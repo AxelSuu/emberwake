@@ -6,8 +6,7 @@ Generated = { type = "Bool", default = false, doc = "Compiled from levels/src; r
 
 [entities.PlayerStart]
 color = "#f9c22b"
-max_count = 1
-doc = "Spawn point, and respawn point after a hazard death"
+doc = "Spawn point; after a hazard death, the one nearest the room's entrance"
 
 [entities.Door]
 color = "#966c6c"
