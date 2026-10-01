@@ -11,6 +11,8 @@ import pygame
 from emberwake.engine.core.clock import FixedStep
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from emberwake.engine.debug.overlay import DebugOverlay
     from emberwake.engine.platform.display import Display
     from emberwake.engine.scene import SceneManager
@@ -34,12 +36,14 @@ class Runner:
         fps_cap: int = 0,
         overlay: DebugOverlay | None = None,
         max_frames: int | None = None,
+        on_frame: Callable[[float], None] | None = None,
     ) -> None:
         self.display = display
         self.scenes = scenes
         self.fps_cap = fps_cap
         self.overlay = overlay
         self.max_frames = max_frames
+        self.on_frame = on_frame
         self._fixed = FixedStep(step)
         self._running = False
 
@@ -57,6 +61,8 @@ class Runner:
             frame_time = clock.tick(self.fps_cap) / 1000
             for event in pygame.event.get():
                 self._dispatch(event)
+            if self.on_frame:
+                self.on_frame(frame_time)
             for _ in range(self._fixed.advance(frame_time)):
                 self.scenes.update(self._fixed.step)
             self.scenes.draw(self.display.canvas, self._fixed.alpha)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from emberwake.engine.audio import Audio
 from emberwake.engine.core.events import EventBus
 from emberwake.engine.core.i18n import Strings
 from emberwake.engine.platform.storage import Storage
@@ -19,6 +20,8 @@ class GameContext:
     dev: bool = False
     strings: Strings = field(default_factory=Strings)
     """String tables for the player's language (`t`)."""
+    audio: Audio = field(default_factory=Audio)
+    """Sound and music; silent unless the app gives it a sound directory."""
     slot: int = 1
     """Save slot the game continues from and saves to."""
     new_game: bool = False
