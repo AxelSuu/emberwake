@@ -1,0 +1,34 @@
+site_name: Emberwake
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: deep orange
+    accent: amber
+  features: [navigation.sections, content.code.copy]
+nav:
+  - Home: index.md
+  - Game design: gdd.md
+  - Architecture: architecture.md
+  - Art bible: art-bible.md
+  - Roadmap: roadmap.md
+  - Decisions: adr/index.md
+  - Specs: specs/index.md
+  - API reference:
+      - Core: reference/core.md
+      - Platform: reference/platform.md
+      - Scenes: reference/scene.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: true
+            members_order: source
+markdown_extensions:
+  - admonition
+  - tables
+  - pymdownx.superfences
