@@ -58,6 +58,7 @@ from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdro
 from emberwake.game.render.bank import SpriteBank
 from emberwake.game.render.fx import Flash
 from emberwake.game.render.glow import Glows
+from emberwake.game.render.hud import Hud, HudState
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
 from emberwake.game.render.swing_fx import arm, lantern_point, trail
 from emberwake.game.render.toast import Toasts
@@ -66,7 +67,7 @@ from emberwake.game.scenes.dialogue import DialogueScene
 from emberwake.game.scenes.pause import PauseScene
 from emberwake.game.scenes.results import ResultsScene, RunFinished
 from emberwake.game.schedule import gameplay_schedule
-from emberwake.game.shop import EMBER_PER_UPGRADE, HP_PER_UPGRADE, SPENT
+from emberwake.game.shop import EMBER_PER_UPGRADE, HP_PER_UPGRADE, SPENT, wallet
 from emberwake.game.signals import Receiver, Wiring
 from emberwake.game.trials import (
     Ghost,
@@ -151,6 +152,7 @@ class GameplayScene(Scene):
         self.particles = ParticleSystem()
         self.cutscenes = CutscenePlayer()
         self.toasts = Toasts()
+        self.hud = Hud()
         self.texts = FloatingTexts()
         self.texts.muted = ctx.settings.accessibility.reduce_flashes
         self.emitters = self._read_emitters() or {}
@@ -628,6 +630,7 @@ class GameplayScene(Scene):
         self.particles.update(dt)
         self.texts.update(dt)
         self.toasts.update(dt)
+        self.hud.update(dt)
         self.flash.update(dt)
         self.flashes = {eid: left - dt for eid, left in self.flashes.items() if left > dt}
         self.backdrops.update(self._room_lit(), dt)
@@ -831,7 +834,7 @@ class GameplayScene(Scene):
         self.backdrops.draw_near(canvas, (ox, oy), room_top)
         self.post.apply(canvas, self.frame.flags, self.backdrops.grade())
         self.flash.draw(canvas)
-        self._draw_ember(canvas)
+        self._draw_hud(canvas)
         self._draw_trial_timer(canvas)
         self.toasts.draw(canvas)
         if self.show_colliders:
@@ -912,16 +915,25 @@ class GameplayScene(Scene):
         text = font.render(format_time(self.trial_time), False, palette.MIST)
         canvas.blit(text, text.get_rect(midtop=(canvas.get_width() // 2, 6)))
 
-    def _draw_ember(self, canvas: pygame.Surface) -> None:
-        """A small bar of the player's ember in the top left corner."""
-        if not self.world.has(self.player, Ember):
+    def _draw_hud(self, canvas: pygame.Surface) -> None:
+        """Health, flame, flares and embers; hidden while a cutscene plays."""
+        health, ember = self.world.find(self.player, Health), self.world.find(self.player, Ember)
+        if health is None or ember is None:
             return
-        ember = self.world.get(self.player, Ember)
-        fraction = ember.current / ember.max
-        x, y, width = 6, 6, 40
-        canvas.fill(palette.INK, (x - 1, y - 1, width + 2, 5))
-        color = palette.EMBER_HOT if fraction > 0.25 else palette.EMBER_COOL
-        canvas.fill(color, (x, y, round(width * fraction), 3))
+        kit = self.world.resource(FlareKit)
+        refill = kit.refill / self.feel.light.flare_refill if self.feel.light.flare_refill else 0
+        state = HudState(
+            health.current,
+            health.max,
+            ember.current,
+            ember.max,
+            kit.charges,
+            kit.max_charges,
+            refill,
+            wallet(self.progress.data),
+        )
+        self.hud.hidden = self.cutscenes.active
+        self.hud.draw(canvas, state)
 
     @staticmethod
     def _centred(
