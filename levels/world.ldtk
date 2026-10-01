@@ -727,6 +727,31 @@
 								480
 							],
 							"fieldInstances": []
+						},
+						{
+							"__identifier": "Beacon",
+							"__grid": [
+								8,
+								30
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FBFF86",
+							"__worldX": 136,
+							"__worldY": 480,
+							"iid": "1ced6211-3534-5a5d-a074-ea8ac198a315",
+							"width": 16,
+							"height": 16,
+							"defUid": 12,
+							"px": [
+								136,
+								480
+							],
+							"fieldInstances": []
 						}
 					]
 				},
@@ -3486,6 +3511,31 @@
 							"defUid": 3,
 							"px": [
 								56,
+								128
+							],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "Beacon",
+							"__grid": [
+								10,
+								8
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FBFF86",
+							"__worldX": 1448,
+							"__worldY": 480,
+							"iid": "3b0a89a4-bbd4-5e7e-ac2c-800868dd4b10",
+							"width": 16,
+							"height": 16,
+							"defUid": 12,
+							"px": [
+								168,
 								128
 							],
 							"fieldInstances": []
