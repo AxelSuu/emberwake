@@ -11,9 +11,10 @@ import pygame
 
 from emberwake.engine.core.serde import SerdeError
 from emberwake.engine.debug.time_control import TimeControl
+from emberwake.engine.ecs import World
 from emberwake.engine.input import InputMapper, InputState
 from emberwake.engine.input.replay import REPLAY_CODEC, Replay, ReplayPlayer, ReplayRecorder
-from emberwake.engine.physics import Tile
+from emberwake.engine.physics import Body, Tile
 from emberwake.engine.platform.documents import save_document
 from emberwake.engine.render.camera import Camera
 from emberwake.engine.scene import Scene
@@ -21,14 +22,14 @@ from emberwake.engine.world.ldtk import load_project
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
 from emberwake.game.feel import Feel, diff, load_feel
-from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Player, step
+from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.render.placeholder import LanternGlow, PlayerSprite, bake_room
+from emberwake.game.schedule import gameplay_schedule
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from emberwake.engine.physics import TileGrid
     from emberwake.game.context import GameContext
 
 log = logging.getLogger(__name__)
@@ -63,9 +64,23 @@ class GameplayScene(Scene):
         self.show_colliders = False
         self.free_camera = False
         self._unsubscribe: list[Callable[[], None]] = []
+        self.world = World()
+        self.world.insert_resource(self.actions)
+        self.world.insert_resource(ctx.bus)
+        self.world.insert_resource(self.feel.player)
+        self.schedule = gameplay_schedule()
         self._load_room()
-        self.player = self._spawn()
+        self.player = self.world.spawn(*self._new_player())
+        self.world.flush()
         self.camera.snap(*self._camera_target())
+
+    @property
+    def body(self) -> Body:
+        return self.world.get(self.player, Body)
+
+    @property
+    def motor(self) -> Motor:
+        return self.world.get(self.player, Motor)
 
     # Lifecycle
 
@@ -93,14 +108,15 @@ class GameplayScene(Scene):
 
     def _load_room(self) -> None:
         level = load_project(paths.levels(WORLD)).level(self.room)
-        self.grid: TileGrid = level.layer("Collisions").to_tile_grid(COLLISIONS)
+        self.grid = level.layer("Collisions").to_tile_grid(COLLISIONS)
+        self.world.insert_resource(self.grid)
         starts = level.entities("PlayerStart")
         self.spawn_point = starts[0].px if starts else (level.width // 2, level.height // 2)
         self.room_image = bake_room(self.grid)
         self.camera.bounds = pygame.Rect(0, 0, level.width, level.height)
 
-    def _spawn(self) -> Player:
-        return Player.spawn(*self.spawn_point, self.feel.player)
+    def _new_player(self) -> tuple[Body, Motor]:
+        return new_player(*self.spawn_point, self.feel.player)
 
     def reload(self) -> None:
         """Re-read feel.toml and the level, keeping the player where it is."""
@@ -109,6 +125,7 @@ class GameplayScene(Scene):
             for key, (old, new) in sorted(diff(self.feel, feel).items()):
                 log.info("feel %s: %s -> %s", key, old, new)
             self.feel = feel
+            self.world.insert_resource(feel.player)
             self.camera.retune(feel.camera)
         try:
             self._load_room()
@@ -184,15 +201,13 @@ class GameplayScene(Scene):
         if self.respawn_in > 0:
             self.respawn_in -= 1
             if self.respawn_in == 0:
-                self.player = self._spawn()
-        else:
-            for event in step(self.player, self.actions, self.grid, self.feel.player, dt):
-                self.ctx.bus.publish(event)
+                self.world.add(self.player, *self._new_player())
+        self.schedule.run(self.world, dt)
         if not self.free_camera:
-            self.camera.update(*self._camera_target(), self.player.facing, dt)
+            self.camera.update(*self._camera_target(), self.motor.facing, dt)
 
     def _camera_target(self) -> tuple[float, float]:
-        body = self.player.body
+        body = self.body
         return body.center_x, body.y + body.height / 2
 
     # Juice
@@ -231,7 +246,7 @@ class GameplayScene(Scene):
             self._draw_colliders(canvas, ox, oy)
 
     def _draw_player(self, canvas: pygame.Surface, ox: int, oy: int, alpha: float) -> None:
-        p, body, visual = self.player, self.player.body, self.visual
+        p, body, visual = self.motor, self.body, self.visual
         px, py = p.previous
         x = px + (body.x - px) * alpha
         y = py + (body.y - py) * alpha
@@ -242,7 +257,7 @@ class GameplayScene(Scene):
         canvas.blit(image, image.get_rect(midbottom=(round(feet[0]), round(feet[1]))))
 
     def _draw_colliders(self, canvas: pygame.Surface, ox: int, oy: int) -> None:
-        p, body = self.player, self.player.body
+        p, body = self.motor, self.body
         rect = pygame.Rect(
             round(body.x) - ox, round(body.y) - oy, round(body.width), round(body.height)
         )

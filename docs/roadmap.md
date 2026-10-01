@@ -13,6 +13,8 @@
 | M8 | Depth | More abilities, NPC dialogue and shop, map screen, Trials + ghosts, achievements, skins |
 | M9 | Ship | PyInstaller builds, itch.io desktop + web demo, polish, performance pass |
 
+Detailed plans: [M2 World](plans/m2-world.md).
+
 ## M0 status
 
 - [x] Project renamed to `emberwake` (was `pygame`, which shadowed the library)
@@ -42,3 +44,14 @@
 - [x] Gameplay scene with placeholder art and lantern glow (#14)
 - [x] Dev tools: F2 colliders, F3 free camera, P pause, `.` step, `,` slow motion (#15)
 - [ ] Hands-on feel pass with a real keyboard and gamepad
+
+## M2 status
+
+- [x] ECS-lite world with resources and phase schedule, player migrated (#16)
+- [ ] Level source: ASCII + TOML compiled to LDtk (#64)
+- [ ] World coordinates, room graph, streaming, transitions (#17)
+- [ ] Prefabs and LDtk entity spawning (#19)
+- [ ] Interactables and signal wiring (#20)
+- [ ] Parallax and depth layers (#18)
+- [ ] Beacons and save slots (#21)
+- [ ] Greybox world: five rooms around the test room (#65)

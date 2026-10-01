@@ -11,6 +11,7 @@ import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from emberwake.engine.ecs import component
 from emberwake.engine.physics.tiles import Tile
 
 if TYPE_CHECKING:
@@ -22,6 +23,7 @@ EPSILON = 1e-6
 SOLID_ONLY = frozenset({Tile.SOLID})
 
 
+@component
 @dataclass(slots=True)
 class Body:
     """An axis-aligned box; ``x``/``y`` is its top-left corner in pixels."""

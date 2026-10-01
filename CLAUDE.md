@@ -19,6 +19,12 @@ Read `docs/architecture.md` before structural changes; decisions live in `docs/a
 - New mechanics start as a spec in `docs/specs/` with acceptance criteria.
 
 ## Workflow
-- `just fix && just check && just test` before every commit.
+- Work happens in pull requests, never directly on `main`. One PR per issue (or tight cluster),
+  branch `m<milestone>/<issue>-<slug>`, PR body starts with `Closes #N`.
+- A PR that depends on an unmerged PR is stacked: branch from it and target it; GitHub
+  retargets to `main` when the base merges (branches auto-delete on merge).
+- Squash merge is disabled on purpose: keep small commits, merge with rebase or a merge commit.
+- `just fix && just check && just test` before every commit; CI must be green before merge.
 - Small commits, one logical change each, subject line only, no attribution trailers.
-- Never push or touch GitHub without the user's explicit yes.
+- Ask before pushing, opening or merging PRs, or editing issues, unless the user said to.
+- The current milestone's plan lives in `docs/plans/`; start there.

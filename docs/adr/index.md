@@ -16,3 +16,4 @@ Superseded records stay, marked as such.
 | [0009](0009-persistence.md) | Storage abstraction, versioned JSON, atomic writes |
 | [0010](0010-art-pipeline.md) | Art pipeline: Resurrect 64, 16 px, pixel DSL, generated normals |
 | [0011](0011-process.md) | Process: specs, ADRs, GitHub issues, CI gates |
+| [0012](0012-ecs-deferred-changes-resources.md) | ECS details: deferred structural changes, resources, phase schedule |
