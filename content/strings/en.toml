@@ -206,3 +206,21 @@ name = "Sprint"
 
 [trial.pits]
 name = "The Pits"
+
+[grant]
+found = "Found: {name}"
+
+[grant.dash]
+name = "Ember dash"
+
+[grant.flare]
+name = "Flares"
+
+[grant.shard]
+name = "Lantern shard"
+
+[grant.oil_flask]
+name = "Oil flask"
+
+[grant.flare_pouch]
+name = "Flare pouch"

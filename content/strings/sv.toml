@@ -205,3 +205,21 @@ name = "Spurt"
 
 [trial.pits]
 name = "Groparna"
+
+[grant]
+found = "Hittade: {name}"
+
+[grant.dash]
+name = "Glöddash"
+
+[grant.flare]
+name = "Bloss"
+
+[grant.shard]
+name = "Lyktskärva"
+
+[grant.oil_flask]
+name = "Oljeflaska"
+
+[grant.flare_pouch]
+name = "Blosspung"
