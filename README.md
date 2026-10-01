@@ -28,8 +28,8 @@ just web           # browser build into build/web
 Bindings live in `settings.json` in the user data folder (Linux:
 `~/.local/share/emberwake/emberwake/`).
 
-Dev keys (`--dev`): F1 fps, F2 colliders, F3 free camera (drag with the mouse), F5 reload
-`content/feel.toml` and the level, F9 save a replay (play it with `--replay replays/<name>.json`),
+Dev keys (`--dev`): F1 fps, F2 colliders, F3 free camera (drag with the mouse), F4 rooms, F5
+reload `content/feel.toml` and the levels, F9 save a replay (play it with `--replay replays/<name>.json`),
 P pause, `.` step one tick, `,` slow motion.
 
 ## Docs

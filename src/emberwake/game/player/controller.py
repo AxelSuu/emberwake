@@ -14,7 +14,7 @@ from emberwake.game.actions import Action
 
 if TYPE_CHECKING:
     from emberwake.engine.input import InputState
-    from emberwake.engine.physics import TileGrid
+    from emberwake.engine.physics import TileSource
     from emberwake.game.player.tuning import PlayerTuning
 
 HAZARDS = frozenset({Tile.HAZARD})
@@ -95,7 +95,7 @@ def step(  # noqa: PLR0917
     body: Body,
     motor: Motor,
     actions: InputState[Action],
-    grid: TileGrid,
+    grid: TileSource,
     tuning: PlayerTuning,
     dt: float,
 ) -> list[PlayerEvent]:
@@ -103,7 +103,7 @@ def step(  # noqa: PLR0917
     return _Tick(body, motor, actions, grid, tuning, dt).run()
 
 
-def wall_side(grid: TileGrid, body: Body, reach: float) -> int:
+def wall_side(grid: TileSource, body: Body, reach: float) -> int:
     """-1 for a solid wall within `reach` px on the left, 1 on the right, else 0."""
     if overlaps(grid, body.x + body.width, body.y, reach, body.height):
         return 1
@@ -120,7 +120,7 @@ class _Tick:
         body: Body,
         motor: Motor,
         actions: InputState[Action],
-        grid: TileGrid,
+        grid: TileSource,
         tuning: PlayerTuning,
         dt: float,
     ) -> None:
@@ -302,6 +302,6 @@ class _Tick:
             body.width - 2 * margin,
             body.height - 2 * margin,
         )
-        if overlaps(self.grid, *inner, kinds=HAZARDS) or body.y > self.grid.pixel_size[1]:
+        if overlaps(self.grid, *inner, kinds=HAZARDS) or self.grid.void(body.center_x, body.y):
             p.dead = True
             self.events.append(Died(body.center_x, body.bottom))

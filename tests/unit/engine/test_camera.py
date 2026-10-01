@@ -58,6 +58,23 @@ def test_room_smaller_than_view_is_centred():
     assert (camera.x, camera.y) == (250, 200)
 
 
+def test_glide_catches_up_faster_and_ends_when_settled():
+    rooms = pygame.Rect(0, 0, 640, 360), pygame.Rect(640, 0, 640, 360)
+    gliding, normal = Camera(VIEW, STILL), Camera(VIEW, STILL)
+    for camera in (gliding, normal):
+        camera.bounds = rooms[0]
+        camera.snap(600, 180)
+    gliding.glide_to(rooms[1])
+    normal.bounds = rooms[1]
+    for _ in range(10):
+        gliding.update(700, 180, 1, DT)
+        normal.update(700, 180, 1, DT)
+    assert gliding.x > normal.x
+    settle(gliding, 700, 180)
+    assert not gliding.gliding
+    assert gliding.x == pytest.approx(960)
+
+
 def test_offset_interpolates_between_ticks():
     camera = Camera(VIEW, STILL)
     camera.snap(1000, 500)

@@ -1,4 +1,4 @@
-"""Move axis-aligned bodies through a `TileGrid`.
+"""Move axis-aligned bodies through a `TileSource`.
 
 Movement is resolved one axis at a time (x, then y) and split into sub-steps of at most half a
 tile, so only the leading row or column needs testing and nothing tunnels through thin walls.
@@ -17,7 +17,7 @@ from emberwake.engine.physics.tiles import Tile
 if TYPE_CHECKING:
     from collections.abc import Collection
 
-    from emberwake.engine.physics.tiles import TileGrid
+    from emberwake.engine.physics.tiles import TileSource
 
 EPSILON = 1e-6
 SOLID_ONLY = frozenset({Tile.SOLID})
@@ -57,7 +57,7 @@ class Contacts:
 
 
 def overlaps(
-    grid: TileGrid,
+    grid: TileSource,
     x: float,
     y: float,
     width: float,
@@ -75,7 +75,7 @@ def overlaps(
 
 
 def move(
-    grid: TileGrid, body: Body, dx: float, dy: float, *, drop_through: bool = False
+    grid: TileSource, body: Body, dx: float, dy: float, *, drop_through: bool = False
 ) -> Contacts:
     """Move `body` by (`dx`, `dy`) pixels, stopping at tiles. Mutates `body`.
 
@@ -100,17 +100,17 @@ def move(
     return contacts
 
 
-def _rows(grid: TileGrid, body: Body) -> range:
+def _rows(grid: TileSource, body: Body) -> range:
     size = grid.tile_size
     return range(math.floor(body.y / size), math.floor((body.bottom - EPSILON) / size) + 1)
 
 
-def _columns(grid: TileGrid, body: Body) -> range:
+def _columns(grid: TileSource, body: Body) -> range:
     size = grid.tile_size
     return range(math.floor(body.x / size), math.floor((body.x + body.width - EPSILON) / size) + 1)
 
 
-def _step_x(grid: TileGrid, body: Body, distance: float, contacts: Contacts) -> bool:
+def _step_x(grid: TileSource, body: Body, distance: float, contacts: Contacts) -> bool:
     size = grid.tile_size
     new_x = body.x + distance
     if distance > 0:
@@ -130,7 +130,7 @@ def _step_x(grid: TileGrid, body: Body, distance: float, contacts: Contacts) -> 
 
 
 def _step_y(
-    grid: TileGrid, body: Body, distance: float, contacts: Contacts, *, drop_through: bool
+    grid: TileSource, body: Body, distance: float, contacts: Contacts, *, drop_through: bool
 ) -> bool:
     size = grid.tile_size
     new_y = body.y + distance

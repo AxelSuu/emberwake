@@ -18,3 +18,4 @@ Superseded records stay, marked as such.
 | [0011](0011-process.md) | Process: specs, ADRs, GitHub issues, CI gates |
 | [0012](0012-ecs-deferred-changes-resources.md) | ECS details: deferred structural changes, resources, phase schedule |
 | [0013](0013-text-first-level-source.md) | Text-first level source compiled to LDtk |
+| [0014](0014-world-coordinates-streamed-rooms.md) | World coordinates, streamed rooms, respawn at the room entrance |

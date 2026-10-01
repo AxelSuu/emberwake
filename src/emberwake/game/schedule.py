@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from emberwake.engine.ecs import Schedule
 from emberwake.game.player.system import player_system
+from emberwake.game.rooms import room_system
 
 PHASES = ("input", "logic", "physics", "post", "camera", "render_prep")
 
@@ -11,4 +12,5 @@ PHASES = ("input", "logic", "physics", "post", "camera", "render_prep")
 def gameplay_schedule() -> Schedule:
     schedule = Schedule(PHASES)
     schedule.add("physics", player_system)
+    schedule.add("post", room_system)
     return schedule

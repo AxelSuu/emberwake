@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -19,6 +19,23 @@ class Tile(IntEnum):
     """Solid only for bodies landing on it from above."""
     HAZARD = 3
     """Passable, but kills on touch."""
+
+
+class TileSource(Protocol):
+    """Anything bodies can collide with: a single `TileGrid` or a world of rooms."""
+
+    @property
+    def tile_size(self) -> int:
+        """Cell size in pixels."""
+        ...
+
+    def get(self, column: int, row: int) -> Tile:
+        """Tile at a cell."""
+        ...
+
+    def void(self, x: float, y: float) -> bool:
+        """Whether the point is in the void below the world, where bodies die."""
+        ...
 
 
 @dataclass(slots=True)
@@ -62,6 +79,10 @@ class TileGrid:
         if 0 <= column < self.width and 0 <= row < self.height:
             return Tile(self.cells[row * self.width + column])
         return self.outside
+
+    def void(self, x: float, y: float) -> bool:
+        """Whether `y` is below the bottom edge of the grid."""
+        return y > self.height * self.tile_size
 
     def set(self, column: int, row: int, tile: Tile) -> None:
         """Change one cell."""

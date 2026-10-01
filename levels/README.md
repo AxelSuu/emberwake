@@ -19,6 +19,9 @@ rebuilt. Do not edit generated levels in LDtk; the next build overwrites them.
 | `src/<room>.txt` | The room's tiles, one character per 16 px tile; size in whole grid cells |
 | `src/<room>.toml` | Optional: what each marker is, its fields and wiring, plus level fields |
 
+Rooms connect where their edges touch and the tiles there are open. Put a PlayerStart near each
+entrance: it is where the player respawns after a hazard death.
+
 Tiles: `#` solid, `=` one-way, `^` hazard, `.` empty. Letters and digits are entity markers on
 empty tiles. Each 4-connected rectangle of one marker is one entity of that size; `P` is a
 PlayerStart without any TOML.
@@ -49,7 +52,7 @@ See `src/defs.toml` for fields.
 
 | Entity | Meaning |
 |---|---|
-| PlayerStart | Spawn and respawn point (pivot: bottom centre) |
+| PlayerStart | Spawn point; after a hazard death the one nearest the room's entrance (pivot: bottom centre) |
 | Door | Solid while closed; opens while its sources are on |
 | Lever | Interact to switch its targets |
 | PressurePlate | On while something stands on it |

@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+import math
 import random
+from typing import TYPE_CHECKING
 
 import pygame
 
 from emberwake.engine.core.noise import ValueNoise
 from emberwake.engine.physics import Tile, TileGrid
 from emberwake.game import palette
+
+if TYPE_CHECKING:
+    from emberwake.engine.render.chunks import Paint
 
 ROCK = pygame.Color("#3e3546")
 ROCK_DARK = pygame.Color("#2e222f")
@@ -33,21 +38,23 @@ LANTERN = (12.5, 13.5)
 """Lantern centre in the right-facing sprite, from its top-left."""
 
 
-def bake_room(grid: TileGrid) -> pygame.Surface:
-    """Render every tile of `grid` once into a transparent surface."""
-    surface = pygame.Surface(grid.pixel_size, pygame.SRCALPHA).convert_alpha()
-    size = grid.tile_size
-    for row in range(grid.height):
-        for column in range(grid.width):
-            tile = grid.get(column, row)
-            rect = pygame.Rect(column * size, row * size, size, size)
-            if tile is Tile.SOLID:
-                _rock(surface, grid, column, row, rect)
-            elif tile is Tile.ONE_WAY:
-                _plank(surface, grid, column, row, rect)
-            elif tile is Tile.HAZARD:
-                _spikes(surface, grid, column, row, rect)
-    return surface
+def tile_painter(grid: TileGrid) -> Paint:
+    """Paints the tiles of `grid` that fall inside a chunk's area."""
+
+    def paint(surface: pygame.Surface, area: pygame.Rect) -> None:
+        size = grid.tile_size
+        for row in range(area.top // size, math.ceil(area.bottom / size)):
+            for column in range(area.left // size, math.ceil(area.right / size)):
+                tile = grid.get(column, row)
+                rect = pygame.Rect(column * size - area.left, row * size - area.top, size, size)
+                if tile is Tile.SOLID:
+                    _rock(surface, grid, column, row, rect)
+                elif tile is Tile.ONE_WAY:
+                    _plank(surface, grid, column, row, rect)
+                elif tile is Tile.HAZARD:
+                    _spikes(surface, grid, column, row, rect)
+
+    return paint
 
 
 def _rock(
