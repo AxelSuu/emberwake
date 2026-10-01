@@ -19,6 +19,7 @@ TIPS = (
     "help.tip.wall",
     "help.tip.drop",
     "help.tip.dash",
+    "help.tip.swing",
     "help.tip.interact",
     "help.tip.flare",
     "help.tip.ember",

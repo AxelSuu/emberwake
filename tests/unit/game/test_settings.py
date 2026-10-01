@@ -56,3 +56,21 @@ def test_v6_gets_cosmetic_and_assist_defaults():
     assert loaded.cosmetics.skin == "default"
     assert loaded.assist.game_speed == 1.0
     assert not loaded.assist.invulnerable
+
+
+def test_v7_gets_the_swing_and_c_leaves_an_untouched_jump():
+    v7: Any = to_data(Settings())
+    del v7["controls"]["keys"]["swing"]
+    v7["controls"]["keys"]["jump"] = ["space", "z", "c"]
+    loaded = SETTINGS_CODEC.load({"version": 7, "data": v7})
+    assert loaded.controls.keys["jump"] == ["space", "z"]
+    assert loaded.controls.keys["swing"] == ["c", "j"]
+
+
+def test_v7_swing_keeps_clear_of_keys_the_player_chose():
+    v7: Any = to_data(Settings())
+    del v7["controls"]["keys"]["swing"]
+    v7["controls"]["keys"]["jump"] = ["c"]
+    loaded = SETTINGS_CODEC.load({"version": 7, "data": v7})
+    assert loaded.controls.keys["jump"] == ["c"]
+    assert loaded.controls.keys["swing"] == ["j"]

@@ -21,11 +21,13 @@ just web           # browser build into build/web
 | Action | Keyboard |
 |---|---|
 | Move | arrows / WASD |
-| Jump | Space, Z, C |
+| Jump | Space, Z |
 | Dash | X, Left Shift, K |
+| Swing lantern (Up or Down in the air to aim) | C, J |
+| Throw flare | F, Q |
 | Interact (levers) | Up, W, E |
 | Drop through platform | Down + Jump |
-| Pause menu | Esc |
+| Pause menu (How to play is in it) | Esc |
 
 Bindings live in `settings.json` in the user data folder (Linux:
 `~/.local/share/emberwake/emberwake/`).

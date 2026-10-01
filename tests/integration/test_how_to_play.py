@@ -31,7 +31,8 @@ def texts(scene: HowToPlayScene) -> dict[str, str]:
 
 def test_every_action_is_listed_with_its_keys(ctx: GameContext) -> None:
     rows = texts(HowToPlayScene(ctx))
-    assert rows["Jump"] == "Space / Z / C"
+    assert rows["Jump"] == "Space / Z"
+    assert rows["Swing lantern"] == "C / J"
     assert rows["Dash"] == "X / Left Shift / K"
     assert len([row for row in rows if row in {"Left", "Right", "Up", "Down"}]) == 4
     assert all(value for value in rows.values() if value)
