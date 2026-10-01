@@ -45,6 +45,7 @@ from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdro
 from emberwake.game.render.fx import Flash
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
 from emberwake.game.scenes.pause import PauseScene
+from emberwake.game.scenes.results import ResultsScene, RunFinished
 from emberwake.game.schedule import gameplay_schedule
 from emberwake.game.signals import Receiver, Wiring
 
@@ -186,6 +187,7 @@ class GameplayScene(Scene):
             bus.subscribe(Dashed, self._on_dashed),
             bus.subscribe(Died, self._on_died),
             bus.subscribe(RoomEntered, self._on_room_entered),
+            bus.subscribe(RunFinished, self._on_run_finished),
             bus.subscribe(BeaconLit, self._on_beacon_lit),
             *self.progress.subscribe(bus),
         ]
@@ -460,6 +462,9 @@ class GameplayScene(Scene):
             beacon.lit and identity.room == self.room
             for _, identity, beacon in self.world.query(Identity, Beacon)
         )
+
+    def _on_run_finished(self, event: RunFinished) -> None:
+        self.manager.push(ResultsScene(self.ctx, event.result))
 
     def _on_beacon_lit(self, event: BeaconLit) -> None:
         juice = self.feel.juice

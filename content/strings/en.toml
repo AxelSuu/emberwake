@@ -65,3 +65,12 @@ down = "Down"
 jump = "Jump"
 dash = "Dash"
 interact = "Interact"
+
+[results]
+title = "Results"
+new_best = "New best!"
+time = "Time {time}"
+best = "Best {time}"
+deaths = "Deaths: {count}"
+embers = "Embers: {count}"
+continue = "Continue"
