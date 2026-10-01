@@ -17,9 +17,9 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-def load_document[T](
-    storage: Storage, key: str, codec: VersionedCodec[T], default: Callable[[], T]
-) -> T:
+def load_document[T, D](
+    storage: Storage, key: str, codec: VersionedCodec[T], default: Callable[[], D]
+) -> T | D:
     """Load `key`, or return ``default()`` if it is missing or unreadable.
 
     Unreadable documents are logged and preserved under ``<key>.corrupt`` so a bad save is

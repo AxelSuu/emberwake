@@ -33,6 +33,8 @@ class Interactable:
     """How far around the body the player can be, in px."""
     in_range: bool = False
     """This is the interactable the player would use now."""
+    used: bool = False
+    """The player used it this tick."""
 
 
 @component
@@ -114,7 +116,7 @@ def interact_system(world: World, dt: float) -> None:
     player = player_body(world)
     nearest: tuple[float, EntityId, Interactable] | None = None
     for eid, body, interactable in world.query(Body, Interactable):
-        interactable.in_range = False
+        interactable.in_range = interactable.used = False
         if player is not None and overlap(body, player, interactable.reach):
             dx = body.center_x - player.center_x
             dy = (body.y + body.height / 2) - (player.y + player.height / 2)
@@ -125,6 +127,7 @@ def interact_system(world: World, dt: float) -> None:
         _, chosen, interactable = nearest
         interactable.in_range = True
         if actions.pressed(Action.INTERACT):
+            interactable.used = True
             world.resource(EventBus).publish(Interacted(world.get(chosen, Identity).iid))
             switch = world.find(chosen, Switch)
             if switch is not None and switch.mode == "toggle":

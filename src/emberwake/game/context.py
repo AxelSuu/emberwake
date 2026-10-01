@@ -16,3 +16,7 @@ class GameContext:
     bus: EventBus
     canvas_size: tuple[int, int]
     dev: bool = False
+    slot: int = 1
+    """Save slot the game continues from and saves to."""
+    new_game: bool = False
+    """Ignore the slot's progress and start over (it is overwritten at the first save)."""

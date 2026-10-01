@@ -143,7 +143,15 @@ entered. F4 shows room rects, names and load state.
 `VersionedCodec` (`{"version", "data"}` envelope, migration chain) + `load_document` /
 `save_document` (JSON, atomic write, `.bak` generation, corrupt files kept as `.corrupt`).
 
-Documents: `settings.json`, `slot_N.json`, `records.json`, `achievements.json`, `ghosts/*.rpl`.
+Documents: `settings.json`, `saves/slot_N.json`, `replays/*.json` (later `records.json`,
+`achievements.json`, `ghosts/*.rpl`).
+
+Save slots ([ADR 0017](adr/0017-saves-at-beacons.md), `game/data/save.py`) hold progress, never
+position: the room and beacon to continue at, playtime, flags, the `WorldState` (persisted
+components and removed entities by iid), discovered room iids and stats. `Progress` keeps them
+current from bus events and writes the slot when a beacon is relit and when the gameplay scene
+exits (the app closes every scene on quit). A session continues from the slot unless it was
+started with an explicit room or a replay; those never load or save.
 
 ## Performance rules
 

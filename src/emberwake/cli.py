@@ -6,6 +6,8 @@ import argparse
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from emberwake.game.data.save import SLOTS
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -20,6 +22,8 @@ class Options:
     frames: int | None = None
     room: str | None = None
     replay: str | None = None
+    slot: int = 1
+    new: bool = False
 
 
 def parse_args(argv: Sequence[str] | None = None) -> Options:
@@ -35,6 +39,10 @@ def parse_args(argv: Sequence[str] | None = None) -> Options:
     )
     parser.add_argument("--room", help="start directly in this LDtk level")
     parser.add_argument("--replay", metavar="KEY", help="play a saved replay, e.g. replays/x.json")
+    parser.add_argument(
+        "--slot", type=int, choices=SLOTS, default=1, help="save slot to continue and save to"
+    )
+    parser.add_argument("--new", action="store_true", help="start a new game in the slot")
     args = parser.parse_args([] if argv is None else argv)
     return Options(
         dev=args.dev,
@@ -43,4 +51,6 @@ def parse_args(argv: Sequence[str] | None = None) -> Options:
         frames=args.frames,
         room=args.room,
         replay=args.replay,
+        slot=args.slot,
+        new=args.new,
     )

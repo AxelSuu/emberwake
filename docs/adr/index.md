@@ -21,3 +21,4 @@ Superseded records stay, marked as such.
 | [0014](0014-world-coordinates-streamed-rooms.md) | World coordinates, streamed rooms, respawn at the room entrance |
 | [0015](0015-entity-state-by-iid.md) | Prefabs from TOML, entity state keyed by LDtk iid |
 | [0016](0016-doors-and-signals.md) | Doors change collision tiles; signals settle in one ordered pass |
+| [0017](0017-saves-at-beacons.md) | Saves at beacons and on quit; replays never save |

@@ -23,14 +23,18 @@ from emberwake.engine.render.chunks import ChunkLayer
 from emberwake.engine.scene import Scene
 from emberwake.engine.world.ldtk import load_project
 from emberwake.engine.world.rooms import Room, RoomEntered, RoomGraph, RoomStreamer, WorldGrid
-from emberwake.engine.world.spawning import Spawner, WorldState
+from emberwake.engine.world.spawning import Spawner
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
+from emberwake.game.beacons import Beacon, BeaconLit
 from emberwake.game.components import Sprite
+from emberwake.game.data.save import SaveSlot, load_slot
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.interact import Interactable, Switch
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.visual import PlayerVisual
+from emberwake.game.progress import Progress
+from emberwake.game.render.fx import Flash, Sparks
 from emberwake.game.render.placeholder import EntityArt, LanternGlow, PlayerSprite, tile_painter
 from emberwake.game.schedule import gameplay_schedule
 from emberwake.game.signals import Receiver, Wiring
@@ -60,23 +64,27 @@ class GameplayScene(Scene):
         self,
         ctx: GameContext,
         *,
-        room: str = DEFAULT_ROOM,
+        room: str | None = None,
         replay: Replay | None = None,
         world_path: Path | None = None,
     ) -> None:
+        """Continue from the save slot, or play `room` (or a replay) without loading or saving."""
         self.ctx = ctx
         self.world_path = world_path or paths.levels(WORLD)
+        start = self._open_progress(room, replay)
         self.feel = self._read_feel() or Feel()
         self.mapper = InputMapper(Action, ctx.settings.controls)
         self.replay = ReplayPlayer(replay, Action) if replay else None
         self.actions = InputState[Action]()
-        self.recorder = ReplayRecorder[Action](room)
+        self.recorder = ReplayRecorder[Action](start)
         self.camera = Camera(ctx.canvas_size, self.feel.camera)
         self.camera.shake.intensity = ctx.settings.video.screen_shake
         self.visual = PlayerVisual()
         self.sprite = PlayerSprite()
         self.glow = LanternGlow()
         self.art = EntityArt()
+        self.sparks = Sparks()
+        self.flash = Flash()
         self.time = TimeControl()
         self.hitstop = 0
         self.respawn_in = 0
@@ -87,8 +95,23 @@ class GameplayScene(Scene):
         self._unsubscribe: list[Callable[[], None]] = []
         self.jobs = Jobs()
         self.layers: dict[str, tuple[ChunkLayer, Iterator[None]]] = {}
+        self._build_world(start)
+        self.camera.snap(*self._camera_target())
+
+    def _open_progress(self, room: str | None, replay: Replay | None) -> str:
+        """Load the slot unless a room or replay was asked for; return the starting room."""
+        ctx = self.ctx
+        from_slot = room is None and replay is None
+        save = load_slot(ctx.storage, ctx.slot) if from_slot and not ctx.new_game else None
+        ctx.new_game = False
+        start = room or (save.room if save else DEFAULT_ROOM)
+        data = save or SaveSlot(room=start)
+        self.progress = Progress(data, ctx.storage, ctx.slot if from_slot else None)
+        return start
+
+    def _build_world(self, start: str) -> None:
         self.world = World()
-        self.spawner = Spawner(self.world, self._read_prefabs() or {}, WorldState())
+        self.spawner = Spawner(self.world, self._read_prefabs() or {}, self.progress.data.world)
         self.grid = WorldGrid()
         levels = load_project(self.world_path).all_levels
         self.wiring = Wiring.from_levels(levels, self.spawner.prefabs)
@@ -100,22 +123,20 @@ class GameplayScene(Scene):
             on_load=self._room_loaded,
             on_unload=self._room_unloaded,
         )
-        self.rooms.enter(room)
-        self.spawn_point = self._entry_point(room)
-        self.camera.bounds = self.rooms.graph.rects[room]
-        self.world.insert_resource(self.actions)
-        self.world.insert_resource(ctx.bus)
+        if start not in self.rooms.graph.levels:
+            log.warning("No room %s; starting in %s", start, DEFAULT_ROOM)
+            start = DEFAULT_ROOM
+        self.rooms.enter(start)
+        self.progress.discover(self.rooms.graph.levels[start].iid)
+        self.spawn_point = self._continue_point(start, self.progress.data.beacon)
+        self.camera.bounds = self.rooms.graph.rects[start]
+        resources = (self.actions, self.ctx.bus, self.grid, self.wiring, self.rooms, self.spawner)
+        for resource in (*resources, self.feel.player, self.feel.rooms):
+            self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
-        self.world.insert_resource(self.grid)
-        self.world.insert_resource(self.wiring)
-        self.world.insert_resource(self.rooms)
-        self.world.insert_resource(self.spawner)
-        self.world.insert_resource(self.feel.player)
-        self.world.insert_resource(self.feel.rooms)
         self.schedule = gameplay_schedule()
         self.player = self.world.spawn(*self._new_player())
         self.world.flush()
-        self.camera.snap(*self._camera_target())
 
     @property
     def room(self) -> str:
@@ -141,11 +162,14 @@ class GameplayScene(Scene):
             bus.subscribe(Dashed, self._on_dashed),
             bus.subscribe(Died, self._on_died),
             bus.subscribe(RoomEntered, self._on_room_entered),
+            bus.subscribe(BeaconLit, self._on_beacon_lit),
+            *self.progress.subscribe(bus),
         ]
 
     def on_exit(self) -> None:
         for unsubscribe in self._unsubscribe:
             unsubscribe()
+        self.progress.save(self.spawner)
 
     # Loading
 
@@ -174,6 +198,16 @@ class GameplayScene(Scene):
         self.spawner.despawn_room(room)
         _, job = self.layers.pop(room.name)
         self.jobs.cancel(job)
+
+    def _continue_point(self, room: str, beacon: str) -> tuple[float, float]:
+        """Feet of the `beacon` entity in `room`, or the room's start if there is none."""
+        level = self.rooms.graph.levels[room]
+        for entity in level.entities():
+            if entity.iid == beacon:
+                left = level.world_x + entity.px[0] - entity.pivot[0] * entity.width
+                top = level.world_y + entity.px[1] - entity.pivot[1] * entity.height
+                return left + entity.width / 2, top + entity.height
+        return self._entry_point(room)
 
     def _entry_point(
         self, room: str, near: tuple[float, float] | None = None
@@ -278,6 +312,9 @@ class GameplayScene(Scene):
         if not self.time.should_tick():
             return
         self.clock += dt
+        self.progress.tick(dt)
+        self.sparks.update(dt)
+        self.flash.update(dt)
         juice = self.feel.juice
         self.visual.update(juice.squash_recovery, dt)
         if self.hitstop > 0:
@@ -329,7 +366,15 @@ class GameplayScene(Scene):
     def _on_room_entered(self, event: RoomEntered) -> None:
         self.camera.glide_to(self.rooms.graph.rects[event.room])
         self.spawn_point = self._entry_point(event.room, (event.x, event.y))
+        self.progress.discover(self.rooms.graph.levels[event.room].iid)
         log.debug("Entered %s from %s", event.room, event.previous)
+
+    def _on_beacon_lit(self, event: BeaconLit) -> None:
+        juice = self.feel.juice
+        self.camera.shake.add(juice.beacon_trauma)
+        self.flash.start(juice.beacon_flash)
+        self.sparks.burst(event.x, event.y - 14)
+        self.progress.checkpoint(event.room, event.iid, self.spawner)
 
     # Rendering
 
@@ -339,6 +384,9 @@ class GameplayScene(Scene):
         ox, oy = self.camera.offset(alpha)
         for layer, _ in self.layers.values():
             layer.draw(canvas, (ox, oy))
+        for _, body, beacon in self.world.query(Body, Beacon):
+            if beacon.lit:
+                self.glow.draw(canvas, (body.center_x - ox, body.y + 3 - oy), self.clock)
         for _, body, sprite in self.world.query(Body, Sprite):
             image = self.art.image(sprite.current, (round(body.width), round(body.height)))
             canvas.blit(image, (round(body.x) - ox, round(body.y) - oy))
@@ -348,6 +396,8 @@ class GameplayScene(Scene):
                 canvas.blit(self.art.prompt, self.art.prompt.get_rect(midbottom=above))
         if self.respawn_in == 0:
             self._draw_player(canvas, ox, oy, alpha)
+        self.sparks.draw(canvas, (ox, oy))
+        self.flash.draw(canvas)
         if self.show_colliders:
             self._draw_colliders(canvas, ox, oy)
         if self.show_rooms:
