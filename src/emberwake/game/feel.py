@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from emberwake.engine.core.serde import from_data, to_data
 from emberwake.engine.render.camera import CameraTuning
 from emberwake.game.player.tuning import PlayerTuning
+from emberwake.game.rooms import RoomTuning
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -35,6 +36,7 @@ class Feel:
     player: PlayerTuning = field(default_factory=PlayerTuning)
     camera: CameraTuning = field(default_factory=CameraTuning)
     juice: JuiceTuning = field(default_factory=JuiceTuning)
+    rooms: RoomTuning = field(default_factory=RoomTuning)
 
 
 def load_feel(path: Path) -> Feel:

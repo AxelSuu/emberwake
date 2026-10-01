@@ -1,4 +1,4 @@
-"""Playing a room: input, player, camera, juice, placeholder rendering and dev tools."""
+"""Playing the world: input, player, rooms, camera, juice, placeholder rendering and dev tools."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 import pygame
 
+from emberwake.engine.core.jobs import Jobs
 from emberwake.engine.core.serde import SerdeError
 from emberwake.engine.debug.time_control import TimeControl
 from emberwake.engine.ecs import World
@@ -17,18 +18,21 @@ from emberwake.engine.input.replay import REPLAY_CODEC, Replay, ReplayPlayer, Re
 from emberwake.engine.physics import Body, Tile, TileSource
 from emberwake.engine.platform.documents import save_document
 from emberwake.engine.render.camera import Camera
+from emberwake.engine.render.chunks import ChunkLayer
 from emberwake.engine.scene import Scene
 from emberwake.engine.world.ldtk import load_project
+from emberwake.engine.world.rooms import Room, RoomEntered, RoomGraph, RoomStreamer, WorldGrid
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.visual import PlayerVisual
-from emberwake.game.render.placeholder import LanternGlow, PlayerSprite, bake_room
+from emberwake.game.render.placeholder import LanternGlow, PlayerSprite, tile_painter
 from emberwake.game.schedule import gameplay_schedule
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterator
+    from pathlib import Path
 
     from emberwake.game.context import GameContext
 
@@ -38,15 +42,22 @@ WORLD = "world.ldtk"
 FEEL = "feel.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
+BAKE_BUDGET = 0.002
+"""Seconds per frame spent baking room art in the background."""
 DEBUG_RED = pygame.Color("#e83b3b")
 
 
 class GameplayScene(Scene):
     def __init__(
-        self, ctx: GameContext, *, room: str = DEFAULT_ROOM, replay: Replay | None = None
+        self,
+        ctx: GameContext,
+        *,
+        room: str = DEFAULT_ROOM,
+        replay: Replay | None = None,
+        world_path: Path | None = None,
     ) -> None:
         self.ctx = ctx
-        self.room = room
+        self.world_path = world_path or paths.levels(WORLD)
         self.feel = self._read_feel() or Feel()
         self.mapper = InputMapper(Action, ctx.settings.controls)
         self.replay = ReplayPlayer(replay, Action) if replay else None
@@ -62,17 +73,40 @@ class GameplayScene(Scene):
         self.respawn_in = 0
         self.clock = 0.0
         self.show_colliders = False
+        self.show_rooms = False
         self.free_camera = False
         self._unsubscribe: list[Callable[[], None]] = []
+        self.jobs = Jobs()
+        self.layers: dict[str, tuple[ChunkLayer, Iterator[None]]] = {}
+        self.grid = WorldGrid()
+        self.rooms = RoomStreamer(
+            RoomGraph(load_project(self.world_path).all_levels),
+            self.grid,
+            "Collisions",
+            COLLISIONS,
+            on_load=self._room_loaded,
+            on_unload=self._room_unloaded,
+        )
+        self.rooms.enter(room)
+        self.spawn_point = self._entry_point(room)
+        self.camera.bounds = self.rooms.graph.rects[room]
         self.world = World()
         self.world.insert_resource(self.actions)
         self.world.insert_resource(ctx.bus)
+        self.world.insert_resource(self.grid, key=TileSource)
+        self.world.insert_resource(self.rooms)
         self.world.insert_resource(self.feel.player)
+        self.world.insert_resource(self.feel.rooms)
         self.schedule = gameplay_schedule()
-        self._load_room()
         self.player = self.world.spawn(*self._new_player())
         self.world.flush()
         self.camera.snap(*self._camera_target())
+
+    @property
+    def room(self) -> str:
+        """The active room."""
+        assert self.rooms.active is not None
+        return self.rooms.active
 
     @property
     def body(self) -> Body:
@@ -91,6 +125,7 @@ class GameplayScene(Scene):
             bus.subscribe(Landed, self._on_landed),
             bus.subscribe(Dashed, self._on_dashed),
             bus.subscribe(Died, self._on_died),
+            bus.subscribe(RoomEntered, self._on_room_entered),
         ]
 
     def on_exit(self) -> None:
@@ -106,14 +141,31 @@ class GameplayScene(Scene):
             log.error("Could not load %s: %s", FEEL, error)
             return None
 
-    def _load_room(self) -> None:
-        level = load_project(paths.levels(WORLD)).level(self.room)
-        self.grid = level.layer("Collisions").to_tile_grid(COLLISIONS)
-        self.world.insert_resource(self.grid, key=TileSource)
-        starts = level.entities("PlayerStart")
-        self.spawn_point = starts[0].px if starts else (level.width // 2, level.height // 2)
-        self.room_image = bake_room(self.grid)
-        self.camera.bounds = pygame.Rect(0, 0, level.width, level.height)
+    def _room_loaded(self, room: Room) -> None:
+        layer = ChunkLayer(room.rect.topleft, room.rect.size, tile_painter(room.grid))
+        job = layer.bake()
+        self.layers[room.name] = (layer, job)
+        self.jobs.add(job)
+
+    def _room_unloaded(self, room: Room) -> None:
+        _, job = self.layers.pop(room.name)
+        self.jobs.cancel(job)
+
+    def _entry_point(
+        self, room: str, near: tuple[float, float] | None = None
+    ) -> tuple[float, float]:
+        """The room's PlayerStart nearest to `near` (feet, world px), or `near` if it has none."""
+        level = self.rooms.graph.levels[room]
+        starts = [
+            (level.world_x + start.px[0], level.world_y + start.px[1])
+            for start in level.entities("PlayerStart")
+        ]
+        if near is None:
+            rect = self.rooms.graph.rects[room]
+            return starts[0] if starts else (rect.centerx, rect.centery)
+        if not starts:
+            return near
+        return min(starts, key=lambda p: (p[0] - near[0]) ** 2 + (p[1] - near[1]) ** 2)
 
     def _new_player(self) -> tuple[Body, Motor]:
         return new_player(*self.spawn_point, self.feel.player)
@@ -126,11 +178,17 @@ class GameplayScene(Scene):
                 log.info("feel %s: %s -> %s", key, old, new)
             self.feel = feel
             self.world.insert_resource(feel.player)
+            self.world.insert_resource(feel.rooms)
             self.camera.retune(feel.camera)
         try:
-            self._load_room()
+            graph = RoomGraph(load_project(self.world_path).all_levels)
+            if self.room not in graph.levels:
+                raise KeyError(self.room)
         except (OSError, KeyError, SerdeError, ValueError) as error:
-            log.error("Could not reload room %s: %s", self.room, error)
+            log.error("Could not reload %s: %s", self.world_path.name, error)
+        else:
+            self.rooms.reload(graph)
+            self.camera.bounds = graph.rects[self.room]
         log.info("Reloaded")
 
     # Input
@@ -155,6 +213,8 @@ class GameplayScene(Scene):
                 self.show_colliders = not self.show_colliders
             case pygame.K_F3:
                 self.free_camera = not self.free_camera
+            case pygame.K_F4:
+                self.show_rooms = not self.show_rooms
             case pygame.K_F5:
                 self.reload()
             case pygame.K_F9:
@@ -234,16 +294,27 @@ class GameplayScene(Scene):
         self.camera.shake.add(juice.death_trauma)
         self.respawn_in = juice.respawn_delay
 
+    # Rooms
+
+    def _on_room_entered(self, event: RoomEntered) -> None:
+        self.camera.glide_to(self.rooms.graph.rects[event.room])
+        self.spawn_point = self._entry_point(event.room, (event.x, event.y))
+        log.debug("Entered %s from %s", event.room, event.previous)
+
     # Rendering
 
     def draw(self, canvas: pygame.Surface, alpha: float) -> None:
+        self.jobs.pump(BAKE_BUDGET)
         canvas.fill(palette.INK)
         ox, oy = self.camera.offset(alpha)
-        canvas.blit(self.room_image, (-ox, -oy))
+        for layer, _ in self.layers.values():
+            layer.draw(canvas, (ox, oy))
         if self.respawn_in == 0:
             self._draw_player(canvas, ox, oy, alpha)
         if self.show_colliders:
             self._draw_colliders(canvas, ox, oy)
+        if self.show_rooms:
+            self._draw_rooms(canvas, ox, oy)
 
     def _draw_player(self, canvas: pygame.Surface, ox: int, oy: int, alpha: float) -> None:
         p, body, visual = self.motor, self.body, self.visual
@@ -271,3 +342,19 @@ class GameplayScene(Scene):
         for i, line in enumerate(lines):
             text = font.render(line, False, "white", "black")
             canvas.blit(text, (canvas.get_width() - text.get_width() - 2, 2 + i * 12))
+
+    def _draw_rooms(self, canvas: pygame.Surface, ox: int, oy: int) -> None:
+        font = pygame.font.Font(None, 16)
+        for name, rect in self.rooms.graph.rects.items():
+            if name == self.room:
+                color, state = palette.EMBER_HOT, "active"
+            elif name in self.layers:
+                color, state = palette.MIST, "loaded"
+            else:
+                color, state = palette.DUSK, "unloaded"
+            if name in self.layers:
+                layer, _ = self.layers[name]
+                state += f" {layer.baked}/{layer.total}"
+            pygame.draw.rect(canvas, color, rect.move(-ox, -oy), 1)
+            text = font.render(f"{name} ({state})", False, color, "black")
+            canvas.blit(text, (rect.x - ox + 3, rect.y - oy + 3))
