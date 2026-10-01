@@ -30,6 +30,14 @@ class FieldInstance:
     value: Any = alias("__value", default=None)
 
 
+def _plain(value: Any) -> Any:
+    if isinstance(value, list):
+        return [_plain(item) for item in value]
+    if isinstance(value, dict) and "entityIid" in value:
+        return value["entityIid"]
+    return value
+
+
 def _field(fields: list[FieldInstance], identifier: str, default: Any) -> Any:
     for instance in fields:
         if instance.identifier == identifier:
@@ -53,6 +61,10 @@ class EntityInstance:
     def field(self, identifier: str, default: Any = None) -> Any:
         """Value of the custom field `identifier`, or `default` if the entity has none."""
         return _field(self.field_instances, identifier, default)
+
+    def values(self) -> dict[str, Any]:
+        """All custom fields, with entity refs replaced by the iid of the entity they point at."""
+        return {f.identifier: _plain(f.value) for f in self.field_instances}
 
 
 @dataclass(slots=True)
