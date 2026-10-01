@@ -12,6 +12,7 @@ from emberwake.cli import parse_args
 from emberwake.engine.core.events import EventBus
 from emberwake.engine.core.log import configure_logging
 from emberwake.engine.debug.overlay import DebugOverlay
+from emberwake.engine.input.replay import REPLAY_CODEC, Replay
 from emberwake.engine.platform.display import Display
 from emberwake.engine.platform.documents import load_document, save_document
 from emberwake.engine.platform.storage import FileStorage, default_storage
@@ -20,6 +21,7 @@ from emberwake.engine.scene import SceneManager
 from emberwake.game.context import GameContext
 from emberwake.game.data.settings import SETTINGS_CODEC, SETTINGS_KEY, Settings
 from emberwake.game.scenes.boot import BootScene
+from emberwake.game.scenes.gameplay import DEFAULT_ROOM, GameplayScene
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -55,7 +57,13 @@ async def main(argv: Sequence[str] | None = None) -> None:
         dev=options.dev,
     )
     scenes = SceneManager()
-    scenes.push(BootScene(ctx))
+    if options.replay:
+        replay = load_document(storage, options.replay, REPLAY_CODEC, Replay)
+        scenes.push(GameplayScene(ctx, room=replay.start or DEFAULT_ROOM, replay=replay))
+    elif options.room:
+        scenes.push(GameplayScene(ctx, room=options.room))
+    else:
+        scenes.push(BootScene(ctx))
     runner = Runner(
         display,
         scenes,

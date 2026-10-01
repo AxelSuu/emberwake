@@ -11,6 +11,7 @@ import pygame
 
 from emberwake.engine.scene import Scene
 from emberwake.game import palette
+from emberwake.game.scenes.gameplay import GameplayScene
 
 if TYPE_CHECKING:
     from emberwake.game.context import GameContext
@@ -65,6 +66,8 @@ class TitleScene(Scene):
     def handle(self, event: pygame.Event) -> None:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.manager.pop()
+        elif event.type in (pygame.KEYDOWN, pygame.CONTROLLERBUTTONDOWN):
+            self.manager.replace(GameplayScene(self.ctx))
 
     def update(self, dt: float) -> None:
         self.time += dt
