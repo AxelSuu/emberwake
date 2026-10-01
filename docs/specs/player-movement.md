@@ -1,6 +1,6 @@
 # Player movement
 
-**Milestone:** M1  **Status:** ready  **Issues:** #7, #8
+**Milestone:** M1  **Status:** done  **Issues:** #7, #8
 
 ## Goal
 Movement that feels tight and fair: instant intent, readable arcs and forgiving timing windows,
@@ -96,17 +96,17 @@ for our 16 px tiles.
 | `hazard_margin` | 2 | px | |
 
 ## Acceptance criteria
-- [ ] Holding right from standstill reaches `max_run` within 6 ticks and never exceeds it.
-- [ ] A held full jump peaks between 3.5 and 4.5 tiles. A one-tick tap peaks below 2 tiles.
-- [ ] A running full jump clears a 6-tile gap.
-- [ ] Jump pressed up to `coyote` ticks after walking off a ledge still jumps; one tick later it does not.
-- [ ] Jump pressed up to `jump_buffer` ticks before landing jumps on the landing tick.
-- [ ] Rising into a ceiling edge overlapping by at most `corner_correction` px slides past it.
-- [ ] Wall slide slows the fall to `wall_slide_max` within a few ticks and then never exceeds it.
-- [ ] A wall jump moves away from the wall and gains height.
-- [ ] A horizontal dash travels about 4.5 tiles, and the charge refills only after landing.
-- [ ] Down + jump on a one-way platform drops through it. Jumping up through one works.
-- [ ] Touching spikes or falling out of the room emits `Died`.
+- [x] Holding right from standstill reaches `max_run` within 6 ticks and never exceeds it.
+- [x] A held full jump peaks between 3.5 and 4.5 tiles. A one-tick tap peaks below 2 tiles.
+- [x] A running full jump clears a 6-tile gap.
+- [x] Jump pressed up to `coyote` ticks after walking off a ledge still jumps; one tick later it does not.
+- [x] Jump pressed up to `jump_buffer` ticks before landing jumps on the landing tick.
+- [x] Rising into a ceiling edge overlapping by at most `corner_correction` px slides past it.
+- [x] Wall slide slows the fall to `wall_slide_max` within a few ticks and then never exceeds it.
+- [x] A wall jump moves away from the wall and gains height.
+- [x] A horizontal dash travels about 4.5 tiles, and the charge refills only after landing.
+- [x] Down + jump on a one-way platform drops through it. Jumping up through one works.
+- [x] Touching spikes or falling out of the room emits `Died`.
 
 ## Tests
 `tests/unit/game/test_player.py`: scenario tests that feed per-tick action sets (the same format

@@ -25,3 +25,20 @@
 - [ ] Verify the pygbag build in a browser (#1)
 - [ ] Spike: pymunk and numpy availability in pygbag (#2)
 - [x] GitHub repo, labels, milestones, issues and project board
+
+## M1 status
+
+- [x] Player movement spec (#6)
+- [x] Input actions, keyboard/gamepad mapper, rebindable bindings in settings (#3)
+- [x] Run-length encoded replays, `--replay`, F9 to save (#4)
+- [x] Tile grid and sub-stepped kinematic collision (#5)
+- [x] Player controller: run, jump, coyote, buffer, apex hang, corner correction (#7)
+- [x] Wall slide, wall jump, dash, one-way drop-through (#8)
+- [x] `content/feel.toml` with F5 hot reload (#9)
+- [x] Camera: deadzone, look-ahead, smoothing, bounds, interpolation (#10)
+- [x] Juice: trauma shake, hitstop, squash and stretch (#11)
+- [x] Typed LDtk loader (#12)
+- [x] LDtk scaffold tool, schema-validated test room, traversal bots (#13)
+- [x] Gameplay scene with placeholder art and lantern glow (#14)
+- [x] Dev tools: F2 colliders, F3 free camera, P pause, `.` step, `,` slow motion (#15)
+- [ ] Hands-on feel pass with a real keyboard and gamepad

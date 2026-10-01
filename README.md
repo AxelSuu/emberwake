@@ -13,7 +13,24 @@ just test          # headless test suite
 just web           # browser build into build/web
 ```
 
-`just` lists every task.
+`just` lists every task. `just run --room Test_Room` skips the menus.
+
+## Controls
+
+| Action | Keyboard | Gamepad |
+|---|---|---|
+| Move | arrows / WASD | d-pad / left stick |
+| Jump | Space, Z, C | A |
+| Dash | X, Left Shift, K | X, B, RB |
+| Drop through platform | Down + Jump | |
+| Back to title | Esc | |
+
+Bindings live in `settings.json` in the user data folder (Linux:
+`~/.local/share/emberwake/emberwake/`).
+
+Dev keys (`--dev`): F1 fps, F2 colliders, F3 free camera (drag with the mouse), F5 reload
+`content/feel.toml` and the level, F9 save a replay (play it with `--replay replays/<name>.json`),
+P pause, `.` step one tick, `,` slow motion.
 
 ## Docs
 
