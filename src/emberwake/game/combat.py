@@ -154,6 +154,27 @@ def combat_system(world: World, dt: float) -> None:
                 bus.publish(Killed(target, attacker))
 
 
+def hurt(world: World, target: EntityId, amount: int = 1, attacker: EntityId | None = None) -> bool:
+    """Take `amount` health from `target` outside of a hitbox (a guttering lantern, burning).
+
+    Invulnerability protects as from a hit, and the usual events are published. Returns whether
+    the target was hurt.
+    """
+    health, body = world.find(target, Health), world.find(target, Body)
+    if health is None or body is None or health.dead or health.invulnerable > 0:
+        return False
+    health.current = max(health.current - amount, 0)
+    health.invulnerable = health.iframes
+    bus = world.resource(EventBus)
+    source = target if attacker is None else attacker
+    centre = body.y + body.height / 2
+    bus.publish(Damaged(target, source, amount, health.current, body.center_x, centre, 0.0, 0.0))
+    if health.current == 0:
+        health.dead = True
+        bus.publish(Killed(target, source))
+    return True
+
+
 def _knock(world: World, target: EntityId, vx: float, vy: float) -> None:
     if world.has(target, Knockback):
         impulse = world.get(target, Knockback)

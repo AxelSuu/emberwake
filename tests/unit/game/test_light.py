@@ -8,6 +8,7 @@ from emberwake.engine.ecs import World
 from emberwake.engine.physics import Body, Tile, TileGrid
 from emberwake.engine.world.rooms import WorldGrid
 from emberwake.game.beacons import Beacon
+from emberwake.game.combat import Damaged, Health, Killed
 from emberwake.game.light import (
     Ember,
     Lightform,
@@ -15,10 +16,11 @@ from emberwake.game.light import (
     LightTuning,
     ember_system,
     falloff,
+    lantern_reach,
     light_at,
     lightform_system,
 )
-from emberwake.game.player.controller import Died, Motor
+from emberwake.game.player.controller import Motor
 
 TUNING = LightTuning(ember_max=100, drain=10, refill=20, lantern_radius=40, beacon_radius=80)
 
@@ -27,14 +29,18 @@ class Cave:
     def __init__(self) -> None:
         self.world = World()
         self.bus = EventBus()
-        self.deaths: list[Died] = []
-        self.bus.subscribe(Died, self.deaths.append)
+        self.hurts: list[Damaged] = []
+        self.deaths: list[Killed] = []
+        self.bus.subscribe(Damaged, self.hurts.append)
+        self.bus.subscribe(Killed, self.deaths.append)
         grid = TileGrid(20, 10, 16, bytearray(200))
         self.grid = grid
         self.world.insert_resource(TUNING)
         self.world.insert_resource(self.bus)
         self.world.insert_resource(grid, key=WorldGrid)
-        self.player = self.world.spawn(Body(100, 100, 14, 22), Motor(), Ember(100))
+        self.player = self.world.spawn(
+            Body(100, 100, 14, 22), Motor(), Ember(100), Health(2, iframes=0.0)
+        )
         self.world.flush()
 
     def add(self, *parts: object) -> None:
@@ -107,14 +113,29 @@ def test_ember_is_capped() -> None:
     assert cave.ember().current == 100
 
 
-def test_empty_ember_kills_once() -> None:
+def test_an_empty_flame_gutters_and_costs_health_every_few_seconds() -> None:
     cave = Cave()
     cave.ember().current = 5
     cave.tick(1.0)
+    assert cave.ember().guttering
+    assert not cave.hurts
+    cave.tick(TUNING.gutter_every)
+    assert [hurt.amount for hurt in cave.hurts] == [1]
+    assert not cave.deaths
+    cave.tick(TUNING.gutter_every)
     assert len(cave.deaths) == 1
-    assert cave.world.get(cave.player, Motor).dead
-    cave.tick(1.0)
-    assert len(cave.deaths) == 1
+
+
+def test_the_lantern_shrinks_while_guttering_and_light_ends_it() -> None:
+    cave = Cave()
+    assert lantern_reach(cave.world) == TUNING.lantern_radius
+    cave.ember().current = 0
+    cave.tick(0.5)
+    assert lantern_reach(cave.world) == TUNING.lantern_radius * TUNING.gutter_radius
+    cave.add(Body(100, 100, 8, 8), LightSource(radius=60))
+    cave.tick(0.5)
+    assert not cave.ember().guttering
+    assert cave.ember().gutter == 0
 
 
 def test_lightform_is_solid_only_while_lit() -> None:
