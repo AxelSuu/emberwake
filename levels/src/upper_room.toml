@@ -1,4 +1,4 @@
-fields = { Backdrop = "ruins" }
+fields = { Backdrop = "ruins", Area = "lab" }
 
 [entities.k]
 type = "Beacon"

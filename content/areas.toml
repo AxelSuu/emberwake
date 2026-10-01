@@ -1,0 +1,17 @@
+# Areas group rooms through the level field Area; each one's name is the string area.<id>.name.
+# `music` is the stem set of its rooms whose Music field is empty.
+#
+# Light %: [light] maps a prefab to the persisted "Component.field" that is true once it is lit;
+# an area's light % is how many of those in its rooms are lit. At 0 % the colour grade keeps
+# `dim` of its saturation, at 100 % all of it; it eases by `rate` (light per second).
+
+dim = 0.7
+rate = 0.5
+
+[light]
+beacon = "Beacon.lit"
+
+[areas.quarter]
+music = "quarter"
+
+[areas.lab]

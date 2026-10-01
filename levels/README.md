@@ -61,3 +61,13 @@ one has no prefab or its fields do not fit.
 | Beacon | Interact to relight: saves, refills the dash and becomes the continue point |
 | Ember | Collectible |
 | Grant | Touch to receive an ability or item (`Thing`, a key of `content/grants.toml`, and `Count`) |
+
+## Level fields
+
+Set in a room's TOML as `fields = { Name = value }`.
+
+| Field | Default | Meaning |
+|---|---|---|
+| Backdrop | `cavern` | A preset in `content/backdrops.toml` |
+| Area | `quarter` | A key of `content/areas.toml` (the dev rooms are `lab`). Entering another area shows its banner; its light % sets the grade's saturation ([spec](../docs/specs/areas.md)) |
+| Music | empty | A stem set, a lowercase name; empty plays the area's `music`. Not played yet |
