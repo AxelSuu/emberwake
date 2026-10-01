@@ -157,36 +157,14 @@ class PlayerSprite:
         return x, y
 
 
-class LanternGlow:
-    """Additive warm glow with a gentle flicker; a stand-in until real lighting (M3)."""
+class Flicker:
+    """A gentle light flicker between 0.55 and 1."""
 
-    LEVELS = 6
-
-    def __init__(self, radius: int = 64, seed: int = 0) -> None:
+    def __init__(self, seed: int = 0) -> None:
         self._noise = ValueNoise(seed)
-        self._images = [
-            self._render(radius, 0.55 + 0.45 * i / (self.LEVELS - 1)) for i in range(self.LEVELS)
-        ]
 
-    @staticmethod
-    def _render(radius: int, strength: float) -> pygame.Surface:
-        surface = pygame.Surface((radius * 2, radius * 2)).convert()
-        black = pygame.Color("black")
-        warm = pygame.Color(palette.EMBER_WARM)
-        hot = pygame.Color(palette.EMBER_HOT)
-        for r in range(radius, 0, -1):
-            falloff = (1 - r / radius) ** 2
-            color = warm.lerp(hot, falloff)
-            pygame.draw.circle(
-                surface, black.lerp(color, falloff * 0.35 * strength), (radius, radius), r
-            )
-        return surface
-
-    def draw(self, canvas: pygame.Surface, center: tuple[float, float], time: float) -> None:
-        flicker = (self._noise(time * 6) + 1) / 2
-        image = self._images[min(int(flicker * self.LEVELS), self.LEVELS - 1)]
-        rect = image.get_rect(center=(round(center[0]), round(center[1])))
-        canvas.blit(image, rect, special_flags=pygame.BLEND_RGB_ADD)
+    def __call__(self, time: float) -> float:
+        return 0.55 + 0.45 * (self._noise(time * 6) + 1) / 2
 
 
 def _prompt() -> pygame.Surface:

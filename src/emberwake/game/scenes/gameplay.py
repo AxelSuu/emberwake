@@ -20,6 +20,8 @@ from emberwake.engine.physics import Body, Tile, TileSource
 from emberwake.engine.platform.documents import save_document
 from emberwake.engine.render.camera import Camera
 from emberwake.engine.render.chunks import ChunkLayer
+from emberwake.engine.render.frame import Layer, RenderFrame
+from emberwake.engine.render.software import SoftwareBackend
 from emberwake.engine.scene import Scene
 from emberwake.engine.world.ldtk import load_project
 from emberwake.engine.world.rooms import Room, RoomEntered, RoomGraph, RoomStreamer, WorldGrid
@@ -36,7 +38,7 @@ from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
 from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdrops
 from emberwake.game.render.fx import Flash, Sparks
-from emberwake.game.render.placeholder import EntityArt, LanternGlow, PlayerSprite, tile_painter
+from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
 from emberwake.game.schedule import gameplay_schedule
 from emberwake.game.signals import Receiver, Wiring
 
@@ -56,6 +58,10 @@ COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
 """Seconds per frame spent baking room art in the background."""
+GLOW_RADIUS = 64
+_ember = pygame.Color(palette.EMBER_WARM).lerp(palette.EMBER_HOT, 0.4)
+GLOW = (_ember.r, _ember.g, _ember.b)
+"""Lantern and beacon light color."""
 DEBUG_RED = pygame.Color("#e83b3b")
 WIRE_ON = pygame.Color("#1ebc73")
 WIRE_OFF = pygame.Color("#b33831")
@@ -83,7 +89,9 @@ class GameplayScene(Scene):
         self.camera.shake.intensity = ctx.settings.video.screen_shake
         self.visual = PlayerVisual()
         self.sprite = PlayerSprite()
-        self.glow = LanternGlow()
+        self.flicker = Flicker()
+        self.frame = RenderFrame()
+        self.backend = SoftwareBackend()
         self.art = EntityArt()
         self.sparks = Sparks()
         self.flash = Flash()
@@ -419,18 +427,22 @@ class GameplayScene(Scene):
         self.backdrops.draw_far(canvas, (ox, oy), room_top)
         for layer, _ in self.layers.values():
             layer.draw(canvas, (ox, oy))
+        frame = self.frame
+        frame.clear()
+        light = self.flicker(self.clock)
         for _, body, beacon in self.world.query(Body, Beacon):
             if beacon.lit:
-                self.glow.draw(canvas, (body.center_x - ox, body.y + 3 - oy), self.clock)
+                frame.light(body.center_x - ox, body.y + 3 - oy, GLOW_RADIUS, GLOW, light)
         for _, body, sprite in self.world.query(Body, Sprite):
             image = self.art.image(sprite.current, (round(body.width), round(body.height)))
-            canvas.blit(image, (round(body.x) - ox, round(body.y) - oy))
+            frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
         for _, body, interactable in self.world.query(Body, Interactable):
             if interactable.in_range:
                 above = (round(body.center_x) - ox, round(body.y) - oy - 3)
-                canvas.blit(self.art.prompt, self.art.prompt.get_rect(midbottom=above))
+                frame.sprite(*self._at(self.art.prompt, above), layer=Layer.OVERLAY)
         if self.respawn_in == 0:
-            self._draw_player(canvas, ox, oy, alpha)
+            self._queue_player(light, ox, oy, alpha)
+        self.backend.render(frame, canvas)
         self.sparks.draw(canvas, (ox, oy))
         self.backdrops.draw_near(canvas, (ox, oy), room_top)
         self.flash.draw(canvas)
@@ -440,16 +452,23 @@ class GameplayScene(Scene):
             self._draw_rooms(canvas, ox, oy)
             self._draw_wires(canvas, ox, oy)
 
-    def _draw_player(self, canvas: pygame.Surface, ox: int, oy: int, alpha: float) -> None:
+    @staticmethod
+    def _at(
+        image: pygame.Surface, midbottom: tuple[float, float]
+    ) -> tuple[pygame.Surface, int, int]:
+        rect = image.get_rect(midbottom=(round(midbottom[0]), round(midbottom[1])))
+        return image, rect.x, rect.y
+
+    def _queue_player(self, light: float, ox: int, oy: int, alpha: float) -> None:
         p, body, visual = self.motor, self.body, self.visual
         px, py = p.previous
         x = px + (body.x - px) * alpha
         y = py + (body.y - py) * alpha
         feet = (x + body.width / 2 - ox, y + body.height - oy)
         lx, ly = self.sprite.lantern_offset(p.facing, visual.scale_x, visual.scale_y)
-        self.glow.draw(canvas, (feet[0] + lx, feet[1] + ly), self.clock)
+        self.frame.light(feet[0] + lx, feet[1] + ly, GLOW_RADIUS, GLOW, light)
         image = self.sprite.image(p.facing, visual.scale_x, visual.scale_y)
-        canvas.blit(image, image.get_rect(midbottom=(round(feet[0]), round(feet[1]))))
+        self.frame.sprite(*self._at(image, feet))
 
     def _draw_colliders(self, canvas: pygame.Surface, ox: int, oy: int) -> None:
         p, body = self.motor, self.body

@@ -110,7 +110,11 @@ and the player mirrored as a kinematic body.
 
 ## Rendering (planned, M3)
 
-Gameplay emits a backend-agnostic `RenderFrame` (draw commands per layer, lights).
+Gameplay emits a backend-agnostic `RenderFrame` (`engine.render.frame`): sprites sorted into
+layers (`WORLD`, `ACTORS`, `FOREGROUND`, `OVERLAY`), lights, and effect flags, all in screen px.
+`SoftwareBackend` draws it today for entities, the player and lights; lights shine on everything
+below `ACTORS`. Backdrops, chunk layers, particles and the flash still draw straight to the canvas
+and move into the frame as the GL backend needs them.
 
 - GL backend (desktop, moderngl): albedo + normal + emissive buffers, deferred 2D lighting with
   normal maps and SDF soft shadows, bloom, LUT color grading, HD-2D depth of field, vignette,
