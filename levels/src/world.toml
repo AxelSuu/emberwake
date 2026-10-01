@@ -9,3 +9,15 @@ cell = [4, 2]
 
 [rooms.Lever_Hall]
 cell = [5, 2]
+
+[rooms.Shaft]
+cell = [6, 1]
+
+[rooms.Plate_Room]
+cell = [7, 1]
+
+[rooms.Upper_Room]
+cell = [8, 0]
+
+[rooms.Return_Hall]
+cell = [4, 0]

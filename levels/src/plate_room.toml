@@ -1,0 +1,6 @@
+[entities.p]
+type = "PressurePlate"
+fields = { Targets = ["b"] }
+
+[entities.b]
+type = "Door"
