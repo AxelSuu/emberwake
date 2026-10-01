@@ -58,5 +58,5 @@ one has no prefab or its fields do not fit.
 | Door | Solid while closed; opens while its sources are on (Mode any/all, Invert) |
 | Lever | Interact to switch its targets (Mode toggle/momentary/once) |
 | PressurePlate | On while something stands on it |
-| Beacon | Relight to save and set the continue point |
+| Beacon | Interact to relight: saves, refills the dash and becomes the continue point |
 | Ember | Collectible |

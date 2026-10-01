@@ -13,7 +13,8 @@ just test          # headless test suite
 just web           # browser build into build/web
 ```
 
-`just` lists every task. `just run --room Test_Room` skips the menus.
+`just` lists every task. `just run` continues save slot 1 (`--slot 2`, `--new` to start over);
+`just run --room Test_Room` jumps straight into a room without loading or saving.
 
 ## Controls
 
