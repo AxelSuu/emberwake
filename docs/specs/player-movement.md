@@ -62,7 +62,7 @@ emits `Died`. The scene respawns the player at the room's `PlayerStart`.
 
 ## Tuning parameters
 
-Defaults live in `content/player.toml`; F5 reloads them in `--dev`. Values are Celeste's, doubled
+Defaults live in `content/feel.toml` (`[player]`); F5 reloads them in `--dev`. Values are Celeste's, doubled
 for our 16 px tiles.
 
 | Name | Default | Unit | Notes |
