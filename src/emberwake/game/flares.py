@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 FLARE_SIZE = 6
 FLARE_RADIUS = 80.0
 FLARE_LIFE = 8.0
+FLARE_COLOR = "#f57d4a"
 FADE = 1.5
 """Seconds over which a dying flare's light fades."""
 COOLDOWN = 0.6
@@ -59,7 +60,7 @@ def throw_flare(world: World, kit: FlareKit, x: float, y: float, facing: int) ->
     half = FLARE_SIZE / 2
     eid = world.spawn(
         Body(x - half, y - half, FLARE_SIZE, FLARE_SIZE),
-        LightSource(radius=FLARE_RADIUS),
+        LightSource(radius=FLARE_RADIUS, color=FLARE_COLOR),
         Flare(handle=handle),
     )
     world.flush()

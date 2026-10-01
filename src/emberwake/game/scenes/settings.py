@@ -116,6 +116,7 @@ class SettingsScene(Scene):
             Toggle(t("settings.fullscreen"), video.fullscreen, self._set_fullscreen),
             toggle("settings.vsync", video, "vsync"),
             slider("settings.shake", video, "screen_shake"),
+            slider("settings.brightness", video, "brightness"),
             toggle("settings.bloom", video, "bloom"),
             toggle("settings.grading", video, "grading"),
             toggle("settings.vignette", video, "vignette"),

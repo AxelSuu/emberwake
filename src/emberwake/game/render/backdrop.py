@@ -56,11 +56,20 @@ class GradeSpec:
     saturation: float = 1.0
 
 
+DARK = (78, 68, 102)
+"""Ambient light of a room without a preset."""
+DARK_LIT = (168, 150, 160)
+
+
 @dataclass(slots=True)
 class BackdropSpec:
     sky: tuple[str, str] = (palette.INK, palette.PLUM)
     grade: GradeSpec = field(default_factory=GradeSpec)
     layers: list[LayerSpec] = field(default_factory=list)
+    ambient: tuple[int, int, int] = DARK
+    """How lit the room is where no light reaches (RGB, 255 is full light)."""
+    ambient_lit: tuple[int, int, int] = DARK_LIT
+    """The same once a beacon in the room burns."""
 
 
 def load_backdrops(path: Path) -> dict[str, BackdropSpec]:
@@ -154,6 +163,18 @@ class Backdrops:
             grade = Grade(grade.multiply, (r, g, b), grade.saturation)
         return grade
 
+    def ambient(self) -> tuple[int, int, int]:
+        """The darkness now: the room's, cross-faded from the previous room's, lit by warmth."""
+        now = self._ambient_of(self.current)
+        if self.fade > 0:
+            now = _mix(now, self._ambient_of(self.previous), self.fade / FADE)
+        return now
+
+    def _ambient_of(self, name: str | None) -> tuple[int, int, int]:
+        spec = self.specs.get(name) if name is not None else None
+        dark, lit = (spec.ambient, spec.ambient_lit) if spec is not None else (DARK, DARK_LIT)
+        return _mix(dark, lit, self.warmth)
+
     def _grade_of(self, name: str | None) -> Grade:
         spec = self.specs.get(name) if name is not None else None
         if spec is None:
@@ -164,6 +185,11 @@ class Backdrops:
         current = self.get(self.current)
         if current is not None:
             current.draw_near(canvas, offset, room_top)
+
+
+def _mix(a: tuple[int, int, int], b: tuple[int, int, int], t: float) -> tuple[int, int, int]:
+    r, g, bl = (round(x + (y - x) * t) for x, y in zip(a, b, strict=True))
+    return r, g, bl
 
 
 def _gradient(size: tuple[int, int], top: pygame.Color, bottom: pygame.Color) -> pygame.Surface:

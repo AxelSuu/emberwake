@@ -23,3 +23,18 @@ EMBER_CORE = "#fbff86"
 EMBER_HOT = "#f9c22b"
 EMBER_WARM = "#fb6b1d"
 EMBER_COOL = "#b33831"
+
+EMISSIVE: tuple[str, ...] = (
+    "#fbff86",
+    "#f9c22b",
+    "#fbb954",
+    "#f79617",
+    "#fb6b1d",
+    "#8ff8e2",
+    "#30e1b9",
+)
+"""Colors that give off light: flame from core to warm, and the mint of eyes and lightforms.
+
+Pixels in these colors are drawn again after the lighting, so they glow in the dark. Keep them
+for things that shine (art bible: warm means light).
+"""

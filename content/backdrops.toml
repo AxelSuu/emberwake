@@ -3,10 +3,13 @@
 # darkened), `grade` the room's colour grade (colors scaled by `multiply`/255, then `add` added,
 # after setting saturation), `top` the screen y of the layer at the top of the room, `blur` a one-off blur
 # radius for depth, `width` and `gap` ranges for skyline and pillar shapes. Colours come from the
-# Resurrect 64 palette.
+# Resurrect 64 palette. `ambient` is how lit the room is where no light reaches (RGB, 255 is full
+# light) and `ambient_lit` the same once a beacon in it burns.
 
 [cavern]
 sky = ["#2e222f", "#45293f"]
+ambient = [78, 68, 102]
+ambient_lit = [168, 150, 160]
 grade = { multiply = [235, 238, 255], add = [0, 0, 4], saturation = 0.9 }
 layers = [
   { kind = "mist", factor = 0.08, color = "#694f62", top = 90, height = 280, blur = 6 },
@@ -17,6 +20,8 @@ layers = [
 
 [ruins]
 sky = ["#323353", "#6b3e75"]
+ambient = [88, 78, 118]
+ambient_lit = [180, 160, 166]
 grade = { multiply = [255, 240, 245], add = [4, 0, 0], saturation = 1.0 }
 layers = [
   { kind = "skyline", factor = 0.1, color = "#484a77", top = 150, height = 220, blur = 4 },

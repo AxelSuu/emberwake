@@ -50,7 +50,7 @@ Lightform = {}
 [brazier]
 [brazier.components]
 Sprite = { image = "brazier" }
-LightSource = { radius = 72.0 }
+LightSource = { radius = 72.0, color = "#fb6b1d" }
 
 [clockrat]
 [clockrat.components]

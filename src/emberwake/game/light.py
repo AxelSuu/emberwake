@@ -56,6 +56,8 @@ class LightSource:
 
     radius: float = 64.0
     strength: float = 1.0
+    color: str = ""
+    """Hex color of the light; empty is the lantern's warm amber."""
 
 
 @component

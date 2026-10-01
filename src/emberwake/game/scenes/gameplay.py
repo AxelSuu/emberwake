@@ -56,6 +56,7 @@ from emberwake.game.progress import Progress
 from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdrops
 from emberwake.game.render.bank import SpriteBank
 from emberwake.game.render.fx import Flash
+from emberwake.game.render.glow import Glows
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
 from emberwake.game.render.swing_fx import arm, lantern_point, trail
 from emberwake.game.render.toast import Toasts
@@ -100,7 +101,11 @@ COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
 """Seconds per frame spent baking room art in the background."""
-GLOW_RADIUS = 64
+GLOW_RADIUS = 72
+FLICKER_PHASE = 1.37
+"""Seconds of flicker between entities with consecutive ids, so lights do not pulse together."""
+BRIGHTNESS_LIFT = 0.6
+"""How far the brightness setting at full lifts the darkness toward full light."""
 HIT_FLASH = 0.12
 """Seconds an enemy shows white after a hit."""
 SHOULDER = 7
@@ -141,14 +146,7 @@ class GameplayScene(Scene):
         self.visual = PlayerVisual()
         self.cosmetics = self._read_cosmetics()
         self.dialogues = self._read_dialogues()
-        self.sprite = PlayerSprite()
-        self.glow = GLOW
-        self.flicker = Flicker()
-        self.frame = RenderFrame(flags=self._effects())
-        self.post = PostChain(ctx.canvas_size)
-        self.backend = SoftwareBackend()
-        self.art = EntityArt()
-        self.bank = SpriteBank(paths.sprites())
+        self._init_render()
         self.particles = ParticleSystem()
         self.cutscenes = CutscenePlayer()
         self.toasts = Toasts()
@@ -175,6 +173,18 @@ class GameplayScene(Scene):
         self.camera.snap(*self._camera_target())
         if self.trial is not None:
             self._begin_attempt()
+
+    def _init_render(self) -> None:
+        self.sprite = PlayerSprite()
+        self.glow = GLOW
+        self.flicker = Flicker()
+        self.frame = RenderFrame(flags=self._effects())
+        self.post = PostChain(self.ctx.canvas_size)
+        self.backend = SoftwareBackend()
+        self.art = EntityArt()
+        self.bank = SpriteBank(paths.sprites())
+        self.glows = Glows()
+        self._colors: dict[str, tuple[int, int, int]] = {}
 
     def _open_progress(self, room: str | None, replay: Replay | None) -> str:
         """Load the slot unless a room or replay was asked for; return the starting room."""
@@ -501,6 +511,7 @@ class GameplayScene(Scene):
         if emitters is not None:
             self.emitters = emitters
         self.bank.reload()
+        self.glows.clear()
         backdrops = self._read_backdrops()
         if backdrops is not None:
             self.backdrops = Backdrops(backdrops, self.ctx.canvas_size)
@@ -782,10 +793,11 @@ class GameplayScene(Scene):
             return self.grid.get(column, row) == Tile.SOLID
 
         frame.occluded = occluded
-        light = self.flicker(self.clock)
-        self._queue_world(light, ox, oy)
+        frame.ambient = self._ambient()
+        frame.occluder_version = self.grid.version
+        self._queue_world(ox, oy)
         if self.respawn_in == 0:
-            self._queue_player(light, ox, oy, alpha)
+            self._queue_player(self._flicker(self.player), ox, oy, alpha)
         self.backend.render(frame, canvas)
         self.particles.draw(canvas, (ox, oy))
         self.texts.draw(canvas, (ox, oy))
@@ -801,33 +813,70 @@ class GameplayScene(Scene):
             self._draw_rooms(canvas, ox, oy)
             self._draw_wires(canvas, ox, oy)
 
-    def _queue_world(self, light: float, ox: int, oy: int) -> None:
-        """Lights, shafts and entity sprites into the frame."""
+    def _queue_world(self, ox: int, oy: int) -> None:
+        """Lights, shafts and entity sprites into the frame; each light flickers on its own."""
         frame = self.frame
-        for _, body, beacon in self.world.query(Body, Beacon):
+        for eid, body, beacon in self.world.query(Body, Beacon):
             if beacon.lit:
+                light = self._flicker(eid)
                 bx, by = body.center_x - ox, body.y + 3 - oy
-                frame.light(bx, by, GLOW_RADIUS, GLOW, light)
+                radius = round(self.feel.light.beacon_radius)
+                frame.light(bx, by, radius, GLOW, light, key=self._still(eid, body))
                 for index, spread in enumerate(SHAFT_ANGLES):
                     sway = math.sin(self.clock * 0.7 + index * 2.1) * 6
                     frame.shaft(ShaftCmd(bx, by, 270 + spread + sway, 90, 36, GLOW, light * 0.8))
         for eid, body, source in self.world.query(Body, LightSource):
             fx, fy = body.center_x - ox, body.y + body.height / 2 - oy
-            frame.light(fx, fy, round(source.radius), GLOW, light * source.strength)
+            color = self._light_color(source.color)
+            strength = self._flicker(eid) * source.strength
+            key = None if self.world.has(eid, Flare) else self._still(eid, body)
+            frame.light(fx, fy, round(source.radius), color, strength, key=key)
             if self.world.has(eid, Flare):
                 image = self.art.image("flare", (round(body.width), round(body.height)))
-                frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
+                self._queue_lit(image, round(body.x) - ox, round(body.y) - oy)
         for eid, body, sprite in self.world.query(Body, Sprite):
             size = (round(body.width), round(body.height))
             image = self.bank.image(sprite.current, self.clock)
             image = image or self.art.image(sprite.current, size)
+            _, x, y = self._at(image, (body.center_x - ox, body.bottom - oy))
             if eid in self.flashes:
-                image = flashed(image, self.flashes[eid] / HIT_FLASH)
-            frame.sprite(*self._at(image, (body.center_x - ox, body.bottom - oy)))
+                frame.sprite(flashed(image, self.flashes[eid] / HIT_FLASH), x, y)
+            else:
+                self._queue_lit(image, x, y)
         for _, body, interactable in self.world.query(Body, Interactable):
             if interactable.in_range:
                 above = (round(body.center_x) - ox, round(body.y) - oy - 3)
                 frame.sprite(*self._at(self.art.prompt, above), layer=Layer.OVERLAY)
+
+    def _queue_lit(
+        self, image: pygame.Surface, x: int, y: int, layer: Layer = Layer.ACTORS
+    ) -> None:
+        """Queue `image`, and its emissive pixels again on the glow layer."""
+        self.frame.sprite(image, x, y, layer)
+        if (glow := self.glows(image)) is not None:
+            self.frame.sprite(glow, x, y, Layer.GLOW)
+
+    @staticmethod
+    def _still(eid: int, body: Body) -> tuple[int, int, int]:
+        """A key for the shadows of a light that stays where it is."""
+        return eid, round(body.x), round(body.y)
+
+    def _flicker(self, eid: int) -> float:
+        return self.flicker(self.clock + eid * FLICKER_PHASE)
+
+    def _light_color(self, hex_color: str) -> tuple[int, int, int]:
+        if not hex_color:
+            return GLOW
+        if hex_color not in self._colors:
+            color = pygame.Color(hex_color)
+            self._colors[hex_color] = (color.r, color.g, color.b)
+        return self._colors[hex_color]
+
+    def _ambient(self) -> tuple[int, int, int]:
+        """The room's darkness, lifted toward full light by the brightness setting."""
+        lift = self.ctx.settings.video.brightness * BRIGHTNESS_LIFT
+        r, g, b = (round(c + (255 - c) * lift) for c in self.backdrops.ambient())
+        return r, g, b
 
     def _draw_trial_timer(self, canvas: pygame.Surface) -> None:
         if self.trial is None:
@@ -875,15 +924,15 @@ class GameplayScene(Scene):
             shoulder = (feet[0], y + SHOULDER - oy)
             lantern = lantern_point(swing, self.feel.swing, shoulder, lantern)
             if (arc := trail(swing, self.feel.swing)) is not None:
-                self.frame.sprite(*self._centred(arc, shoulder), layer=Layer.FOREGROUND)
+                self.frame.sprite(*self._centred(arc, shoulder), layer=Layer.GLOW)
         self.frame.light(*lantern, GLOW_RADIUS, self.glow, light)
         image = self.sprite.image(p.facing, visual.scale_x, visual.scale_y, bare=swinging)
-        self.frame.sprite(*self._at(image, feet))
+        self._queue_lit(*self._at(image, feet))
         if swing is not None and swinging:
             shoulder = (round(feet[0]), round(y + SHOULDER - oy))
             image, (left, top) = arm(lantern[0] - shoulder[0], lantern[1] - shoulder[1])
             self.frame.sprite(image, shoulder[0] + left, shoulder[1] + top)
-            self.frame.sprite(*self._centred(self.sprite.lantern, lantern))
+            self._queue_lit(*self._centred(self.sprite.lantern, lantern))
         self._queue_ghost(ox, oy)
 
     def _queue_ghost(self, ox: int, oy: int) -> None:
