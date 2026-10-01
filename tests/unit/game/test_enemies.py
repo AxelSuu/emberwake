@@ -212,3 +212,18 @@ def test_dead_enemies_are_removed() -> None:
     yard.world.get(rat, Health).dead = True
     yard.tick()
     assert not [e for e, _ in yard.world.query(Brain)]
+
+
+def test_sprites_show_their_brain_state_and_how_long() -> None:
+    from emberwake.game.components import Sprite  # noqa: PLC0415
+    from emberwake.game.render.sprites import sprite_system  # noqa: PLC0415
+
+    yard = Yard()
+    rat = yard.enemy("clockrat", 64)
+    yard.world.add(rat, Sprite("clockrat"))
+    yard.tick()
+    sprite_system(yard.world, STEP)
+    sprite_system(yard.world, STEP)
+    sprite = yard.world.get(rat, Sprite)
+    assert sprite.state == "patrol"
+    assert sprite.since == STEP

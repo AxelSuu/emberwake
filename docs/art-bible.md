@@ -53,6 +53,15 @@ Each sprite may ship up to three aligned images, packed together by the atlas pa
 | Dash | 3 | Afterimages in code |
 | Attack | 5 | Hitbox active frames tagged |
 
+Finished sheets are found by name: the player as `player_<state>` (`idle`, `run`, `jump`,
+`fall`, `wall`, `dash`, `swing_forward`, `swing_up`, `swing_down`, `kindle`, `death`; drawn
+facing right), any other entity as `<image>_<state>` while it is in that state (an enemy's brain
+state: `clockrat_charge`), else `<image>` looping. Clips restart when the state changes.
+
+Secondary motion is code and works on any sprite: a verlet scarf from the neck, the lantern on a
+pendulum from the hand (its light sways with it), breathing when idle, a bob on each stride,
+dust on landings, footsteps and wall slides, and fading afterimages behind a dash.
+
 Bosses and large creatures use the skeletal rig (parts rotated through a RotSprite angle cache
 so pixels stay crisp). Secondary motion (scarf, cape, chains) is procedural verlet.
 

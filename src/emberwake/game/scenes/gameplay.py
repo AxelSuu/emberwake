@@ -46,6 +46,7 @@ from emberwake.game.cosmetics import Cosmetics, load_cosmetics
 from emberwake.game.data.records import RunResult, format_time, load_records
 from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
+from emberwake.game.enemies import Brain
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.interact import Collected, Interactable, Switch
@@ -61,7 +62,7 @@ from emberwake.game.render.fx import Flash
 from emberwake.game.render.glow import Glows
 from emberwake.game.render.hud import Hud, HudState
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
-from emberwake.game.render.swing_fx import arm, lantern_point, trail
+from emberwake.game.render.player_view import Light, PlayerView
 from emberwake.game.render.toast import Toasts
 from emberwake.game.scenes.dev import FlagsScene, WarpScene
 from emberwake.game.scenes.dialogue import DialogueScene
@@ -109,10 +110,12 @@ FLICKER_PHASE = 1.37
 """Seconds of flicker between entities with consecutive ids, so lights do not pulse together."""
 BRIGHTNESS_LIFT = 0.6
 """How far the brightness setting at full lifts the darkness toward full light."""
+WALKING = frozenset({"patrol", "charge", "creep", "flee"})
+"""Brain states in which a placeholder enemy bobs as it walks."""
+LANDING_DUST = 0.35
+"""Share of the fall speed above which a landing kicks up dust."""
 HIT_FLASH = 0.12
 """Seconds an enemy shows white after a hit."""
-SHOULDER = 7
-"""Px below the top of the player's body that the lantern swings around."""
 SHAFT_ANGLES = (-22, 0, 22)
 """Degrees either side of straight up for a lit beacon's light shafts."""
 _ember = pygame.Color(palette.EMBER_WARM).lerp(palette.EMBER_HOT, 0.4)
@@ -199,6 +202,7 @@ class GameplayScene(Scene):
         self.art = EntityArt()
         self.bank = SpriteBank(paths.sprites())
         self.glows = Glows()
+        self.view = PlayerView(self.sprite, self.bank, self.glows)
         self._colors: dict[str, tuple[int, int, int]] = {}
 
     def _open_progress(self, room: str | None, replay: Replay | None) -> str:
@@ -347,6 +351,7 @@ class GameplayScene(Scene):
         skin = self.cosmetics.skin(settings.cosmetics.skin)
         flame = self.cosmetics.lantern(settings.cosmetics.lantern, palette.EMBER_HOT)
         self.sprite = PlayerSprite({k: v for k, v in dataclasses.asdict(skin).items() if v}, flame)
+        self.view.sprite = self.sprite
         color = pygame.Color(flame)
         self.glow = (color.r, color.g, color.b)
         self.time.speed = min(max(settings.assist.game_speed, 0.25), 1.0)
@@ -607,6 +612,7 @@ class GameplayScene(Scene):
             body.x, body.y = x - body.width / 2, y - body.height
             motor.vx = motor.vy = 0.0
             motor.previous = (body.x, body.y)
+            self.view.place(body, motor)
         self.camera.snap(*self._camera_target())
 
     def _enter_room(self, room: str, feet: tuple[float, float]) -> None:
@@ -675,6 +681,8 @@ class GameplayScene(Scene):
             self.trial_time += dt
         if self.ghost is not None:
             self.ghost.update(self.grid, dt)
+        if not self.motor.dead:
+            self._animate(dt)
         if self.motor.grounded and not self.motor.dead:
             self.safe = (self.body.center_x, self.body.bottom)
         if not self.free_camera:
@@ -697,6 +705,8 @@ class GameplayScene(Scene):
         impact = min(event.speed / max_fall, 1.0)
         self.ctx.audio.sfx("player/land", impact)
         self.visual.squash(juice.squash * impact)
+        if impact > LANDING_DUST:
+            self._dust("land_dust", event.x, event.y)
         if impact >= juice.hard_landing:
             self.camera.shake.add(juice.hard_landing_trauma)
 
@@ -735,6 +745,23 @@ class GameplayScene(Scene):
         self.to_beacon = True
         self._drop_cinder()
 
+    def _animate(self, dt: float) -> None:
+        """Secondary motion and the dust and footsteps it calls for."""
+        body, motor = self.body, self.motor
+        for event in self.visual.animate(motor, dt):
+            if event == "step":
+                self.ctx.audio.sfx("player/step", 0.5)
+                self._dust("step_dust", body.center_x, body.bottom)
+            else:
+                side = 1 if motor.facing > 0 else -1
+                self._dust("slide_dust", body.center_x + side * body.width / 2, body.y + 6)
+        swing, kindle = self.world.find(self.player, Swing), self.world.find(self.player, Kindle)
+        self.view.update(body, motor, swing, kindle, dt)
+
+    def _dust(self, emitter: str, x: float, y: float) -> None:
+        if (spec := self.emitters.get(emitter)) is not None:
+            self.particles.burst(spec, x, y)
+
     def _respawn(self) -> None:
         """Bring the player back: at the room's entrance after a hazard, else at the beacon."""
         if self.to_beacon:
@@ -749,6 +776,7 @@ class GameplayScene(Scene):
         if self.kept is not None:
             self.world.get(self.player, Health).current = self.kept[0]
             self.world.get(self.player, Ember).current = self.kept[1]
+        self.view.place(self.body, self.motor)
         if self.to_beacon:
             self.camera.snap(*self._camera_target())
         if self.trial is not None:
@@ -947,9 +975,10 @@ class GameplayScene(Scene):
                 self._queue_lit(image, round(body.x) - ox, round(body.y) - oy)
         for eid, body, sprite in self.world.query(Body, Sprite):
             size = (round(body.width), round(body.height))
-            image = self.bank.image(sprite.current, self.clock)
+            image = self._finished(sprite)
+            lift = 0 if image is not None else self._bob(eid)
             image = image or self.art.image(sprite.current, size)
-            _, x, y = self._at(image, (body.center_x - ox, body.bottom - oy))
+            _, x, y = self._at(image, (body.center_x - ox, body.bottom - oy - lift))
             if eid in self.flashes:
                 frame.sprite(flashed(image, self.flashes[eid] / HIT_FLASH), x, y)
             else:
@@ -958,6 +987,24 @@ class GameplayScene(Scene):
             if interactable.in_range:
                 above = (round(body.center_x) - ox, round(body.y) - oy - 3)
                 frame.sprite(*self._at(self.art.prompt, above), layer=Layer.OVERLAY)
+
+    def _finished(self, sprite: Sprite) -> pygame.Surface | None:
+        """The finished art for `sprite` now: its state's clip, else its looping sheet."""
+        if sprite.state:
+            clip = self.bank.image(f"{sprite.current}_{sprite.state}", sprite.since)
+            if clip is not None:
+                return clip
+        return self.bank.image(sprite.current, self.clock)
+
+    def _bob(self, eid: EntityId) -> int:
+        """A little life for placeholder enemies: walkers bob, fliers float."""
+        brain = self.world.find(eid, Brain)
+        if brain is None:
+            return 0
+        phase = self.clock + eid * FLICKER_PHASE
+        if brain.kind == "wisp_eater":
+            return round(math.sin(phase * 3.0) * 2)
+        return round(abs(math.sin(phase * 14.0))) if brain.state in WALKING else 0
 
     def _queue_lit(
         self, image: pygame.Surface, x: int, y: int, layer: Layer = Layer.ACTORS
@@ -1031,28 +1078,19 @@ class GameplayScene(Scene):
         return image, rect.x, rect.y
 
     def _queue_player(self, light: float, ox: int, oy: int, alpha: float) -> None:
-        p, body, visual = self.motor, self.body, self.visual
-        px, py = p.previous
-        x = px + (body.x - px) * alpha
-        y = py + (body.y - py) * alpha
-        feet = (x + body.width / 2 - ox, y + body.height - oy)
-        lx, ly = self.sprite.lantern_offset(p.facing, visual.scale_x, visual.scale_y)
-        lantern = (feet[0] + lx, feet[1] + ly)
         swing = self.world.find(self.player, Swing)
-        swinging = swing is not None and swing.tick > 0
-        if swing is not None and swinging:
-            shoulder = (feet[0], y + SHOULDER - oy)
-            lantern = lantern_point(swing, self.feel.swing, shoulder, lantern)
-            if (arc := trail(swing, self.feel.swing)) is not None:
-                self.frame.sprite(*self._centred(arc, shoulder), layer=Layer.GLOW)
-        self.frame.light(*lantern, self._lantern_radius(), self.glow, light)
-        image = self.sprite.image(p.facing, visual.scale_x, visual.scale_y, bare=swinging)
-        self._queue_lit(*self._at(image, feet))
-        if swing is not None and swinging:
-            shoulder = (round(feet[0]), round(y + SHOULDER - oy))
-            image, (left, top) = arm(lantern[0] - shoulder[0], lantern[1] - shoulder[1])
-            self.frame.sprite(image, shoulder[0] + left, shoulder[1] + top)
-            self._queue_lit(*self._centred(self.sprite.lantern, lantern))
+        lantern = Light(self._lantern_radius(), self.glow, light)
+        self.view.queue(
+            self.frame,
+            self.body,
+            self.motor,
+            self.visual,
+            swing,
+            self.feel.swing,
+            offset=(ox, oy),
+            alpha=alpha,
+            light=lantern,
+        )
         self._queue_ghost(ox, oy)
 
     def _lantern_radius(self) -> int:

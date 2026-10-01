@@ -25,3 +25,33 @@ life = [0.4, 0.9]
 gravity = -60
 size = 1
 colors = ["#fbff86", "#f9c22b", "#fb6b1d"]
+
+[land_dust]
+count = 8
+speed = [20, 70]
+angle = [180, 360]
+life = [0.2, 0.45]
+gravity = 120
+drag = 3.0
+size = 1
+colors = ["#9babb2", "#7f708a", "#625565"]
+
+[step_dust]
+count = 2
+speed = [10, 30]
+angle = [200, 340]
+life = [0.15, 0.3]
+gravity = 60
+drag = 4.0
+size = 1
+colors = ["#7f708a", "#625565"]
+
+[slide_dust]
+count = 2
+speed = [5, 20]
+angle = [250, 290]
+life = [0.2, 0.35]
+gravity = -40
+drag = 3.0
+size = 1
+colors = ["#9babb2", "#625565"]
