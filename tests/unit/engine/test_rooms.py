@@ -76,6 +76,18 @@ def test_world_grid_set_changes_the_owning_room():
     assert not grid.set(1, 1, Tile.SOLID)
 
 
+def test_world_grid_counts_changes_to_its_tiles():
+    grid = WorldGrid()
+    b = room("B")
+    grid.add(b)
+    added = grid.version
+    grid.set(21, 1, Tile.SOLID)
+    grid.set(21, 1, Tile.SOLID)
+    assert grid.version == added + 1
+    grid.remove(b)
+    assert grid.version == added + 2
+
+
 def test_world_grid_rejects_misaligned_rooms():
     level = GRAPH.levels["A"]
     shifted = Level(level.identifier, level.iid, 8, 0, level.width, level.height)
