@@ -1,0 +1,26 @@
+name: Cross-platform
+
+# Weekly instead of per push: Windows and macOS minutes are expensive on private repos.
+on:
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+env:
+  SDL_VIDEODRIVER: dummy
+  SDL_AUDIODRIVER: dummy
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - run: uv run pytest

@@ -1,0 +1,23 @@
+name: Feature
+description: A slice of a mechanic or system
+labels: ["type:feature"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What the player or developer gets, in one or two sentences.
+    validations:
+      required: true
+  - type: input
+    id: spec
+    attributes:
+      label: Spec
+      description: Path to the spec in docs/specs/, if any.
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria
+      value: "- [ ] "
+    validations:
+      required: true
