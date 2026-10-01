@@ -8,6 +8,7 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from emberwake.engine.core.mathx import approach, sign
+from emberwake.engine.ecs import component
 from emberwake.engine.physics import Body, Tile, move, overlaps
 from emberwake.game.actions import Action
 
@@ -59,9 +60,11 @@ class Died:
 type PlayerEvent = Jumped | Landed | Dashed | Died
 
 
+@component
 @dataclass(slots=True)
-class Player:
-    body: Body
+class Motor:
+    """Controller state of the player; its position and size are its `Body`."""
+
     vx: float = 0.0
     vy: float = 0.0
     facing: int = 1
@@ -81,18 +84,23 @@ class Player:
     previous: tuple[float, float] = field(default=(0.0, 0.0))
     """Body position at the start of the last tick, for render interpolation."""
 
-    @classmethod
-    def spawn(cls, foot_x: float, foot_y: float, tuning: PlayerTuning) -> Player:
-        """A player standing with the middle of its feet at (`foot_x`, `foot_y`)."""
-        body = Body(foot_x - tuning.width / 2, foot_y - tuning.height, tuning.width, tuning.height)
-        return cls(body, dash_charges=tuning.dash_charges, previous=(body.x, body.y))
+
+def new_player(foot_x: float, foot_y: float, tuning: PlayerTuning) -> tuple[Body, Motor]:
+    """A player standing with the middle of its feet at (`foot_x`, `foot_y`)."""
+    body = Body(foot_x - tuning.width / 2, foot_y - tuning.height, tuning.width, tuning.height)
+    return body, Motor(dash_charges=tuning.dash_charges, previous=(body.x, body.y))
 
 
-def step(
-    player: Player, actions: InputState[Action], grid: TileGrid, tuning: PlayerTuning, dt: float
+def step(  # noqa: PLR0917
+    body: Body,
+    motor: Motor,
+    actions: InputState[Action],
+    grid: TileGrid,
+    tuning: PlayerTuning,
+    dt: float,
 ) -> list[PlayerEvent]:
-    """Advance `player` by one tick and return what happened."""
-    return _Tick(player, actions, grid, tuning, dt).run()
+    """Advance the player by one tick and return what happened."""
+    return _Tick(body, motor, actions, grid, tuning, dt).run()
 
 
 def wall_side(grid: TileGrid, body: Body, reach: float) -> int:
@@ -107,15 +115,17 @@ def wall_side(grid: TileGrid, body: Body, reach: float) -> int:
 class _Tick:
     """The working state of one `step` call."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0917
         self,
-        player: Player,
+        body: Body,
+        motor: Motor,
         actions: InputState[Action],
         grid: TileGrid,
         tuning: PlayerTuning,
         dt: float,
     ) -> None:
-        self.p = player
+        self.p = motor
+        self.body = body
         self.actions = actions
         self.grid = grid
         self.t = tuning
@@ -125,7 +135,7 @@ class _Tick:
         self.intent_y = actions.axis(Action.UP, Action.DOWN)
 
     def run(self) -> list[PlayerEvent]:
-        p, body = self.p, self.p.body
+        p, body = self.p, self.body
         p.previous = (body.x, body.y)
         if p.wall_lock > 0:
             p.wall_lock -= 1
@@ -170,7 +180,7 @@ class _Tick:
         p.dash_charges -= 1
         p.dash_ticks = t.dash_ticks
         p.var_jump = p.wall_lock = 0
-        self.events.append(Dashed(p.body.center_x, p.body.bottom, *p.dash_dir))
+        self.events.append(Dashed(self.body.center_x, self.body.bottom, *p.dash_dir))
 
     def dash(self) -> None:
         p, t = self.p, self.t
@@ -196,7 +206,7 @@ class _Tick:
             not p.grounded
             and p.vy >= 0
             and self.intent_x != 0
-            and wall_side(self.grid, p.body, 1) == self.intent_x
+            and wall_side(self.grid, self.body, 1) == self.intent_x
         )
         max_fall = t.wall_slide_max if sliding else t.max_fall
         apex = abs(p.vy) < t.apex_threshold and self.actions.down(Action.JUMP)
@@ -213,7 +223,7 @@ class _Tick:
         return sliding
 
     def try_jump(self) -> None:
-        p, t, body = self.p, self.t, self.p.body
+        p, t, body = self.p, self.t, self.body
         if not self.actions.pressed_within(Action.JUMP, t.jump_buffer):
             return
         if p.grounded and p.on_one_way and self.intent_y > 0:
@@ -241,7 +251,7 @@ class _Tick:
 
     def correct_corner(self) -> None:
         """Slide around ceiling corners clipped by at most `corner_correction` px."""
-        p, grid, body = self.p, self.grid, self.p.body
+        p, grid, body = self.p, self.grid, self.body
         next_y = body.y + p.vy * self.dt
         if not overlaps(grid, body.x, next_y, body.width, body.height):
             return
@@ -255,7 +265,7 @@ class _Tick:
                     return
 
     def move(self) -> None:
-        p, body = self.p, self.p.body
+        p, body = self.p, self.body
         dropping = p.drop_ticks > 0
         impact = p.vy
         contacts = move(self.grid, body, p.vx * self.dt, p.vy * self.dt, drop_through=dropping)
@@ -285,7 +295,7 @@ class _Tick:
                 self.events.append(Landed(body.center_x, body.bottom, impact))
 
     def check_death(self) -> None:
-        p, body, margin = self.p, self.p.body, self.t.hazard_margin
+        p, body, margin = self.p, self.body, self.t.hazard_margin
         inner = (
             body.x + margin,
             body.y + margin,

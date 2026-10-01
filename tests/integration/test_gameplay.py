@@ -37,9 +37,9 @@ def play(ctx: GameContext, replay: Replay, ticks: int) -> GameplayScene:
 def test_replays_are_deterministic(ctx: GameContext):
     a = play(ctx, RUN_AND_JUMP, RUN_AND_JUMP.ticks)
     b = play(ctx, RUN_AND_JUMP, RUN_AND_JUMP.ticks)
-    assert (a.player.body, a.player.vx, a.player.vy) == (b.player.body, b.player.vx, b.player.vy)
-    assert a.player.body.x > PIT_RIGHT_EDGE
-    assert not a.player.dead
+    assert (a.body, a.motor.vx, a.motor.vy) == (b.body, b.motor.vx, b.motor.vy)
+    assert a.body.x > PIT_RIGHT_EDGE
+    assert not a.motor.dead
 
 
 def test_recording_matches_the_input_it_was_given(ctx: GameContext):
@@ -55,9 +55,9 @@ def test_switches_to_live_input_when_replay_ends(ctx: GameContext):
 def test_dash_triggers_hitstop(ctx: GameContext):
     scene = play(ctx, Replay("Test_Room", 0, [(5, []), (1, ["dash"])]), 6)
     assert scene.hitstop == scene.feel.juice.dash_hitstop
-    body = scene.player.body.x
+    body = scene.body.x
     scene.update(STEP)
-    assert scene.player.body.x == body
+    assert scene.body.x == body
 
 
 def test_death_respawns_at_start(ctx: GameContext):
@@ -70,8 +70,8 @@ def test_death_respawns_at_start(ctx: GameContext):
     for _ in range(juice.death_hitstop + juice.respawn_delay + 2):
         scene.update(STEP)
     assert scene.respawn_in == 0
-    assert not scene.player.dead
-    assert scene.player.body.center_x == pytest.approx(scene.spawn_point[0])
+    assert not scene.motor.dead
+    assert scene.body.center_x == pytest.approx(scene.spawn_point[0])
 
 
 def test_unsubscribes_on_exit(ctx: GameContext):
@@ -97,10 +97,10 @@ def key(scene: GameplayScene, k: int) -> None:
 def test_dev_keys(ctx: GameContext):
     scene = play(ctx, RUN_AND_JUMP, 1)
     key(scene, pygame.K_p)
-    x = scene.player.body.x
+    x = scene.body.x
     for _ in range(5):
         scene.update(STEP)
-    assert scene.player.body.x == x
+    assert scene.body.x == x
     key(scene, pygame.K_PERIOD)
     scene.update(STEP)
     key(scene, pygame.K_F2)
