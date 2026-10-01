@@ -76,13 +76,18 @@ class Spawner:
         self._warned: set[str] = set()
 
     def resolve(self, iid: str) -> EntityId | None:
-        """The live entity with LDtk `iid`, or ``None`` if its room is not loaded."""
-        return self.ids.get(iid)
+        """The live entity with LDtk `iid`, or ``None`` if its room is not loaded or it died."""
+        eid = self.ids.get(iid)
+        return eid if eid is not None and self.world.reserved(eid) else None
 
     def spawn_room(self, room: Room) -> None:
-        """Queue a spawn for every entity of `room` that has a prefab and is not live yet."""
+        """Queue a spawn for every entity of `room` that has a prefab and is not live yet.
+
+        Calling it on a loaded room brings back what was despawned without being retired, such
+        as killed enemies (resting at a beacon does this).
+        """
         for entity in room.level.entities():
-            if entity.iid in self.ids or entity.iid in self.state.removed:
+            if self.resolve(entity.iid) is not None or entity.iid in self.state.removed:
                 continue
             name = prefab_name(entity.identifier)
             prefab = self.prefabs.get(name)
@@ -106,7 +111,7 @@ class Spawner:
             if identity.room == room.name and identity.iid not in self.state.removed:
                 self._save(eid, identity)
                 self.world.despawn(eid)
-                del self.ids[identity.iid]
+                self.ids.pop(identity.iid, None)
 
     def retire(self, eid: EntityId) -> None:
         """Take a spawned entity out of play for good: despawn it and never spawn it again."""

@@ -94,6 +94,12 @@ class World:
     def __len__(self) -> int:
         return len(self._alive)
 
+    def reserved(self, eid: EntityId) -> bool:
+        """Whether `eid` is alive or spawned and waiting for the next `flush`."""
+        return eid in self._alive or any(
+            op == "spawn" and pending == eid for op, pending, _ in self._pending
+        )
+
     def get[C](self, eid: EntityId, tp: type[C]) -> C:
         """The `tp` component of `eid`.
 

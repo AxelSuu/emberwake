@@ -217,3 +217,14 @@ def test_component_decorator_uses_the_shared_registry():
         pass
 
     assert ecs.COMPONENTS["EcsTestMarker"] is EcsTestMarker
+
+
+def test_reserved_counts_queued_spawns_but_not_the_despawned():
+    world = World()
+    eid = world.spawn()
+    assert eid not in world
+    assert world.reserved(eid)
+    world.flush()
+    world.despawn(eid)
+    world.flush()
+    assert not world.reserved(eid)
