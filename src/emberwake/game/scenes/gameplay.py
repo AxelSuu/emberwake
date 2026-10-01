@@ -23,6 +23,7 @@ from emberwake.engine.physics import Body, Tile, TileSource
 from emberwake.engine.platform.documents import save_document
 from emberwake.engine.render.camera import Camera
 from emberwake.engine.render.chunks import ChunkLayer
+from emberwake.engine.render.floating_text import FloatingTexts
 from emberwake.engine.render.frame import Flag, Layer, RenderFrame, ShaftCmd
 from emberwake.engine.render.particles import EmitterSpec, ParticleSystem, load_emitters
 from emberwake.engine.render.post import PostChain
@@ -37,7 +38,7 @@ from emberwake.game.beacons import Beacon, BeaconLit
 from emberwake.game.components import Sprite
 from emberwake.game.data.save import SaveSlot, load_slot
 from emberwake.game.feel import Feel, diff, load_feel
-from emberwake.game.interact import Interactable, Switch
+from emberwake.game.interact import Collected, Interactable, Switch
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
@@ -105,6 +106,8 @@ class GameplayScene(Scene):
         self.backend = SoftwareBackend()
         self.art = EntityArt()
         self.particles = ParticleSystem()
+        self.texts = FloatingTexts()
+        self.texts.muted = ctx.settings.accessibility.reduce_flashes
         self.emitters = self._read_emitters() or {}
         self.flash = Flash()
         self.flash.muted = ctx.settings.accessibility.reduce_flashes
@@ -188,6 +191,7 @@ class GameplayScene(Scene):
             bus.subscribe(Died, self._on_died),
             bus.subscribe(RoomEntered, self._on_room_entered),
             bus.subscribe(RunFinished, self._on_run_finished),
+            bus.subscribe(Collected, self._on_collected),
             bus.subscribe(BeaconLit, self._on_beacon_lit),
             *self.progress.subscribe(bus),
         ]
@@ -200,6 +204,7 @@ class GameplayScene(Scene):
         self.frame.flags = self._effects()
         self.camera.shake.intensity = settings.video.screen_shake
         self.flash.muted = settings.accessibility.reduce_flashes
+        self.texts.muted = settings.accessibility.reduce_flashes
 
     def on_exit(self) -> None:
         for unsubscribe in self._unsubscribe:
@@ -396,6 +401,7 @@ class GameplayScene(Scene):
         self.clock += dt
         self.progress.tick(dt)
         self.particles.update(dt)
+        self.texts.update(dt)
         self.flash.update(dt)
         self.backdrops.update(self._room_lit(), dt)
         juice = self.feel.juice
@@ -466,6 +472,10 @@ class GameplayScene(Scene):
     def _on_run_finished(self, event: RunFinished) -> None:
         self.manager.push(ResultsScene(self.ctx, event.result))
 
+    def _on_collected(self, event: Collected) -> None:
+        body, color = self.body, pygame.Color(palette.EMBER_HOT)
+        self.texts.spawn(f"+{event.value}", body.center_x, body.y - 4, (color.r, color.g, color.b))
+
     def _on_beacon_lit(self, event: BeaconLit) -> None:
         juice = self.feel.juice
         self.camera.shake.add(juice.beacon_trauma)
@@ -511,6 +521,7 @@ class GameplayScene(Scene):
             self._queue_player(light, ox, oy, alpha)
         self.backend.render(frame, canvas)
         self.particles.draw(canvas, (ox, oy))
+        self.texts.draw(canvas, (ox, oy))
         self.backdrops.draw_near(canvas, (ox, oy), room_top)
         self.post.apply(canvas, self.frame.flags, self.backdrops.grade())
         self.flash.draw(canvas)
