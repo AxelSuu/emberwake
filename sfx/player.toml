@@ -1,0 +1,27 @@
+[jump]
+wave = "square"
+duty = 0.4
+freq = 330.0
+slide = 1.6
+sustain = 0.05
+decay = 0.12
+lowpass = 0.6
+variants = 3
+
+[land]
+wave = "noise"
+freq = 180.0
+slide = -1.0
+sustain = 0.0
+decay = 0.08
+lowpass = 0.3
+variants = 3
+
+[dash]
+wave = "saw"
+freq = 500.0
+slide = -2.0
+sustain = 0.04
+decay = 0.12
+lowpass = 0.4
+variants = 2

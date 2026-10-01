@@ -47,6 +47,10 @@ normals:
 autotile *args:
     uv run python -m tools.autotile {{args}}
 
+# Generate sound effects from sfx/*.toml into assets/sfx/
+sfx:
+    uv run python -m tools.sfx
+
 # Recompile sprites whenever they change
 art-watch:
     uv run python -m tools.pxl watch
