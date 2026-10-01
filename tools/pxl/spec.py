@@ -21,6 +21,9 @@ ms = 120                   # optional duration, for animation sheets
 ```
 
 Without ``[[frames]]`` the sprite is one frame of every layer in order.
+
+``uses = "base"`` at the top merges in the shared palette ``palettes/base.toml``, found in the
+sprite's folder or the nearest folder above it; keys in the sprite's own ``[palette]`` win.
 """
 
 from __future__ import annotations
@@ -49,6 +52,7 @@ class FrameSpec:
 
 @dataclass(slots=True)
 class PxlFile:
+    uses: str = ""
     palette: dict[str, str] = field(default_factory=dict)
     layers: dict[str, str] = field(default_factory=dict)
     frames: list[FrameSpec] = field(default_factory=list)
@@ -73,10 +77,23 @@ def parse(path: Path) -> Sprite:
     """Read and check `path`. Raises `PxlError` naming the file and the problem."""
     try:
         raw = from_data(PxlFile, tomllib.loads(path.read_text(encoding="utf-8")))
+        if raw.uses:
+            raw.palette = {**shared_palette(path, raw.uses), **raw.palette}
         return check(raw)
     except (tomllib.TOMLDecodeError, SerdeError, PxlError) as error:
         msg = f"{path}: {error}"
         raise PxlError(msg) from error
+
+
+def shared_palette(path: Path, name: str) -> dict[str, str]:
+    """The ``[palette]`` of ``palettes/<name>.toml`` nearest above `path`."""
+    for folder in path.resolve().parents:
+        candidate = folder / "palettes" / f"{name}.toml"
+        if candidate.is_file():
+            data = tomllib.loads(candidate.read_text(encoding="utf-8"))
+            return from_data(dict[str, str], data.get("palette", {}))
+    msg = f"no palettes/{name}.toml above the sprite"
+    raise PxlError(msg)
 
 
 def check(raw: PxlFile) -> Sprite:

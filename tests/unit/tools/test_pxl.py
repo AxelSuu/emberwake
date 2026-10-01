@@ -116,3 +116,15 @@ def test_cli_build(tmp_path: Path):
     assert main(args) == 0
     source(tmp_path, "oops", "bad.pxl")
     assert main(args) == 1
+
+
+def test_a_shared_palette_is_found_above_and_local_keys_win(tmp_path: Path):
+    palettes = tmp_path / "art" / "palettes"
+    palettes.mkdir(parents=True)
+    (palettes / "base.toml").write_text('[palette]\no = "#2e222f"\nf = "#f9c22b"\n')
+    path = source(tmp_path, 'uses = "base"\n[palette]\nf = "#fb6b1d"\n[layers]\na = "of"\n')
+    sprite = parse(path)
+    assert sprite.palette == {"o": (0x2E, 0x22, 0x2F), "f": (0xFB, 0x6B, 0x1D)}
+    missing = source(tmp_path, 'uses = "nope"\n[layers]\na = "o"\n', "other.pxl")
+    with pytest.raises(PxlError, match=r"palettes/nope\.toml"):
+        parse(missing)

@@ -1,0 +1,55 @@
+# Shared keys for .pxl sprites (`uses = "base"`). All Resurrect 64; a sprite's own [palette]
+# overrides any key. Ramps run dark to light; light colors are reserved for light (see the art
+# bible).
+
+[palette]
+# Ink and stone, the outline and the dark
+o = "#2e222f"
+1 = "#3e3546"
+2 = "#625565"
+3 = "#7f708a"
+4 = "#9babb2"
+5 = "#c7dcd0"
+w = "#ffffff"
+s = "#694f62"
+# Plum and night, the shadows
+p = "#45293f"
+P = "#6b3e75"
+n = "#323353"
+b = "#484a77"
+B = "#4d65b4"
+c = "#4d9be6"
+C = "#8fd3ff"
+# Teal and mint, water and cold light
+t = "#0b5e65"
+T = "#0b8a8f"
+g = "#0eaf9b"
+G = "#30e1b9"
+m = "#8ff8e2"
+# Rust, brass and brown, clockwork
+r = "#6e2727"
+R = "#b33831"
+d = "#966c6c"
+D = "#ab947a"
+z = "#4c3e24"
+Z = "#676633"
+# Flame, kept for light: cool to hot to core
+e = "#ea4f36"
+f = "#fb6b1d"
+a = "#f79617"
+y = "#f9c22b"
+k = "#fbb954"
+Y = "#fbff86"
+# Rose, wine and violet
+x = "#753c54"
+X = "#a24b6f"
+h = "#cf657f"
+H = "#ed8099"
+v = "#905ea9"
+V = "#a884f3"
+# Moss
+j = "#313638"
+l = "#374e4a"
+L = "#547e64"
+q = "#165a4c"
+Q = "#239063"
