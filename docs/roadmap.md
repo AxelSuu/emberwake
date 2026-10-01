@@ -44,3 +44,14 @@ Detailed plans: [M2 World](plans/m2-world.md).
 - [x] Gameplay scene with placeholder art and lantern glow (#14)
 - [x] Dev tools: F2 colliders, F3 free camera, P pause, `.` step, `,` slow motion (#15)
 - [ ] Hands-on feel pass with a real keyboard and gamepad
+
+## M2 status
+
+- [x] ECS-lite world with resources and phase schedule, player migrated (#16)
+- [ ] Level source: ASCII + TOML compiled to LDtk (#64)
+- [ ] World coordinates, room graph, streaming, transitions (#17)
+- [ ] Prefabs and LDtk entity spawning (#19)
+- [ ] Interactables and signal wiring (#20)
+- [ ] Parallax and depth layers (#18)
+- [ ] Beacons and save slots (#21)
+- [ ] Greybox world: five rooms around the test room (#65)

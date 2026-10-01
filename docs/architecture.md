@@ -6,7 +6,8 @@
 emberwake.app        wiring: builds services, pushes the first scene, runs the loop
 emberwake.game       Emberwake content: scenes, components, systems, data models
 emberwake.engine     reusable, game-agnostic
-  core               pure Python: events, clock, serde, log, mathx, noise (later: ecs, fsm, tween)
+  core               pure Python: events, clock, serde, log, mathx, noise (later: fsm, tween)
+  ecs                pure Python: entities, component stores, queries, resources, phase schedule
   platform           desktop vs browser: storage, documents, display
   scene              scene stack
   runner             the main loop
@@ -45,19 +46,24 @@ extra OS windows (`pygame.Window`) are reserved for dev tools.
 Planned flow: Boot -> Title -> MainMenu -> (Settings, SaveSelect, Trials, Credits) -> Gameplay
 (+ Pause, Map, Inventory, Dialogue, Shop overlays) -> Results.
 
-## World objects (planned, M1-M2)
+## World objects (M2)
 
-ECS-lite: `World` holds component stores (`dict[type, dict[EntityId, C]]`), typed queries and a
-phase schedule `input -> ai -> pre_physics -> physics -> post_physics -> combat -> animation ->
-camera -> render_prep`. Components are slotted dataclasses, so they serialize with `serde`.
-Prefabs are TOML; LDtk entities spawn prefabs and their `iid` is the stable identity for
-persistent world state. UI widgets and scenes are plain OOP. Behavior: FSMs (player, simple
-enemies), behavior trees (bosses), generator coroutines (cutscenes).
+ECS-lite (`engine.ecs`, [ADR 0012](adr/0012-ecs-deferred-changes-resources.md)): `World` holds
+component stores (`dict[type, dict[EntityId, C]]`), typed queries for 1-4 component types and
+resources (world singletons such as the tile grid, input and event bus). `spawn`, `add`, `remove`
+and `despawn` are queued and applied by `flush`. A `Schedule` runs systems phase by phase and
+flushes between phases; the gameplay phases (`game/schedule.py`) are `input -> logic -> physics
+-> post -> camera -> render_prep`, with more (ai, combat, animation) added as systems need them.
+Components are slotted dataclasses registered with `@component`, so prefabs and saves name them
+as text and `serde` stores their data. Prefabs are TOML; LDtk entities spawn prefabs and their
+`iid` is the stable identity for persistent world state. UI widgets and scenes are plain OOP.
+Behavior: FSMs (player, simple enemies), behavior trees (bosses), generator coroutines
+(cutscenes).
 
 | Thing | Components |
 |---|---|
-| Player | Transform, KinematicBody, Collider, PlayerController, Health, Animator, LightEmitter, Inventory, Abilities, CameraTarget |
-| Enemy | Transform, KinematicBody, Collider, Hurtbox, Hitbox, Health, Brain, Animator, LightSensitive, Loot |
+| Player | Body, Motor (done); later Health, Animator, LightEmitter, Inventory, Abilities |
+| Enemy | Body, Hurtbox, Hitbox, Health, Brain, Animator, LightSensitive, Loot |
 | NPC | Transform, Animator, Interactable |
 | Lever, door, plate | Interactable or Trigger, Switch, signal wiring via LDtk entity refs |
 | Beacon | Interactable, LightEmitter, SavePoint, AreaGrade |
@@ -79,10 +85,11 @@ to replay a session exactly.
 
 Characters: custom kinematic AABBs, per-axis resolution against the LDtk IntGrid (solid,
 one-way, hazard), sub-stepped to half a tile so nothing tunnels. The player controller
-(`game/player/controller.py`) is a pure step function that returns events (`Jumped`, `Landed`,
-`Dashed`, `Died`); the gameplay scene publishes them on the bus and feedback reacts. Entity overlap: spatial hash plus layer bitmasks. Props, ropes,
-debris, flares: pymunk, with tile solids greedy-meshed into static boxes and the player mirrored
-as a kinematic body.
+(`game/player/controller.py`) is a pure step function over a `Body` and a `Motor` that returns
+events (`Jumped`, `Landed`, `Dashed`, `Died`); `player_system` runs it in the physics phase and
+publishes the events on the bus, and feedback reacts. Entity overlap: spatial hash plus layer
+bitmasks. Props, ropes, debris, flares: pymunk, with tile solids greedy-meshed into static boxes
+and the player mirrored as a kinematic body.
 
 ## Rendering (planned, M3)
 

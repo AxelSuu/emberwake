@@ -18,6 +18,7 @@ nav:
   - Specs: specs/index.md
   - API reference:
       - Core: reference/core.md
+      - ECS: reference/ecs.md
       - Platform: reference/platform.md
       - Scenes: reference/scene.md
 plugins:
