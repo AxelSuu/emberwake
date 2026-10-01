@@ -14,6 +14,7 @@ check:
     uv run ruff format --check .
     uv run ty check
     uv run lint-imports
+    uv run python -m tools.levels validate
 
 fix:
     uv run ruff check --fix .

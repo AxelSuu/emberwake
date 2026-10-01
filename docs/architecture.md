@@ -56,8 +56,15 @@ and `despawn` are queued and applied by `flush`. A `Schedule` runs systems phase
 flushes between phases; the gameplay phases (`game/schedule.py`) are `input -> logic -> physics
 -> post -> camera -> render_prep`, with more (ai, combat, animation) added as systems need them.
 Components are slotted dataclasses registered with `@component`, so prefabs and saves name them
-as text and `serde` stores their data. Prefabs are TOML; LDtk entities spawn prefabs and their
-`iid` is the stable identity for persistent world state. UI widgets and scenes are plain OOP.
+as text and `serde` stores their data. UI widgets and scenes are plain OOP.
+
+Prefabs ([ADR 0015](adr/0015-entity-state-by-iid.md)) live in `content/prefabs.toml`: components
+with field values, a mapping from LDtk fields to component fields, and the components to persist.
+When a room loads, `Spawner` spawns each LDtk entity as the prefab named after its identifier in
+snake_case, adding `Identity` (iid, room, prefab) and a `Body` over its LDtk rect. Entity refs
+stay iids and `Spawner.resolve` finds the live entity, if its room is loaded. When a room
+unloads, persisted components are written to `WorldState` by iid and restored on the next spawn.
+`tools.levels validate` (in `just check`) proves every placed entity has a prefab its fields fit.
 Behavior: FSMs (player, simple enemies), behavior trees (bosses), generator coroutines
 (cutscenes).
 

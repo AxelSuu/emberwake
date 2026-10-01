@@ -7,12 +7,14 @@ from typing import TYPE_CHECKING
 
 import pytest
 from tools.levels.ldtk import build_project
-from tools.levels.source import Defs, Source, make_room, read_toml
+from tools.levels.source import Defs, MarkerSpec, RoomFile, Source, make_room, read_toml
 
 from emberwake.engine.input.replay import Replay
 from emberwake.engine.scene import SceneManager
 from emberwake.engine.world.rooms import RoomEntered
+from emberwake.engine.world.spawning import Identity
 from emberwake.game import paths
+from emberwake.game.components import Sprite
 from emberwake.game.player.controller import Died
 from emberwake.game.scenes.gameplay import GameplayScene
 
@@ -27,8 +29,9 @@ TOP = "#" * 20
 OPEN = "." * 20
 FLOOR = "#" * 20
 WEST = "\n".join([TOP, *["#" + "." * 19] * 8, "#.P" + "." * 17, FLOOR])
-MIDDLE = "\n".join([TOP, *[OPEN] * 8, "..P" + "." * 17, "#" * 8 + "^^^^" + "#" * 8])
-EAST = "\n".join([TOP, *["." * 19 + "#"] * 9, FLOOR])
+PIT = "#" * 8 + "^^^^" + "#" * 8
+MIDDLE = "\n".join([TOP, *[OPEN] * 7, "....e" + "." * 15, "..P" + "." * 17, PIT])
+EAST = "\n".join([TOP, *["." * 19 + "#"] * 8, "..k" + "." * 16 + "#", FLOOR])
 
 
 @pytest.fixture
@@ -36,8 +39,8 @@ def world_path(tmp_path: Path) -> Path:
     defs = read_toml(Defs, paths.levels("src/defs.toml"))
     rooms = [
         make_room("West", (0, 0), WEST),
-        make_room("Middle", (1, 0), MIDDLE),
-        make_room("East", (2, 0), EAST),
+        make_room("Middle", (1, 0), MIDDLE, RoomFile(entities={"e": MarkerSpec("Ember")})),
+        make_room("East", (2, 0), EAST, RoomFile(entities={"k": MarkerSpec("Beacon")})),
     ]
     path = tmp_path / "world.ldtk"
     path.write_text(json.dumps(build_project(Source(defs, rooms))))
@@ -72,6 +75,23 @@ def test_running_east_enters_the_next_room(ctx: GameContext, world_path: Path):
     assert scene.camera.bounds == scene.rooms.graph.rects["Middle"]
     assert scene.camera.gliding
     assert scene.spawn_point == (320 + 2 * 16 + 8, 10 * 16)
+
+
+def spawned(scene: GameplayScene) -> set[tuple[str, str]]:
+    return {(identity.prefab, identity.room) for _, identity in scene.world.query(Identity)}
+
+
+def test_entities_spawn_with_their_rooms(ctx: GameContext, world_path: Path):
+    scene = play(ctx, world_path, [(1, [])])
+    assert spawned(scene) == {
+        ("player_start", "West"),
+        ("player_start", "Middle"),
+        ("ember", "Middle"),
+    }
+    (sprite,) = [sprite for _, sprite in scene.world.query(Sprite)]
+    assert sprite.image == "ember"
+    scene = play(ctx, world_path, [(5, []), (110, ["right"])])
+    assert ("beacon", "East") in spawned(scene)
 
 
 def test_hazard_death_respawns_at_the_room_entry_point(ctx: GameContext, world_path: Path):

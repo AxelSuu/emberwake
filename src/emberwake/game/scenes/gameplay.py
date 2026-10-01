@@ -13,6 +13,7 @@ from emberwake.engine.core.jobs import Jobs
 from emberwake.engine.core.serde import SerdeError
 from emberwake.engine.debug.time_control import TimeControl
 from emberwake.engine.ecs import World
+from emberwake.engine.ecs.prefabs import Prefab, load_prefabs
 from emberwake.engine.input import InputMapper, InputState
 from emberwake.engine.input.replay import REPLAY_CODEC, Replay, ReplayPlayer, ReplayRecorder
 from emberwake.engine.physics import Body, Tile, TileSource
@@ -22,12 +23,14 @@ from emberwake.engine.render.chunks import ChunkLayer
 from emberwake.engine.scene import Scene
 from emberwake.engine.world.ldtk import load_project
 from emberwake.engine.world.rooms import Room, RoomEntered, RoomGraph, RoomStreamer, WorldGrid
+from emberwake.engine.world.spawning import Spawner, WorldState
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
+from emberwake.game.components import Sprite
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.visual import PlayerVisual
-from emberwake.game.render.placeholder import LanternGlow, PlayerSprite, tile_painter
+from emberwake.game.render.placeholder import EntityArt, LanternGlow, PlayerSprite, tile_painter
 from emberwake.game.schedule import gameplay_schedule
 
 if TYPE_CHECKING:
@@ -40,6 +43,7 @@ log = logging.getLogger(__name__)
 
 WORLD = "world.ldtk"
 FEEL = "feel.toml"
+PREFABS = "prefabs.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
@@ -68,6 +72,7 @@ class GameplayScene(Scene):
         self.visual = PlayerVisual()
         self.sprite = PlayerSprite()
         self.glow = LanternGlow()
+        self.art = EntityArt()
         self.time = TimeControl()
         self.hitstop = 0
         self.respawn_in = 0
@@ -78,6 +83,8 @@ class GameplayScene(Scene):
         self._unsubscribe: list[Callable[[], None]] = []
         self.jobs = Jobs()
         self.layers: dict[str, tuple[ChunkLayer, Iterator[None]]] = {}
+        self.world = World()
+        self.spawner = Spawner(self.world, self._read_prefabs() or {}, WorldState())
         self.grid = WorldGrid()
         self.rooms = RoomStreamer(
             RoomGraph(load_project(self.world_path).all_levels),
@@ -90,11 +97,11 @@ class GameplayScene(Scene):
         self.rooms.enter(room)
         self.spawn_point = self._entry_point(room)
         self.camera.bounds = self.rooms.graph.rects[room]
-        self.world = World()
         self.world.insert_resource(self.actions)
         self.world.insert_resource(ctx.bus)
         self.world.insert_resource(self.grid, key=TileSource)
         self.world.insert_resource(self.rooms)
+        self.world.insert_resource(self.spawner)
         self.world.insert_resource(self.feel.player)
         self.world.insert_resource(self.feel.rooms)
         self.schedule = gameplay_schedule()
@@ -141,13 +148,22 @@ class GameplayScene(Scene):
             log.error("Could not load %s: %s", FEEL, error)
             return None
 
+    def _read_prefabs(self) -> dict[str, Prefab] | None:
+        try:
+            return load_prefabs(paths.content(PREFABS))
+        except (OSError, tomllib.TOMLDecodeError, SerdeError) as error:
+            log.error("Could not load %s: %s", PREFABS, error)
+            return None
+
     def _room_loaded(self, room: Room) -> None:
         layer = ChunkLayer(room.rect.topleft, room.rect.size, tile_painter(room.grid))
         job = layer.bake()
         self.layers[room.name] = (layer, job)
         self.jobs.add(job)
+        self.spawner.spawn_room(room)
 
     def _room_unloaded(self, room: Room) -> None:
+        self.spawner.despawn_room(room)
         _, job = self.layers.pop(room.name)
         self.jobs.cancel(job)
 
@@ -171,7 +187,7 @@ class GameplayScene(Scene):
         return new_player(*self.spawn_point, self.feel.player)
 
     def reload(self) -> None:
-        """Re-read feel.toml and the level, keeping the player where it is."""
+        """Re-read feel.toml, prefabs and the levels, keeping the player where it is."""
         feel = self._read_feel()
         if feel is not None:
             for key, (old, new) in sorted(diff(self.feel, feel).items()):
@@ -180,6 +196,9 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.player)
             self.world.insert_resource(feel.rooms)
             self.camera.retune(feel.camera)
+        prefabs = self._read_prefabs()
+        if prefabs is not None:
+            self.spawner.prefabs = prefabs
         try:
             graph = RoomGraph(load_project(self.world_path).all_levels)
             if self.room not in graph.levels:
@@ -309,6 +328,9 @@ class GameplayScene(Scene):
         ox, oy = self.camera.offset(alpha)
         for layer, _ in self.layers.values():
             layer.draw(canvas, (ox, oy))
+        for _, body, sprite in self.world.query(Body, Sprite):
+            image = self.art.image(sprite.image, (round(body.width), round(body.height)))
+            canvas.blit(image, (round(body.x) - ox, round(body.y) - oy))
         if self.respawn_in == 0:
             self._draw_player(canvas, ox, oy, alpha)
         if self.show_colliders:
