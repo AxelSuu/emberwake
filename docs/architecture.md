@@ -20,7 +20,8 @@ emberwake.engine     reusable, game-agnostic
 ```
 
 Runtime data lives outside the package: `content/` (TOML, e.g. `feel.toml`) and `levels/`
-(LDtk). `game/paths.py` finds them; the web build copies both next to the package.
+(LDtk, compiled from the ASCII + TOML in `levels/src` by `tools/levels`). `game/paths.py` finds
+them; the web build copies both next to the package.
 
 Dependencies point downward only. import-linter enforces it (`just check`).
 
