@@ -1,0 +1,94 @@
+[project]
+name = "emberwake"
+version = "0.1.0"
+description = "A pixel-art action-platformer about carrying light into the dark."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pygame-ce>=2.5.8",
+]
+
+[project.scripts]
+emberwake = "emberwake.__main__:run"
+
+[build-system]
+requires = ["uv_build>=0.11.2,<0.13"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.140",
+    "import-linter>=2.5",
+    "prek>=0.2",
+    "pytest>=8.4",
+    "pytest-cov>=7.0",
+    "ruff>=0.14",
+    "ty>=0.0.1",
+]
+docs = [
+    "mkdocs-material>=9.6",
+    "mkdocstrings[python]>=0.30",
+]
+web = [
+    "pygbag>=0.9.3",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "tools"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "UP", "B", "SIM", "RUF", "N", "PL", "PERF", "PTH", "TC", "D",
+    "C4", "RET", "PIE", "PT", "FURB",
+]
+ignore = [
+    "D105",    # magic methods
+    "D107",    # __init__, documented on the class
+    "PLR0913", # too many args: constructors of data-heavy classes
+    "PLR2004", # magic values: tuning constants live inline in tests and prototypes
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"src/emberwake/game/**" = ["D1"]
+"src/emberwake/__main__.py" = ["D1"]
+"main.py" = ["D1"]
+"tests/**" = ["D1"]
+"tools/**" = ["D1"]
+
+[tool.ty.environment]
+python-version = "3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
+filterwarnings = ["ignore:no fast renderer available"]
+
+[tool.coverage.run]
+source = ["emberwake"]
+branch = true
+
+[tool.importlinter]
+root_package = "emberwake"
+
+[[tool.importlinter.contracts]]
+name = "Game builds on engine, never the reverse"
+type = "layers"
+layers = [
+    "emberwake.app",
+    "emberwake.game",
+    "emberwake.engine",
+]
+
+[[tool.importlinter.contracts]]
+name = "Engine core is dependency-free"
+type = "forbidden"
+source_modules = ["emberwake.engine.core"]
+forbidden_modules = ["emberwake.engine.platform", "emberwake.engine.scene"]
