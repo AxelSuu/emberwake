@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from emberwake.engine.core.serde import VersionedCodec
 from emberwake.engine.platform.documents import load_document, save_document
@@ -24,6 +24,17 @@ class Stats:
 
 
 @dataclass(slots=True)
+class Cinder:
+    """Embers dropped where the player died, waiting to be picked up."""
+
+    room: str
+    x: float
+    y: float
+    """World px of the spot."""
+    embers: int
+
+
+@dataclass(slots=True)
 class SaveSlot:
     room: str
     """Room to continue in: the last beacon's, or where the game started."""
@@ -36,9 +47,15 @@ class SaveSlot:
     discovered: list[str] = field(default_factory=list)
     """Iids of rooms entered, in order."""
     stats: Stats = field(default_factory=Stats)
+    cinder: Cinder | None = None
 
 
-SAVE_CODEC = VersionedCodec(SaveSlot, version=1)
+def _add_cinder(data: dict[str, Any]) -> dict[str, Any]:
+    """v1 -> v2: the dropped-embers spot; none in older saves."""
+    return data
+
+
+SAVE_CODEC = VersionedCodec(SaveSlot, version=2, migrations={1: _add_cinder})
 """Bump the version and add a migration whenever `SaveSlot` (or what it holds) changes shape."""
 
 
