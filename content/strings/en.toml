@@ -64,6 +64,7 @@ down = "Down"
 jump = "Jump"
 dash = "Dash"
 interact = "Interact"
+flare = "Throw flare"
 
 [results]
 title = "Results"

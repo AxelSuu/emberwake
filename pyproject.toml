@@ -21,6 +21,7 @@ dev = [
     "import-linter>=2.5",
     "jsonschema>=4.25",
     "prek>=0.2",
+    "pymunk>=7",
     "pytest>=8.4",
     "pytest-benchmark>=5.3",
     "pytest-cov>=7.0",

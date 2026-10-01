@@ -19,7 +19,7 @@ from emberwake.engine.ecs import World
 from emberwake.engine.ecs.prefabs import Prefab, load_prefabs
 from emberwake.engine.input import InputMapper, InputState
 from emberwake.engine.input.replay import REPLAY_CODEC, Replay, ReplayPlayer, ReplayRecorder
-from emberwake.engine.physics import Body, Tile, TileSource
+from emberwake.engine.physics import Body, PropWorld, Tile, TileSource
 from emberwake.engine.platform.documents import save_document
 from emberwake.engine.render.camera import Camera
 from emberwake.engine.render.chunks import ChunkLayer
@@ -39,8 +39,9 @@ from emberwake.game.combat import Damaged, Health, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
 from emberwake.game.data.save import SaveSlot, load_slot
 from emberwake.game.feel import Feel, diff, load_feel
+from emberwake.game.flares import Flare, FlareKit
 from emberwake.game.interact import Collected, Interactable, Switch
-from emberwake.game.light import Ember
+from emberwake.game.light import Ember, LightSource
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
@@ -165,6 +166,7 @@ class GameplayScene(Scene):
         for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
+        self.world.insert_resource(FlareKit(PropWorld(self.grid, (0, 0, 1, 1))))
         self.schedule = gameplay_schedule()
         self.player = self.world.spawn(*self._new_player())
         self.world.flush()
@@ -529,6 +531,12 @@ class GameplayScene(Scene):
                 for index, spread in enumerate(SHAFT_ANGLES):
                     sway = math.sin(self.clock * 0.7 + index * 2.1) * 6
                     frame.shaft(ShaftCmd(bx, by, 270 + spread + sway, 90, 36, GLOW, light * 0.8))
+        for eid, body, source in self.world.query(Body, LightSource):
+            fx, fy = body.center_x - ox, body.y + body.height / 2 - oy
+            frame.light(fx, fy, round(source.radius), GLOW, light * source.strength)
+            if self.world.has(eid, Flare):
+                image = self.art.image("flare", (round(body.width), round(body.height)))
+                frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
         for _, body, sprite in self.world.query(Body, Sprite):
             image = self.art.image(sprite.current, (round(body.width), round(body.height)))
             frame.sprite(image, round(body.x) - ox, round(body.y) - oy)

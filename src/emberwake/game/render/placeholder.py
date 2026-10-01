@@ -269,6 +269,11 @@ class EntityArt:
         image.fill(EYES, (rect.centerx - 2, rect.centery - 1, 4, 2))
 
     @staticmethod
+    def _flare(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(palette.EMBER_WARM, rect)
+        image.fill(palette.EMBER_CORE, rect.inflate(-2, -2))
+
+    @staticmethod
     def _ember(image: pygame.Surface, rect: pygame.Rect) -> None:
         cx, cy = rect.center
         diamond = [(cx, cy - 4), (cx + 3, cy), (cx, cy + 4), (cx - 3, cy)]

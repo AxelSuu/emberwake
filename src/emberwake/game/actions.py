@@ -15,9 +15,11 @@ class Action(StrEnum):
     JUMP = "jump"
     DASH = "dash"
     INTERACT = "interact"
+    FLARE = "flare"
 
 
 INTERACT_KEYS = ["up", "w", "e"]
+FLARE_KEYS = ["f", "q"]
 
 
 def default_bindings() -> Bindings:
@@ -30,5 +32,6 @@ def default_bindings() -> Bindings:
             Action.JUMP: ["space", "z", "c"],
             Action.DASH: ["x", "left shift", "k"],
             Action.INTERACT: INTERACT_KEYS,
+            Action.FLARE: FLARE_KEYS,
         },
     )
