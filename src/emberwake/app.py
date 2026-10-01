@@ -22,6 +22,7 @@ from emberwake.game.context import GameContext
 from emberwake.game.data.settings import SETTINGS_CODEC, SETTINGS_KEY, Settings
 from emberwake.game.scenes.boot import BootScene
 from emberwake.game.scenes.gameplay import DEFAULT_ROOM, GameplayScene
+from emberwake.game.strings import load_strings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -55,6 +56,7 @@ async def main(argv: Sequence[str] | None = None) -> None:
         bus=EventBus(),
         canvas_size=CANVAS_SIZE,
         dev=options.dev,
+        strings=load_strings(settings.language, warn=options.dev),
         slot=options.slot,
         new_game=options.new,
     )

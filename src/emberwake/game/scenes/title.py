@@ -51,7 +51,9 @@ class TitleScene(Scene):
         title_font = pygame.font.Font(None, 64)
         self.title = title_font.render("EMBERWAKE", False, palette.EMBER_HOT)
         self.glow = _glow(title_font.render("EMBERWAKE", False, palette.EMBER_WARM), 6)
-        self.prompt = pygame.font.Font(None, 16).render("press any key", False, palette.MIST)
+        self.prompt = pygame.font.Font(None, 16).render(
+            ctx.t("title.press_any_key"), False, palette.MIST
+        )
         self.glow_frame = self.glow.copy()
         self.ember_glow = _radial_glow(6, pygame.Color(palette.EMBER_WARM))
 

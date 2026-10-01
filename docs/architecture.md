@@ -180,6 +180,14 @@ stick, A/B) into `Nav`, with hold-to-repeat; `UiRoot` lays a tree out, routes ev
 look comes from `content/ui.toml` (`Theme`, Resurrect 64 colors). Screens (menus, settings,
 rebinding) build on it in M4.
 
+## Localization (M4)
+
+Player-facing text goes through `ctx.t("key", name=value)` (`engine.core.i18n.Strings`). Tables
+are `content/strings/<language>.toml`, nested tables become dotted keys, and a missing key falls
+back to English, then to the key itself; `--dev` logs each missing key once. Tests require every
+language to have the same keys and placeholders as English, and every `t("...")` in game code to
+exist and be used. The language comes from `settings.language`.
+
 ## Persistence
 
 `Storage` (files in `pygame.system.get_pref_path` on desktop, `localStorage` in the browser) +

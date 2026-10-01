@@ -21,7 +21,7 @@ class BootScene(Scene):
     def __init__(self, ctx: GameContext) -> None:
         self.ctx = ctx
         self.elapsed = 0.0
-        self.text = pygame.font.Font(None, 16).render("made with pygame-ce", False, palette.MIST)
+        self.text = pygame.font.Font(None, 16).render(ctx.t("boot.made_with"), False, palette.MIST)
 
     def handle(self, event: pygame.Event) -> None:
         if event.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN, pygame.JOYBUTTONDOWN):
