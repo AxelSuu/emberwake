@@ -10,3 +10,9 @@ v1.
 
 **Consequences.** Precise controls plus satisfying physical props. pymunk is optional: if it is
 missing (browser), props fall back to simple kinematics.
+
+**Implementation note.** `engine/physics/props.py` has `PropWorld` with two backends, chosen at
+import time by `HAS_PYMUNK`. The pymunk backend meshes solid tiles greedily into static boxes and
+mirrors the player as a kinematic body; the fallback gives props gravity, bounce and friction
+through the tile mover, without prop-prop or player collision. Whether pymunk runs in the browser
+build is still open (issue #2); the fallback is what the web build uses until it is checked.

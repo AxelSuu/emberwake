@@ -40,3 +40,10 @@ def test_v3_settings_load_with_default_accessibility():
     loaded = SETTINGS_CODEC.load(raw)
     assert (loaded.language, loaded.video.crt) == ("sv", True)
     assert loaded.accessibility.reduce_flashes is False
+
+
+def test_v5_controls_gain_the_flare_binding():
+    v5: Any = to_data(Settings())
+    del v5["controls"]["keys"]["flare"]
+    loaded = SETTINGS_CODEC.load({"version": 5, "data": v5})
+    assert loaded.controls.keys["flare"] == ["f", "q"]
