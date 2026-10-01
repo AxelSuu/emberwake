@@ -29,6 +29,9 @@ class JuiceTuning:
     squash: float = 0.35
     stretch: float = 0.3
     squash_recovery: float = 14.0
+    beacon_trauma: float = 0.35
+    beacon_flash: float = 0.35
+    """Seconds the screen flash lasts when a beacon is relit."""
 
 
 @dataclass(frozen=True, slots=True)

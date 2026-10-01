@@ -57,6 +57,8 @@ hard_landing_trauma = 0.3
 squash = 0.35
 stretch = 0.3
 squash_recovery = 14.0
+beacon_trauma = 0.35
+beacon_flash = 0.35
 
 [rooms]
 entry_boost = 240
