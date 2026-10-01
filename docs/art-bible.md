@@ -25,6 +25,9 @@ Each sprite may ship up to three aligned images, packed together by the atlas pa
 1. Placeholder art from code, so gameplay never waits for art.
 2. Pixel DSL (`art/**/*.pxl`, TOML): palette keys + text grids + frames + layers, compiled to
    PNG. Diffable and easy to author by hand or by an AI assistant. Tiles, props, icons, UI.
+   `just art` compiles `art/**/*.pxl` to `assets/**/*.png` (a sheet, plus a `.json` of frame size
+   and timings when there are several frames); `just art-watch` recompiles on save. The format is
+   documented at the top of `tools/pxl/spec.py`.
 3. Aseprite files for hand-drawn work, exported through the CLI or parsed directly.
 4. Autotile generator: 47-tile blob sets from a few base pieces, plus matching LDtk rules.
 5. Free CC0 packs only to validate the pipeline early, replaced before release.

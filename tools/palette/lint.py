@@ -20,7 +20,12 @@ if TYPE_CHECKING:
 
 PALETTE = frozenset(RESURRECT_64)
 HEX = re.compile(r"#[0-9a-fA-F]{6}\b")
-TEXT_GLOBS = ("content/**/*.toml", "levels/src/*.toml", "src/emberwake/game/**/*.py")
+TEXT_GLOBS = (
+    "art/**/*.pxl",
+    "content/**/*.toml",
+    "levels/src/*.toml",
+    "src/emberwake/game/**/*.py",
+)
 IMAGE_GLOBS = ("assets/**/*.png", "content/**/*.png")
 
 
