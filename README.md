@@ -25,7 +25,7 @@ just web           # browser build into build/web
 | Dash | X, Left Shift, K | X, B, RB |
 | Interact (levers) | Up, W, E | Y, d-pad up |
 | Drop through platform | Down + Jump | |
-| Back to title | Esc | |
+| Pause menu | Esc | Start |
 
 Bindings live in `settings.json` in the user data folder (Linux:
 `~/.local/share/emberwake/emberwake/`).

@@ -130,6 +130,12 @@ class InputMapper[A: Enum]:
                 self._held_keys.clear()
                 self._held_buttons.clear()
 
+    def release_all(self) -> None:
+        """Forget every held key and button, such as when another screen took the input."""
+        self._held_keys.clear()
+        self._held_buttons.clear()
+        self._tapped.clear()
+
     def sample(self) -> frozenset[A]:
         """Return the actions held since the last sample, including taps already released."""
         held = set(self._tapped)

@@ -44,6 +44,7 @@ from emberwake.game.progress import Progress
 from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdrops
 from emberwake.game.render.fx import Flash
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
+from emberwake.game.scenes.pause import PauseScene
 from emberwake.game.schedule import gameplay_schedule
 from emberwake.game.signals import Receiver, Wiring
 
@@ -190,8 +191,9 @@ class GameplayScene(Scene):
         ]
 
     def on_resume(self) -> None:
-        """Apply settings changed in an overlay."""
+        """Apply settings changed in an overlay and drop input held while it was open."""
         settings = self.ctx.settings
+        self.mapper.release_all()
         self.frame.flags = self._effects()
         self.camera.shake.intensity = settings.video.screen_shake
         self.flash.muted = settings.accessibility.reduce_flashes
@@ -335,11 +337,14 @@ class GameplayScene(Scene):
         self.mapper.handle(event)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                from emberwake.game.scenes.title import TitleScene  # noqa: PLC0415
-
-                self.manager.replace(TitleScene(self.ctx))
+                self.manager.push(PauseScene(self.ctx))
             elif self.ctx.dev:
                 self._dev_key(event.key)
+        elif (
+            event.type == pygame.CONTROLLERBUTTONDOWN
+            and event.button == pygame.CONTROLLER_BUTTON_START
+        ):
+            self.manager.push(PauseScene(self.ctx))
         elif event.type == pygame.MOUSEMOTION and self.free_camera and event.buttons[0]:
             self.camera.x -= event.rel[0]
             self.camera.y -= event.rel[1]

@@ -29,3 +29,9 @@ master = "Huvudvolym"
 music = "Musik"
 sfx = "Effekter"
 reduce_flashes = "Minska blinkningar"
+
+[pause]
+title = "Pausad"
+resume = "Fortsätt"
+settings = "Inställningar"
+quit = "Avsluta till titel"
