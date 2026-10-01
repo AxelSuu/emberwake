@@ -1,0 +1,13 @@
+# Widget theme. Colors come from the Resurrect 64 palette; sizes are px.
+
+font_size = 16
+text = "#c7dcd0"
+dim = "#7f708a"
+accent = "#f9c22b"
+panel = "#2e222f"
+border = "#625565"
+focus = "#45293f"
+pad = 6
+gap = 2
+row = 14
+tween = 16.0

@@ -16,7 +16,8 @@ emberwake.engine     reusable, game-agnostic
   render             camera, screen shake, chunked layers (later: backends, lighting, particles)
   world              LDtk loader, room graph, world grid, room streaming
   debug              fps overlay, time control (later: console, inspector window)
-  (planned) assets, audio, ui
+  ui                 themed widgets with keyboard and gamepad focus navigation
+  (planned) assets, audio
 ```
 
 Runtime data lives outside the package: `content/` (TOML, e.g. `feel.toml`) and `levels/`
@@ -168,6 +169,16 @@ per step and runs as a `Jobs` entry pumped for 2 ms per frame; drawing bakes any
 that is still missing. On a room change the camera glides into the new room's bounds with faster
 smoothing, and the respawn point becomes that room's PlayerStart nearest to where the player
 entered. F4 shows room rects, names and load state.
+
+## UI toolkit (M4)
+
+`engine.ui`: `Label`, `Button`, `Toggle`, `Slider`, `Selector`, `KeybindField`, and the containers
+`Panel` and `ScrollList`. A container keeps one focused child; up and down move it, left, right and
+accept go to the child (`Nav` actions). `Navigator` turns keyboard and gamepad events (d-pad,
+stick, A/B) into `Nav`, with hold-to-repeat; `UiRoot` lays a tree out, routes events (a listening
+`KeybindField` takes raw ones) and calls `on_back`. Focus highlights ease (`Widget.glow`) and the
+look comes from `content/ui.toml` (`Theme`, Resurrect 64 colors). Screens (menus, settings,
+rebinding) build on it in M4.
 
 ## Persistence
 

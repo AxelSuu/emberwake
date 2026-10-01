@@ -22,6 +22,7 @@ nav:
       - World: reference/world.md
       - Platform: reference/platform.md
       - Scenes: reference/scene.md
+      - UI: reference/ui.md
 plugins:
   - search
   - mkdocstrings:
