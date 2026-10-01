@@ -18,6 +18,7 @@ from emberwake.engine.world.rooms import Room, WorldGrid
 from emberwake.engine.world.spawning import Identity, Spawner, WorldState
 from emberwake.game import paths
 from emberwake.game.actions import Action
+from emberwake.game.beacons import Beacon, BeaconLit, beacon_system
 from emberwake.game.interact import (
     Collected,
     Interactable,
@@ -30,6 +31,7 @@ from emberwake.game.interact import (
     trigger_system,
 )
 from emberwake.game.player.controller import Motor
+from emberwake.game.player.tuning import PlayerTuning
 from emberwake.game.render.sprites import sprite_system
 from emberwake.game.scenes.gameplay import COLLISIONS
 from emberwake.game.signals import Door, Receiver, Wiring, door_system, signal_system
@@ -38,7 +40,7 @@ DEFS = read_toml(Defs, paths.levels("src/defs.toml"))
 PREFABS = load_prefabs(paths.content("prefabs.toml"))
 WALL, INSIDE = "#" * 20, "#" + "." * 18 + "#"
 DOOR = "#......b...........#"
-HALL = "\n".join([WALL, *[INSIDE] * 6, DOOR, DOOR, "#.P.a..b..p..e.....#", WALL])
+HALL = "\n".join([WALL, *[INSIDE] * 6, DOOR, DOOR, "#.P.a..b..p..e..k..#", WALL])
 TOML = """
 [entities.a]
 type = "Lever"
@@ -51,6 +53,8 @@ fields = { Targets = ["b"] }
 [entities.e]
 type = "Ember"
 fields = { Value = 5 }
+[entities.k]
+type = "Beacon"
 """
 FEET = 10 * 16
 
@@ -68,11 +72,12 @@ class Rig:
         self.actions = InputState[Action]()
         self.bus = EventBus()
         self.events: list[object] = []
-        for kind in (Interacted, SwitchChanged, Collected):
+        for kind in (Interacted, SwitchChanged, Collected, BeaconLit):
             self.bus.subscribe(kind, self.events.append)
         for resource in (self.actions, self.bus, self.spawner, self.grid):
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
+        self.world.insert_resource(PlayerTuning())
         self.world.insert_resource(Wiring.from_levels(project.levels, PREFABS))
         self.spawner.spawn_room(self.grid.rooms[0])
         self.body = Body(0, FEET - 20, 10, 20)
@@ -80,6 +85,7 @@ class Rig:
         self.world.spawn(self.body, self.motor)
         self.schedule = Schedule(["logic", "post", "render_prep"])
         self.schedule.add("logic", interact_system)
+        self.schedule.add("logic", beacon_system)
         for system in (trigger_system, plate_system, pickup_system, signal_system, door_system):
             self.schedule.add("post", system)
         self.schedule.add("render_prep", sprite_system)
@@ -206,3 +212,15 @@ def test_wiring_lists_sources_in_iid_order():
     rig = Rig()
     door, lever, plate = (rig.one(n, Identity).iid for n in ("door", "lever", "pressure_plate"))
     assert rig.world.resource(Wiring).sources == {door: sorted([lever, plate])}
+
+
+def test_relighting_a_beacon_refills_the_dash_and_asks_for_a_save():
+    rig = Rig().at(16).tick()
+    rig.motor.dash_charges = 0
+    rig.tick(Action.INTERACT)
+    assert rig.one("beacon", Beacon).lit
+    (lit,) = [e for e in rig.events if isinstance(e, BeaconLit)]
+    assert (lit.iid, lit.room, lit.y) == (rig.one("beacon", Identity).iid, "Hall", FEET)
+    assert rig.motor.dash_charges == 1
+    rig.tick().tick(Action.INTERACT)
+    assert len([e for e in rig.events if isinstance(e, BeaconLit)]) == 2

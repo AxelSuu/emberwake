@@ -30,7 +30,11 @@ Switch = { mode = "momentary" }
 PressurePlate = {}
 
 [beacon]
-components = { Sprite = { image = "beacon" } }
+persist = ["Beacon"]
+[beacon.components]
+Sprite = { image = "beacon", active_image = "beacon_lit" }
+Interactable = { prompt = "relight" }
+Beacon = {}
 
 [ember]
 fields = { Value = "Pickup.value" }

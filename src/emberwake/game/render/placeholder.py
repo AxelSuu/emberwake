@@ -244,6 +244,14 @@ class EntityArt:
         image.fill(palette.EMBER_COOL, (rect.centerx - 2, rect.top + 1, 4, 3))
 
     @staticmethod
+    def _beacon_lit(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 3, rect.top + 6, 6, rect.height - 6))
+        image.fill(ROCK_LIGHT, (rect.centerx - 3, rect.top + 6, 1, rect.height - 6))
+        image.fill(LANTERN_FRAME, (rect.centerx - 4, rect.top + 4, 8, 2))
+        image.fill(palette.EMBER_WARM, (rect.centerx - 3, rect.top, 6, 4))
+        image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.top + 1, 2, 3))
+
+    @staticmethod
     def _ember(image: pygame.Surface, rect: pygame.Rect) -> None:
         cx, cy = rect.center
         diamond = [(cx, cy - 4), (cx + 3, cy), (cx, cy + 4), (cx - 3, cy)]
