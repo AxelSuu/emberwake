@@ -64,3 +64,12 @@ down = "Ner"
 jump = "Hoppa"
 dash = "Dasha"
 interact = "Interagera"
+
+[results]
+title = "Resultat"
+new_best = "Nytt rekord!"
+time = "Tid {time}"
+best = "Bäst {time}"
+deaths = "Dödsfall: {count}"
+embers = "Glöd: {count}"
+continue = "Fortsätt"
