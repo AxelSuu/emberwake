@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from emberwake.engine.core.events import EventBus
-    from emberwake.engine.platform.storage import Storage
-    from emberwake.game.data.settings import Settings
+from emberwake.engine.core.events import EventBus
+from emberwake.engine.platform.storage import Storage
+from emberwake.game.data.settings import Settings
 
 
 @dataclass(slots=True)

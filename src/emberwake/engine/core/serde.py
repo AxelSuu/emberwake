@@ -7,7 +7,8 @@ dataclasses, ``list[T]``, ``tuple[T, ...]``, ``tuple[A, B]``, ``dict[K, V]`` (``
 
 Loading is lenient where it helps save compatibility and strict where it catches bugs:
 unknown keys are ignored, missing keys fall back to field defaults, wrong types raise
-`SerdeError` with a JSONPath-like location.
+`SerdeError` with a JSONPath-like location. Fields declared with `alias` are stored under a
+different key, for external formats whose keys are not valid Python names.
 
 Example:
     >>> from dataclasses import dataclass
@@ -27,14 +28,14 @@ import dataclasses
 import functools
 import types
 import typing
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Literal, Union, get_args, get_origin, get_type_hints
-
-if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+from typing import Any, Literal, Union, get_args, get_origin, get_type_hints
 
 type Data = bool | int | float | str | list[Data] | dict[str, Data] | None
+
+SERDE_KEY = "serde_key"
 
 
 class SerdeError(ValueError):
@@ -45,6 +46,11 @@ class SerdeError(ValueError):
         self.path = path
 
 
+def alias(key: str, **kwargs: Any) -> Any:
+    """Declare a dataclass field stored under `key`; `kwargs` go to `dataclasses.field`."""
+    return field(metadata={SERDE_KEY: key}, **kwargs)
+
+
 def to_data(obj: object) -> Data:
     """Convert `obj` into JSON-compatible data."""
     if obj is None or isinstance(obj, bool | int | float | str):
@@ -52,7 +58,7 @@ def to_data(obj: object) -> Data:
     if isinstance(obj, Enum):
         return to_data(obj.value)
     if dataclasses.is_dataclass(obj) and not isinstance(obj, type):
-        return {f.name: to_data(getattr(obj, f.name)) for f in dataclasses.fields(obj)}
+        return {_field_key(f): to_data(getattr(obj, f.name)) for f in dataclasses.fields(obj)}
     if isinstance(obj, list | tuple):
         return [to_data(item) for item in obj]
     if isinstance(obj, dict):
@@ -101,6 +107,10 @@ class VersionedCodec[T]:
                 raise SerdeError("$.version", f"no migration from version {step}")
             data = self.migrations[step](data)
         return from_data(self.model, data)
+
+
+def _field_key(f: dataclasses.Field[Any]) -> str:
+    return f.metadata.get(SERDE_KEY, f.name)
 
 
 def _key_to_str(key: object) -> str:
@@ -216,8 +226,9 @@ def _convert_dataclass(cls: Any, data: object, path: str) -> Any:
     for f in dataclasses.fields(cls):
         if not f.init:
             continue
-        if f.name in mapping:
-            kwargs[f.name] = _convert(hints[f.name], mapping[f.name], f"{path}.{f.name}")
+        key = _field_key(f)
+        if key in mapping:
+            kwargs[f.name] = _convert(hints[f.name], mapping[key], f"{path}.{key}")
         elif f.default is dataclasses.MISSING and f.default_factory is dataclasses.MISSING:
-            raise SerdeError(f"{path}.{f.name}", "missing required field")
+            raise SerdeError(f"{path}.{key}", "missing required field")
     return cls(**kwargs)

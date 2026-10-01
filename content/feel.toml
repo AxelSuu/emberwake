@@ -1,0 +1,58 @@
+# How Emberwake feels. Units: px, px/s, px/s², ticks (1/60 s) and 1/s rates.
+# Edit while running `just run --dev` and press F5 to reload.
+# Movement rules: docs/specs/player-movement.md
+
+[player]
+width = 10
+height = 20
+max_run = 180
+run_accel = 2000
+run_decel = 800
+air_mult = 0.65
+gravity = 1800
+max_fall = 320
+apex_threshold = 80
+apex_gravity_mult = 0.5
+jump_speed = 210
+jump_h_boost = 80
+var_jump = 12
+jump_cut = 0.5
+coyote = 6
+jump_buffer = 6
+corner_correction = 6
+drop_through = 8
+wall_slide_max = 80
+wall_jump_speed = 260
+wall_jump_lock = 10
+wall_jump_reach = 3
+dash_speed = 480
+dash_end_speed = 320
+dash_end_up_mult = 0.75
+dash_ticks = 9
+dash_charges = 1
+hazard_margin = 2
+
+[camera]
+deadzone = [24, 40]
+smoothing = 7.0
+look_ahead = 40
+look_ahead_rate = 2.5
+vertical_bias = -12
+
+[camera.shake]
+max_offset = 10
+frequency = 22
+decay = 1.6
+
+[juice]
+dash_hitstop = 3
+death_hitstop = 8
+respawn_delay = 24
+dash_trauma = 0.25
+wall_jump_trauma = 0.1
+death_trauma = 0.6
+hard_landing = 0.85
+hard_landing_trauma = 0.3
+squash = 0.35
+stretch = 0.3
+squash_recovery = 14.0

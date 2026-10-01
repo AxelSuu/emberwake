@@ -6,13 +6,20 @@
 emberwake.app        wiring: builds services, pushes the first scene, runs the loop
 emberwake.game       Emberwake content: scenes, components, systems, data models
 emberwake.engine     reusable, game-agnostic
-  core               pure Python: events, clock, serde, log (later: ecs, fsm, tween, rng)
+  core               pure Python: events, clock, serde, log, mathx, noise (later: ecs, fsm, tween)
   platform           desktop vs browser: storage, documents, display
   scene              scene stack
   runner             the main loop
-  debug              overlay (later: console, inspector window)
-  (planned) input, assets, render, audio, physics, world, ui
+  input              per-tick action state, keyboard/gamepad mapper, replays
+  physics            tile grid, sub-stepped kinematic collision
+  render             camera, screen shake (later: backends, lighting, particles)
+  world              LDtk loader (later: rooms, streaming)
+  debug              fps overlay, time control (later: console, inspector window)
+  (planned) assets, audio, ui
 ```
+
+Runtime data lives outside the package: `content/` (TOML, e.g. `feel.toml`) and `levels/`
+(LDtk). `game/paths.py` finds them; the web build copies both next to the package.
 
 Dependencies point downward only. import-linter enforces it (`just check`).
 
@@ -60,10 +67,20 @@ enemies), behavior trees (bosses), generator coroutines (cutscenes).
 Systems talk through the `EventBus` (`EnemyKilled`, `PlayerHurt`, ...) so score, sfx, particles,
 floating text and achievements stay decoupled.
 
-## Physics (planned, M1/M5)
+## Input
 
-Characters: custom kinematic swept AABB, per-axis resolution against the LDtk IntGrid (solid,
-one-way, spikes, water, ladder). Entity overlap: spatial hash plus layer bitmasks. Props, ropes,
+Devices never reach gameplay. `InputMapper` turns key and gamepad events into a set of held
+actions, sampled once per tick (taps shorter than a tick still count for one tick).
+`InputState` derives `pressed`, `released` and buffered presses from consecutive frames. Because
+gameplay sees only these frames, recording them (`ReplayRecorder`, run-length encoded) is enough
+to replay a session exactly.
+
+## Physics (M1 done, M5 planned)
+
+Characters: custom kinematic AABBs, per-axis resolution against the LDtk IntGrid (solid,
+one-way, hazard), sub-stepped to half a tile so nothing tunnels. The player controller
+(`game/player/controller.py`) is a pure step function that returns events (`Jumped`, `Landed`,
+`Dashed`, `Died`); the gameplay scene publishes them on the bus and feedback reacts. Entity overlap: spatial hash plus layer bitmasks. Props, ropes,
 debris, flares: pymunk, with tile solids greedy-meshed into static boxes and the player mirrored
 as a kinematic body.
 

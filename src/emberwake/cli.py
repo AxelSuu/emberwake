@@ -18,6 +18,8 @@ class Options:
     fullscreen: bool = False
     log_level: str = "INFO"
     frames: int | None = None
+    room: str | None = None
+    replay: str | None = None
 
 
 def parse_args(argv: Sequence[str] | None = None) -> Options:
@@ -31,7 +33,14 @@ def parse_args(argv: Sequence[str] | None = None) -> Options:
     parser.add_argument(
         "--frames", type=int, metavar="N", help="quit after N frames (smoke tests, profiling)"
     )
+    parser.add_argument("--room", help="start directly in this LDtk level")
+    parser.add_argument("--replay", metavar="KEY", help="play a saved replay, e.g. replays/x.json")
     args = parser.parse_args([] if argv is None else argv)
     return Options(
-        dev=args.dev, fullscreen=args.fullscreen, log_level=args.log_level, frames=args.frames
+        dev=args.dev,
+        fullscreen=args.fullscreen,
+        log_level=args.log_level,
+        frames=args.frames,
+        room=args.room,
+        replay=args.replay,
     )

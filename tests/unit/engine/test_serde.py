@@ -8,7 +8,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from emberwake.engine.core.serde import SerdeError, VersionedCodec, from_data, to_data
+from emberwake.engine.core.serde import SerdeError, VersionedCodec, alias, from_data, to_data
 
 
 class Color(Enum):
@@ -137,3 +137,17 @@ def test_codec_requires_every_migration_step():
     codec = VersionedCodec(V2, version=3, migrations={2: lambda d: d})
     with pytest.raises(SerdeError, match="no migration from version 1"):
         codec.load({"version": 1, "data": {"full_name": "x"}})
+
+
+@dataclass
+class External:
+    identifier: str = alias("__identifier")
+    world_x: int = alias("worldX", default=0)
+
+
+def test_alias_keys():
+    assert from_data(External, {"__identifier": "Room", "worldX": 5}) == External("Room", 5)
+    assert to_data(External("Room")) == {"__identifier": "Room", "worldX": 0}
+    with pytest.raises(SerdeError) as info:
+        from_data(External, {})
+    assert info.value.path == "$.__identifier"

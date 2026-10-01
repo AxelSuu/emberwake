@@ -1,0 +1,180 @@
+"""Programmatic placeholder art, so gameplay never waits for real sprites (ADR 0010)."""
+
+from __future__ import annotations
+
+import random
+
+import pygame
+
+from emberwake.engine.core.noise import ValueNoise
+from emberwake.engine.physics import Tile, TileGrid
+from emberwake.game import palette
+
+ROCK = pygame.Color("#3e3546")
+ROCK_DARK = pygame.Color("#2e222f")
+ROCK_SPECK = pygame.Color("#45293f")
+ROCK_EDGE = pygame.Color("#625565")
+ROCK_LIGHT = pygame.Color("#7f708a")
+PLANK = pygame.Color("#966c6c")
+PLANK_LIGHT = pygame.Color("#ab947a")
+PLANK_DARK = pygame.Color("#6e2727")
+POST = pygame.Color("#694f62")
+SPIKE = pygame.Color("#b33831")
+SPIKE_TIP = pygame.Color("#f68181")
+
+CLOAK = pygame.Color("#4d65b4")
+CLOAK_SHADE = pygame.Color("#484a77")
+CLOAK_DARK = pygame.Color("#323353")
+EYES = pygame.Color("#8ff8e2")
+LANTERN_FRAME = pygame.Color("#625565")
+
+SPRITE_SIZE = (14, 22)
+LANTERN = (12.5, 13.5)
+"""Lantern centre in the right-facing sprite, from its top-left."""
+
+
+def bake_room(grid: TileGrid) -> pygame.Surface:
+    """Render every tile of `grid` once into a transparent surface."""
+    surface = pygame.Surface(grid.pixel_size, pygame.SRCALPHA).convert_alpha()
+    size = grid.tile_size
+    for row in range(grid.height):
+        for column in range(grid.width):
+            tile = grid.get(column, row)
+            rect = pygame.Rect(column * size, row * size, size, size)
+            if tile is Tile.SOLID:
+                _rock(surface, grid, column, row, rect)
+            elif tile is Tile.ONE_WAY:
+                _plank(surface, grid, column, row, rect)
+            elif tile is Tile.HAZARD:
+                _spikes(surface, grid, column, row, rect)
+    return surface
+
+
+def _rock(
+    surface: pygame.Surface, grid: TileGrid, column: int, row: int, rect: pygame.Rect
+) -> None:
+    def open_at(dx: int, dy: int) -> bool:
+        return grid.get(column + dx, row + dy) is not Tile.SOLID
+
+    surface.fill(ROCK, rect)
+    rng = random.Random(column * 7919 + row * 104729)
+    for _ in range(3):
+        x, y = rng.randrange(1, rect.w - 1), rng.randrange(1, rect.h - 1)
+        surface.fill(ROCK_SPECK, (rect.x + x, rect.y + y, rng.choice((1, 2)), 1))
+    if open_at(0, 1):
+        surface.fill(ROCK_DARK, (rect.x, rect.bottom - 2, rect.w, 2))
+    if open_at(-1, 0):
+        surface.fill(ROCK_EDGE, (rect.x, rect.y, 1, rect.h))
+    if open_at(1, 0):
+        surface.fill(ROCK_DARK, (rect.right - 1, rect.y, 1, rect.h))
+    if open_at(0, -1):
+        surface.fill(ROCK_EDGE, (rect.x, rect.y, rect.w, 3))
+        surface.fill(ROCK_LIGHT, (rect.x, rect.y, rect.w, 1))
+
+
+def _plank(
+    surface: pygame.Surface, grid: TileGrid, column: int, row: int, rect: pygame.Rect
+) -> None:
+    surface.fill(PLANK, (rect.x, rect.y, rect.w, 4))
+    surface.fill(PLANK_LIGHT, (rect.x, rect.y, rect.w, 1))
+    surface.fill(PLANK_DARK, (rect.x, rect.y + 4, rect.w, 1))
+    for side, x in ((-1, rect.x + 2), (1, rect.right - 4)):
+        if grid.get(column + side, row) is not Tile.ONE_WAY:
+            surface.fill(POST, (x, rect.y + 5, 2, 6))
+
+
+def _spikes(
+    surface: pygame.Surface, grid: TileGrid, column: int, row: int, rect: pygame.Rect
+) -> None:
+    down = grid.get(column, row - 1) is Tile.SOLID and grid.get(column, row + 1) is not Tile.SOLID
+    for i in range(4):
+        x = rect.x + i * 4
+        if down:
+            points = [(x, rect.y), (x + 2, rect.y + 10), (x + 4, rect.y)]
+            tip = (x + 2, rect.y + 9)
+        else:
+            points = [(x, rect.bottom), (x + 2, rect.bottom - 10), (x + 4, rect.bottom)]
+            tip = (x + 2, rect.bottom - 10)
+        pygame.draw.polygon(surface, SPIKE, points)
+        surface.fill(SPIKE_TIP, (*tip, 1, 1))
+
+
+def _player_image() -> pygame.Surface:
+    image = pygame.Surface(SPRITE_SIZE, pygame.SRCALPHA).convert_alpha()
+    pygame.draw.polygon(image, CLOAK, [(4, 6), (9, 6), (12, 21), (1, 21)])
+    pygame.draw.polygon(image, CLOAK_SHADE, [(7, 6), (9, 6), (12, 21), (7, 21)])
+    pygame.draw.ellipse(image, CLOAK, (3, 0, 8, 9))
+    image.fill(palette.INK, (5, 3, 4, 4))
+    image.fill(EYES, (6, 4, 1, 1))
+    image.fill(EYES, (8, 4, 1, 1))
+    image.fill(CLOAK_DARK, (4, 21, 2, 1))
+    image.fill(CLOAK_DARK, (8, 21, 2, 1))
+    pygame.draw.line(image, CLOAK_DARK, (9, 10), (12, 11))
+    image.fill(LANTERN_FRAME, (11, 11, 3, 1))
+    image.fill(palette.EMBER_HOT, (11, 12, 3, 4))
+    image.fill(palette.EMBER_CORE, (12, 13, 1, 2))
+    return image
+
+
+class PlayerSprite:
+    """Player images per facing and squash, cached so nothing is transformed every frame."""
+
+    QUANTUM = 0.05
+
+    def __init__(self) -> None:
+        right = _player_image()
+        self._base = {1: right, -1: pygame.transform.flip(right, True, False)}
+        self._cache: dict[tuple[int, int, int], pygame.Surface] = {}
+
+    def image(self, facing: int, scale_x: float, scale_y: float) -> pygame.Surface:
+        qx, qy = round(scale_x / self.QUANTUM), round(scale_y / self.QUANTUM)
+        key = (facing, qx, qy)
+        if key not in self._cache:
+            base = self._base[facing]
+            width, height = base.get_size()
+            size = (
+                max(round(width * qx * self.QUANTUM), 1),
+                max(round(height * qy * self.QUANTUM), 1),
+            )
+            self._cache[key] = pygame.transform.scale(base, size)
+        return self._cache[key]
+
+    @staticmethod
+    def lantern_offset(facing: int, scale_x: float, scale_y: float) -> tuple[float, float]:
+        """Lantern position relative to the feet (bottom centre of the sprite)."""
+        width, height = SPRITE_SIZE
+        x = (LANTERN[0] - width / 2) * facing * scale_x
+        y = (LANTERN[1] - height) * scale_y
+        return x, y
+
+
+class LanternGlow:
+    """Additive warm glow with a gentle flicker; a stand-in until real lighting (M3)."""
+
+    LEVELS = 6
+
+    def __init__(self, radius: int = 64, seed: int = 0) -> None:
+        self._noise = ValueNoise(seed)
+        self._images = [
+            self._render(radius, 0.55 + 0.45 * i / (self.LEVELS - 1)) for i in range(self.LEVELS)
+        ]
+
+    @staticmethod
+    def _render(radius: int, strength: float) -> pygame.Surface:
+        surface = pygame.Surface((radius * 2, radius * 2)).convert()
+        black = pygame.Color("black")
+        warm = pygame.Color(palette.EMBER_WARM)
+        hot = pygame.Color(palette.EMBER_HOT)
+        for r in range(radius, 0, -1):
+            falloff = (1 - r / radius) ** 2
+            color = warm.lerp(hot, falloff)
+            pygame.draw.circle(
+                surface, black.lerp(color, falloff * 0.35 * strength), (radius, radius), r
+            )
+        return surface
+
+    def draw(self, canvas: pygame.Surface, center: tuple[float, float], time: float) -> None:
+        flicker = (self._noise(time * 6) + 1) / 2
+        image = self._images[min(int(flicker * self.LEVELS), self.LEVELS - 1)]
+        rect = image.get_rect(center=(round(center[0]), round(center[1])))
+        canvas.blit(image, rect, special_flags=pygame.BLEND_RGB_ADD)

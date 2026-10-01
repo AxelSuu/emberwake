@@ -29,7 +29,7 @@ cov:
 web:
     rm -rf build/web-src && mkdir -p build/web-src
     cp main.py build/web-src/
-    cp -r src/emberwake build/web-src/
+    cp -r src/emberwake content levels build/web-src/
     uv run --group web pygbag --build build/web-src
     rm -rf build/web && mv build/web-src/build/web build/web
 

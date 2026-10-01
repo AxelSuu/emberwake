@@ -19,6 +19,7 @@ build-backend = "uv_build"
 dev = [
     "hypothesis>=6.140",
     "import-linter>=2.5",
+    "jsonschema>=4.25",
     "prek>=0.2",
     "pytest>=8.4",
     "pytest-cov>=7.0",
@@ -54,6 +55,14 @@ ignore = [
     "PLR2004", # magic values: tuning constants live inline in tests and prototypes
 ]
 
+[tool.ruff.lint.flake8-bugbear]
+# serde.alias returns a dataclasses.Field, like field() itself.
+extend-immutable-calls = ["emberwake.engine.core.serde.alias"]
+
+[tool.ruff.lint.flake8-type-checking]
+# serde resolves dataclass annotations at runtime, so their imports must be real.
+runtime-evaluated-decorators = ["dataclasses.dataclass"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
@@ -70,6 +79,7 @@ python-version = "3.12"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
+pythonpath = ["."]
 filterwarnings = ["ignore:no fast renderer available"]
 
 [tool.coverage.run]
