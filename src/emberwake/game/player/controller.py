@@ -55,6 +55,8 @@ class Dashed:
 class Died:
     x: float
     y: float
+    cause: str = "hazard"
+    """``hazard`` (spikes, the void: back to the room's entrance) or ``health`` (to a beacon)."""
 
 
 type PlayerEvent = Jumped | Landed | Dashed | Died

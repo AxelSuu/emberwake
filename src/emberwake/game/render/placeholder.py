@@ -322,6 +322,15 @@ class EntityArt:
         image.fill(palette.EMBER_HOT, (rect.left, rect.top, 2, rect.height))
 
     @staticmethod
+    def _cinder(image: pygame.Surface, rect: pygame.Rect) -> None:
+        """A small heap of embers, glowing."""
+        w, h = rect.size
+        pygame.draw.ellipse(image, palette.INK, (0, h - 5, w, 5))
+        for i, color in enumerate((palette.EMBER_COOL, palette.EMBER_WARM, palette.EMBER_HOT)):
+            pygame.draw.ellipse(image, color, (2 + i, h - 6 - i * 2, w - 4 - 2 * i, 4))
+        image.fill(palette.EMBER_CORE, (w // 2 - 1, h - 9, 2, 2))
+
+    @staticmethod
     def _ember(image: pygame.Surface, rect: pygame.Rect) -> None:
         cx, cy = rect.center
         diamond = [(cx, cy - 4), (cx + 3, cy), (cx, cy + 4), (cx - 3, cy)]
