@@ -230,6 +230,24 @@ class EntityArt:
         image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.top + 1, 2, 3))
 
     @staticmethod
+    def _lightform(image: pygame.Surface, rect: pygame.Rect) -> None:
+        for x in range(rect.left, rect.right, 4):
+            image.fill(ROCK_EDGE, (x, rect.top, 2, 1))
+            image.fill(ROCK_EDGE, (x, rect.bottom - 1, 2, 1))
+
+    @staticmethod
+    def _lightform_lit(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(palette.EMBER_WARM, (rect.left, rect.top, rect.width, 3))
+        image.fill(palette.EMBER_CORE, (rect.left, rect.top, rect.width, 1))
+
+    @staticmethod
+    def _brazier(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(LANTERN_FRAME, (rect.centerx - 5, rect.bottom - 6, 10, 2))
+        image.fill(ROCK_EDGE, (rect.centerx - 3, rect.bottom - 4, 6, 4))
+        image.fill(palette.EMBER_WARM, (rect.centerx - 3, rect.bottom - 10, 6, 4))
+        image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.bottom - 9, 2, 3))
+
+    @staticmethod
     def _ember(image: pygame.Surface, rect: pygame.Rect) -> None:
         cx, cy = rect.center
         diamond = [(cx, cy - 4), (cx + 3, cy), (cx, cy + 4), (cx - 3, cy)]

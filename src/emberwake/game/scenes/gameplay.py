@@ -39,6 +39,7 @@ from emberwake.game.components import Sprite
 from emberwake.game.data.save import SaveSlot, load_slot
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.interact import Collected, Interactable, Switch
+from emberwake.game.light import Ember
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
@@ -159,7 +160,7 @@ class GameplayScene(Scene):
         self.spawn_point = self._continue_point(start, self.progress.data.beacon)
         self.camera.bounds = self.rooms.graph.rects[start]
         resources = (self.actions, self.ctx.bus, self.grid, self.wiring, self.rooms, self.spawner)
-        for resource in (*resources, self.feel.player, self.feel.rooms):
+        for resource in (*resources, self.feel.player, self.feel.rooms, self.feel.light):
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
         self.schedule = gameplay_schedule()
@@ -302,8 +303,9 @@ class GameplayScene(Scene):
             return near
         return min(starts, key=lambda p: (p[0] - near[0]) ** 2 + (p[1] - near[1]) ** 2)
 
-    def _new_player(self) -> tuple[Body, Motor]:
-        return new_player(*self.spawn_point, self.feel.player)
+    def _new_player(self) -> tuple[Body, Motor, Ember]:
+        body, motor = new_player(*self.spawn_point, self.feel.player)
+        return body, motor, Ember(self.feel.light.ember_max)
 
     def reload(self) -> None:
         """Re-read feel.toml, prefabs and the levels, keeping the player where it is."""
@@ -314,6 +316,7 @@ class GameplayScene(Scene):
             self.feel = feel
             self.world.insert_resource(feel.player)
             self.world.insert_resource(feel.rooms)
+            self.world.insert_resource(feel.light)
             self.camera.retune(feel.camera)
         prefabs = self._read_prefabs()
         if prefabs is not None:
@@ -520,11 +523,23 @@ class GameplayScene(Scene):
         self.backdrops.draw_near(canvas, (ox, oy), room_top)
         self.post.apply(canvas, self.frame.flags, self.backdrops.grade())
         self.flash.draw(canvas)
+        self._draw_ember(canvas)
         if self.show_colliders:
             self._draw_colliders(canvas, ox, oy)
         if self.show_rooms:
             self._draw_rooms(canvas, ox, oy)
             self._draw_wires(canvas, ox, oy)
+
+    def _draw_ember(self, canvas: pygame.Surface) -> None:
+        """A small bar of the player's ember in the top left corner."""
+        if not self.world.has(self.player, Ember):
+            return
+        ember = self.world.get(self.player, Ember)
+        fraction = ember.current / self.feel.light.ember_max
+        x, y, width = 6, 6, 40
+        canvas.fill(palette.INK, (x - 1, y - 1, width + 2, 5))
+        color = palette.EMBER_HOT if fraction > 0.25 else palette.EMBER_COOL
+        canvas.fill(color, (x, y, round(width * fraction), 3))
 
     @staticmethod
     def _at(

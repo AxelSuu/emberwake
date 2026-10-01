@@ -41,3 +41,13 @@ fields = { Value = "Pickup.value" }
 [ember.components]
 Sprite = { image = "ember" }
 Pickup = {}
+
+[lightform]
+[lightform.components]
+Sprite = { image = "lightform", active_image = "lightform_lit" }
+Lightform = {}
+
+[brazier]
+[brazier.components]
+Sprite = { image = "brazier" }
+LightSource = { radius = 72.0 }

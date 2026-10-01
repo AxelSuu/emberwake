@@ -39,3 +39,14 @@ color = "#ea4f36"
 pivot = [0.5, 0.5]
 doc = "Collectible"
 fields.Value = { type = "Int", default = 1 }
+
+[entities.Lightform]
+color = "#8ff8e2"
+size = [32, 8]
+pivot = [0.0, 0.0]
+resizable = true
+doc = "A one-way platform that exists only while light reaches it"
+
+[entities.Brazier]
+color = "#f9c22b"
+doc = "A fixed light source"
