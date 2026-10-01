@@ -88,6 +88,7 @@ branch = true
 
 [tool.importlinter]
 root_package = "emberwake"
+include_external_packages = true
 
 [[tool.importlinter.contracts]]
 name = "Game builds on engine, never the reverse"
@@ -99,7 +100,7 @@ layers = [
 ]
 
 [[tool.importlinter.contracts]]
-name = "Engine core is dependency-free"
+name = "Engine core and ECS are dependency-free"
 type = "forbidden"
-source_modules = ["emberwake.engine.core"]
-forbidden_modules = ["emberwake.engine.platform", "emberwake.engine.scene"]
+source_modules = ["emberwake.engine.core", "emberwake.engine.ecs"]
+forbidden_modules = ["pygame", "emberwake.engine.platform", "emberwake.engine.scene"]
