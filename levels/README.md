@@ -48,7 +48,9 @@ from the room name and marker, so moving an entity keeps its saved state.
 
 ## Entities
 
-See `src/defs.toml` for fields.
+See `src/defs.toml` for fields. Each entity spawns the prefab named after it in snake_case from
+`content/prefabs.toml`; `uv run python -m tools.levels validate` (part of `just check`) fails if
+one has no prefab or its fields do not fit.
 
 | Entity | Meaning |
 |---|---|
