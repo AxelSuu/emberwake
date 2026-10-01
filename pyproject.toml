@@ -54,6 +54,10 @@ ignore = [
     "PLR2004", # magic values: tuning constants live inline in tests and prototypes
 ]
 
+[tool.ruff.lint.flake8-bugbear]
+# serde.alias returns a dataclasses.Field, like field() itself.
+extend-immutable-calls = ["emberwake.engine.core.serde.alias"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
