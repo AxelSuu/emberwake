@@ -39,6 +39,10 @@ art:
 atlas:
     uv run python -m tools.atlas
 
+# Generate normal maps (_n.png) for sprites in assets/
+normals:
+    uv run python -m tools.normals
+
 # Recompile sprites whenever they change
 art-watch:
     uv run python -m tools.pxl watch
