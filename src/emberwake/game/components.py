@@ -36,6 +36,7 @@ from emberwake.game import (  # noqa: E402, F401
     dialogue,
     enemies,
     flares,
+    grants,
     interact,
     light,
     signals,

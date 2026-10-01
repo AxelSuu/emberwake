@@ -60,3 +60,4 @@ one has no prefab or its fields do not fit.
 | PressurePlate | On while something stands on it |
 | Beacon | Interact to relight: saves, refills the dash and becomes the continue point |
 | Ember | Collectible |
+| Grant | Touch to receive an ability or item (`Thing`, a key of `content/grants.toml`, and `Count`) |

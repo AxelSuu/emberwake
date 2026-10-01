@@ -4,6 +4,7 @@
 text = "dialogue.tinker.hello"
 branches = [{ if = "met_tinker", goto = "again" }]
 set = { met_tinker = 1 }
+action = "give:flare"
 choices = [
     { text = "dialogue.tinker.ask_shop", goto = "shop" },
     { text = "dialogue.tinker.ask_city", goto = "city" },

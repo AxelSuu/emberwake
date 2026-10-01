@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from emberwake.engine.core.dialogue import DialogueRunner
 from emberwake.engine.ui import Button, Label, Panel, UiRoot, Widget
 from emberwake.game import paths
+from emberwake.game.grants import GIVE, Give
 from emberwake.game.scenes.overlay import Overlay
 from emberwake.game.shop import buy, can_buy, load_shop, owned, price, wallet
 
@@ -106,6 +107,8 @@ class DialogueScene(Overlay):
         for action in self.runner.take_actions():
             if action == "shop":
                 self.manager.push(ShopScene(self.ctx, self.progress, self.save))
+            elif action.startswith(GIVE):
+                self.ctx.bus.publish(Give(action.removeprefix(GIVE)))
 
     def _leave(self) -> None:
         self.manager.pop()

@@ -322,6 +322,16 @@ class EntityArt:
         image.fill(palette.EMBER_HOT, (rect.left, rect.top, 2, rect.height))
 
     @staticmethod
+    def _grant(image: pygame.Surface, rect: pygame.Rect) -> None:
+        """A small pedestal holding a glowing orb."""
+        w, h = rect.size
+        image.fill(ROCK_EDGE, (2, h - 4, w - 4, 4))
+        image.fill(ROCK_LIGHT, (2, h - 4, w - 4, 1))
+        pygame.draw.circle(image, palette.EMBER_WARM, (w // 2, h - 9), 4)
+        pygame.draw.circle(image, palette.EMBER_HOT, (w // 2, h - 9), 3)
+        image.fill(palette.EMBER_CORE, (w // 2 - 1, h - 11, 2, 2))
+
+    @staticmethod
     def _cinder(image: pygame.Surface, rect: pygame.Rect) -> None:
         """A small heap of embers, glowing."""
         w, h = rect.size

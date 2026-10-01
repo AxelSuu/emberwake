@@ -49,6 +49,7 @@ from emberwake.game.dialogue import Talk
 from emberwake.game.enemies import Brain
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
+from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
 from emberwake.game.interact import Collected, Interactable, Switch
 from emberwake.game.light import Ember, LightSource
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
@@ -101,6 +102,7 @@ PARTICLES = "particles.toml"
 COSMETICS = "cosmetics.toml"
 DIALOGUE = "dialogue.toml"
 TRIALS = "trials.toml"
+GRANTS = "grants.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
@@ -247,6 +249,10 @@ class GameplayScene(Scene):
         flares = self.feel.light.flare_charges
         kit = FlareKit(PropWorld(self.grid, (0, 0, 1, 1)), charges=flares, max_charges=flares)
         self.world.insert_resource(kit)
+        data = self.progress.data
+        self.loadout = Loadout(data.abilities, data.inventory, self._read_grants())
+        self.world.insert_resource(self.loadout)
+        kit.max_charges = kit.charges = self._flare_charges()
         self.schedule = gameplay_schedule()
         self._apply_settings()
         self.player = self.world.spawn(*self._new_player())
@@ -289,6 +295,8 @@ class GameplayScene(Scene):
             bus.subscribe(Rested, self._on_rested),
             bus.subscribe(Kindled, self._on_kindled),
             bus.subscribe(CinderRecovered, self._on_cinder),
+            bus.subscribe(Give, self._on_give),
+            bus.subscribe(Granted, self._on_granted),
             bus.subscribe(FlareThrown, self._on_flare),
             bus.subscribe(FlareFizzled, self._on_fizzle),
             *self.progress.subscribe(bus),
@@ -381,6 +389,10 @@ class GameplayScene(Scene):
         if most > ember.max:
             ember.current += most - ember.max
             ember.max = most
+        kit = self.world.resource(FlareKit)
+        if (charges := self._flare_charges()) > kit.max_charges:
+            kit.charges += charges - kit.max_charges
+            kit.max_charges = charges
 
     def _on_talk(self, event: Talk) -> None:
         graph = self.dialogues.get(event.dialogue)
@@ -517,11 +529,23 @@ class GameplayScene(Scene):
         return body, motor, Ember(most, max=most), health, hurtbox, *swing, Kindle()
 
     def _maximums(self) -> tuple[int, float]:
-        """The player's health and ember capacity, with the shop upgrades bought so far."""
-        flags = self.progress.data.flags
+        """The player's health and flame capacity, with shop upgrades and items found."""
+        flags, loadout = self.progress.data.flags, self.loadout
         hp = self.feel.enemies.player_hp + flags.get(UP_HP, 0) * HP_PER_UPGRADE
+        hp += loadout.bonus_health
         most = self.feel.light.ember_max + flags.get(UP_OIL, 0) * EMBER_PER_UPGRADE
+        most += loadout.bonus_flame
         return hp, most
+
+    def _flare_charges(self) -> int:
+        return self.feel.light.flare_charges + self.loadout.bonus_flares
+
+    def _read_grants(self) -> dict[str, GrantSpec]:
+        try:
+            return load_grants(paths.content(GRANTS))
+        except (OSError, tomllib.TOMLDecodeError, SerdeError) as error:
+            log.error("Could not load %s: %s", GRANTS, error)
+            return {}
 
     def reload(self) -> None:
         """Re-read feel.toml, prefabs and the levels, keeping the player where it is."""
@@ -592,8 +616,7 @@ class GameplayScene(Scene):
                 rooms = sorted(self.rooms.graph.levels)
                 self.manager.push(WarpScene(self.ctx, rooms, self.room, self.warp))
             case pygame.K_F7:
-                flags = self.progress.data.flags
-                self.manager.push(FlagsScene(self.ctx, flags, self._known_flags()))
+                self._flags_overlay()
             case pygame.K_F9:
                 self.save_replay()
             case pygame.K_p:
@@ -602,6 +625,12 @@ class GameplayScene(Scene):
                 self.time.step()
             case pygame.K_COMMA:
                 self.time.toggle_slow()
+
+    def _flags_overlay(self) -> None:
+        data, specs = self.progress.data, self.loadout.specs
+        abilities = [name for name, spec in specs.items() if spec.kind == "ability"]
+        flags = self._known_flags()
+        self.manager.push(FlagsScene(self.ctx, data.flags, flags, data.abilities, abilities))
 
     def warp(self, room: str) -> None:
         """Move the player to `room`'s first PlayerStart, as if it had walked in (dev)."""
@@ -802,6 +831,19 @@ class GameplayScene(Scene):
         if cinder is None or self.cinder is not None or cinder.room not in self.rooms.loaded:
             return
         self.cinder = self.world.spawn(*cinder_parts(cinder))
+
+    def _on_give(self, event: Give) -> None:
+        if self.loadout.give(event.thing, event.count):
+            self.ctx.bus.publish(Granted(event.thing, event.count))
+
+    def _on_granted(self, event: Granted) -> None:
+        name = self.ctx.t(f"grant.{event.thing}.name")
+        self.toasts.push(self.ctx.t("grant.found", name=name))
+        self.ctx.audio.sfx("player/kindle")
+        self._apply_upgrades()
+        body = self.body
+        self._dust("kindle", body.center_x, body.y)
+        self.progress.save(self.spawner)
 
     def _on_cinder(self, event: CinderRecovered) -> None:
         self.progress.data.cinder = None

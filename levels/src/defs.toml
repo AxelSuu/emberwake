@@ -40,6 +40,13 @@ pivot = [0.5, 0.5]
 doc = "Collectible"
 fields.Value = { type = "Int", default = 1 }
 
+[entities.Grant]
+color = "#fbff86"
+pivot = [0.5, 1.0]
+doc = "Touch to receive an ability or item from content/grants.toml"
+fields.Thing = { type = "String", default = "shard", doc = "A key of content/grants.toml" }
+fields.Count = { type = "Int", default = 1 }
+
 [entities.Lightform]
 color = "#8ff8e2"
 size = [32, 8]

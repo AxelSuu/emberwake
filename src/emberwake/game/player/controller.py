@@ -100,9 +100,13 @@ def step(  # noqa: PLR0917
     grid: TileSource,
     tuning: PlayerTuning,
     dt: float,
+    *,
+    can_dash: bool = True,
 ) -> list[PlayerEvent]:
-    """Advance the player by one tick and return what happened."""
-    return _Tick(body, motor, actions, grid, tuning, dt).run()
+    """Advance the player by one tick and return what happened; `can_dash` gates the dash."""
+    tick = _Tick(body, motor, actions, grid, tuning, dt)
+    tick.can_dash = can_dash
+    return tick.run()
 
 
 def wall_side(grid: TileSource, body: Body, reach: float) -> int:
@@ -135,6 +139,7 @@ class _Tick:
         self.events: list[PlayerEvent] = []
         self.intent_x = actions.axis(Action.LEFT, Action.RIGHT)
         self.intent_y = actions.axis(Action.UP, Action.DOWN)
+        self.can_dash = True
 
     def run(self) -> list[PlayerEvent]:
         p, body = self.p, self.body
@@ -148,7 +153,7 @@ class _Tick:
             p.air_ticks = min(p.air_ticks + 1, NEVER)
         p.drop_ticks = max(p.drop_ticks - 1, 0)
 
-        if p.dash_ticks == 0 and p.dash_charges > 0:
+        if p.dash_ticks == 0 and p.dash_charges > 0 and self.can_dash:
             self.try_dash()
         sliding = False
         if p.dash_ticks > 0:

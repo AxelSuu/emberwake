@@ -21,6 +21,7 @@ STEP = 1 / 60
 def start(ctx: GameContext) -> tuple[SceneManager, GameplayScene]:
     scenes = SceneManager()
     game = GameplayScene(ctx, room="Test_Room")
+    game.loadout.give("flare")
     scenes.push(game)
     for _ in range(30):
         scenes.update(STEP)
@@ -96,3 +97,12 @@ def test_flares_run_out_and_come_back_in_light(ctx: GameContext) -> None:
     for _ in range(round(game.feel.light.flare_refill * 60) + 5):
         scenes.update(STEP)
     assert kit.charges >= 1
+
+
+def test_no_flares_before_they_are_given(ctx: GameContext) -> None:
+    scenes = SceneManager()
+    game = GameplayScene(ctx, room="Test_Room")
+    scenes.push(game)
+    scenes.update(STEP)
+    throw(scenes)
+    assert not flares(game)

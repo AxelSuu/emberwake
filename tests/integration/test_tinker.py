@@ -139,3 +139,14 @@ def test_an_unaffordable_item_cannot_be_bought_and_purchases_are_saved(ctx: Game
     saved = load_slot(ctx.storage, ctx.slot)
     assert saved is not None
     assert saved.flags["up_hp"] == 1
+
+
+def test_meeting_the_tinker_gives_flares_once(ctx: GameContext) -> None:
+    scenes, game = at_the_tinker(ctx)
+    assert not game.loadout.has("flare")
+    talk(scenes)
+    assert game.loadout.has("flare")
+    assert game.toasts
+    pick(scenes, "Goodbye")
+    talk(scenes)
+    assert game.progress.data.abilities.count("flare") == 1

@@ -16,6 +16,7 @@ from emberwake.engine.input import InputState
 from emberwake.engine.physics import Body, PropWorld
 from emberwake.engine.world.rooms import RoomStreamer
 from emberwake.game.actions import Action
+from emberwake.game.grants import Loadout
 from emberwake.game.interact import player_body
 from emberwake.game.light import Ember, LightSource, LightTuning
 from emberwake.game.player.controller import Motor
@@ -96,7 +97,8 @@ def flare_system(world: World, dt: float) -> None:
     player = player_body(world)
     actions = world.resource(InputState)
     _recharge(world, kit, dt)
-    if player is not None and kit.cooldown <= 0 and actions.pressed(Action.FLARE):
+    allowed = not world.has_resource(Loadout) or world.resource(Loadout).has("flare")
+    if player is not None and allowed and kit.cooldown <= 0 and actions.pressed(Action.FLARE):
         bus = world.resource(EventBus)
         if kit.charges <= 0:
             bus.publish(FlareFizzled())

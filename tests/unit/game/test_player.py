@@ -353,3 +353,10 @@ def test_tuning_is_respected():
     sim.hold(2)
     sim.hold(30, R)
     assert sim.motor.vx == pytest.approx(60)
+
+
+def test_no_dash_without_the_ability():
+    sim = settled()
+    sim.actions.advance(frozenset({DASH}))
+    events = step(sim.body, sim.motor, sim.actions, sim.grid, sim.tuning, DT, can_dash=False)
+    assert not [event for event in events if isinstance(event, Dashed)]
