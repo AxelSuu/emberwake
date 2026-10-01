@@ -14,7 +14,7 @@ from emberwake.engine.debug.time_control import TimeControl
 from emberwake.engine.ecs import World
 from emberwake.engine.input import InputMapper, InputState
 from emberwake.engine.input.replay import REPLAY_CODEC, Replay, ReplayPlayer, ReplayRecorder
-from emberwake.engine.physics import Body, Tile
+from emberwake.engine.physics import Body, Tile, TileSource
 from emberwake.engine.platform.documents import save_document
 from emberwake.engine.render.camera import Camera
 from emberwake.engine.scene import Scene
@@ -109,7 +109,7 @@ class GameplayScene(Scene):
     def _load_room(self) -> None:
         level = load_project(paths.levels(WORLD)).level(self.room)
         self.grid = level.layer("Collisions").to_tile_grid(COLLISIONS)
-        self.world.insert_resource(self.grid)
+        self.world.insert_resource(self.grid, key=TileSource)
         starts = level.entities("PlayerStart")
         self.spawn_point = starts[0].px if starts else (level.width // 2, level.height // 2)
         self.room_image = bake_room(self.grid)

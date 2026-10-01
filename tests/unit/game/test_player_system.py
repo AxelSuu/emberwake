@@ -3,7 +3,7 @@ from __future__ import annotations
 from emberwake.engine.core.events import EventBus
 from emberwake.engine.ecs import COMPONENTS, World
 from emberwake.engine.input import InputState
-from emberwake.engine.physics import Body, Tile, TileGrid
+from emberwake.engine.physics import Body, Tile, TileGrid, TileSource
 from emberwake.game.actions import Action
 from emberwake.game.player.controller import Landed, Motor, new_player
 from emberwake.game.player.tuning import PlayerTuning
@@ -18,7 +18,7 @@ def world_with_players(*feet: tuple[float, float]) -> tuple[World, list[Landed]]
     landed: list[Landed] = []
     bus.subscribe(Landed, landed.append)
     world.insert_resource(InputState[Action]())
-    world.insert_resource(TileGrid.from_rows(ROWS, {"#": Tile.SOLID}))
+    world.insert_resource(TileGrid.from_rows(ROWS, {"#": Tile.SOLID}), key=TileSource)
     world.insert_resource(PlayerTuning())
     world.insert_resource(bus)
     for foot in feet:

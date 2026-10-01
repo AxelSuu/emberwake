@@ -106,3 +106,8 @@ def test_moves_never_end_inside_solids(moves: list[tuple[float, float]], x: floa
     for dx, dy in moves:
         move(ROOM, body, dx, dy)
         assert not overlaps(ROOM, body.x, body.y, body.width, body.height)
+
+
+def test_void_is_below_the_grid():
+    assert not ROOM.void(-50, 7 * TS)
+    assert ROOM.void(5, 7 * TS + 1)
