@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 import pygame
 
+from emberwake.engine.core.cutscene import CutscenePlayer
 from emberwake.engine.core.jobs import Jobs
 from emberwake.engine.core.serde import SerdeError
 from emberwake.engine.debug.time_control import TimeControl
@@ -109,6 +110,7 @@ class GameplayScene(Scene):
         self.backend = SoftwareBackend()
         self.art = EntityArt()
         self.particles = ParticleSystem()
+        self.cutscenes = CutscenePlayer()
         self.texts = FloatingTexts()
         self.texts.muted = ctx.settings.accessibility.reduce_flashes
         self.emitters = self._read_emitters() or {}
@@ -358,6 +360,8 @@ class GameplayScene(Scene):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.manager.push(PauseScene(self.ctx))
+            elif event.key == pygame.K_RETURN and self.cutscenes.active:
+                self.cutscenes.skip()
             elif self.ctx.dev:
                 self._dev_key(event.key)
         elif event.type == pygame.MOUSEMOTION and self.free_camera and event.buttons[0]:
@@ -398,7 +402,8 @@ class GameplayScene(Scene):
                     return frame
             log.info("Replay finished, live input")
             self.replay = None
-        return self.mapper.sample()
+        held = self.mapper.sample()
+        return frozenset() if self.cutscenes.active else held
 
     # Simulation
 
@@ -407,6 +412,7 @@ class GameplayScene(Scene):
             return
         self.clock += dt
         self.progress.tick(dt)
+        self.cutscenes.update(dt)
         self.particles.update(dt)
         self.texts.update(dt)
         self.flash.update(dt)
