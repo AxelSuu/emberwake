@@ -34,9 +34,15 @@ class AudioSettings:
 
 
 @dataclass(slots=True)
+class AccessibilitySettings:
+    reduce_flashes: bool = False
+
+
+@dataclass(slots=True)
 class Settings:
     video: VideoSettings = field(default_factory=VideoSettings)
     audio: AudioSettings = field(default_factory=AudioSettings)
+    accessibility: AccessibilitySettings = field(default_factory=AccessibilitySettings)
     controls: Bindings = field(default_factory=default_bindings)
     language: str = "en"
 
@@ -56,6 +62,13 @@ def _add_post_effects(data: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
+def _add_accessibility(data: dict[str, Any]) -> dict[str, Any]:
+    """v3 -> v4: the accessibility group; missing fields take their defaults on load."""
+    return data
+
+
 SETTINGS_CODEC = VersionedCodec(
-    Settings, version=3, migrations={1: _add_interact, 2: _add_post_effects}
+    Settings,
+    version=4,
+    migrations={1: _add_interact, 2: _add_post_effects, 3: _add_accessibility},
 )

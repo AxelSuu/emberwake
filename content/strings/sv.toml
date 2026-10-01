@@ -5,3 +5,27 @@ made_with = "gjort med pygame-ce"
 
 [title]
 press_any_key = "tryck på valfri tangent"
+
+[language]
+name = "Svenska"
+
+[settings]
+title = "Inställningar"
+back = "Tillbaka"
+video = "Bild"
+audio = "Ljud"
+accessibility = "Tillgänglighet"
+language = "Språk"
+fullscreen = "Helskärm"
+vsync = "VSync (nästa start)"
+shake = "Skärmskak"
+bloom = "Bloom"
+grading = "Färggradering"
+vignette = "Vinjett"
+crt = "CRT-linjer"
+shadows = "Skuggor"
+shafts = "Ljusstrålar"
+master = "Huvudvolym"
+music = "Musik"
+sfx = "Effekter"
+reduce_flashes = "Minska blinkningar"

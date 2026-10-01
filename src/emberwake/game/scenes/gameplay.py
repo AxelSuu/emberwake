@@ -105,6 +105,7 @@ class GameplayScene(Scene):
         self.particles = ParticleSystem()
         self.emitters = self._read_emitters() or {}
         self.flash = Flash()
+        self.flash.muted = ctx.settings.accessibility.reduce_flashes
         self.backdrops = Backdrops(self._read_backdrops() or {}, ctx.canvas_size)
         self.time = TimeControl()
         self.hitstop = 0
@@ -187,6 +188,13 @@ class GameplayScene(Scene):
             bus.subscribe(BeaconLit, self._on_beacon_lit),
             *self.progress.subscribe(bus),
         ]
+
+    def on_resume(self) -> None:
+        """Apply settings changed in an overlay."""
+        settings = self.ctx.settings
+        self.frame.flags = self._effects()
+        self.camera.shake.intensity = settings.video.screen_shake
+        self.flash.muted = settings.accessibility.reduce_flashes
 
     def on_exit(self) -> None:
         for unsubscribe in self._unsubscribe:
