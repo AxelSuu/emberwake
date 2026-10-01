@@ -47,3 +47,12 @@ def test_v5_controls_gain_the_flare_binding():
     del v5["controls"]["keys"]["flare"]
     loaded = SETTINGS_CODEC.load({"version": 5, "data": v5})
     assert loaded.controls.keys["flare"] == ["f", "q"]
+
+
+def test_v6_gets_cosmetic_and_assist_defaults():
+    v6: Any = to_data(Settings())
+    del v6["cosmetics"], v6["assist"]
+    loaded = SETTINGS_CODEC.load({"version": 6, "data": v6})
+    assert loaded.cosmetics.skin == "default"
+    assert loaded.assist.game_speed == 1.0
+    assert not loaded.assist.invulnerable

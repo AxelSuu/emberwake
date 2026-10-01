@@ -8,7 +8,7 @@ from emberwake.game import paths
 
 TABLES = load_tables(paths.content("strings"))
 SOURCE = Path(__file__).parents[3] / "src/emberwake/game"
-DYNAMIC = ("achievement.",)
+DYNAMIC = ("achievement.", "skin.", "lantern.")
 """Key families the game builds at runtime (``f"achievement.{id}.name"``)."""
 CALL = re.compile(r"""\bt\(\s*["']([a-z0-9_.]+)["']""")
 

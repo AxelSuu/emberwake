@@ -13,6 +13,8 @@ from emberwake.engine.physics import Tile, TileGrid
 from emberwake.game import palette
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from emberwake.engine.render.chunks import Paint
 
 ROCK = pygame.Color("#3e3546")
@@ -108,20 +110,30 @@ def _spikes(
         surface.fill(SPIKE_TIP, (*tip, 1, 1))
 
 
-def _player_image() -> pygame.Surface:
+def _player_image(
+    skin: Mapping[str, str] | None = None, flame: str | None = None
+) -> pygame.Surface:
+    """The player; `skin` overrides ``cloak``, ``cloak_shade``, ``cloak_dark`` and ``eyes``."""
+    skin = skin or {}
+    cloak = pygame.Color(skin.get("cloak") or CLOAK)
+    shade = pygame.Color(skin.get("cloak_shade") or CLOAK_SHADE)
+    dark = pygame.Color(skin.get("cloak_dark") or CLOAK_DARK)
+    eyes = pygame.Color(skin.get("eyes") or EYES)
+    glow = pygame.Color(flame or palette.EMBER_HOT)
+    core = glow.lerp(pygame.Color(palette.EMBER_CORE), 0.6)
     image = pygame.Surface(SPRITE_SIZE, pygame.SRCALPHA).convert_alpha()
-    pygame.draw.polygon(image, CLOAK, [(4, 6), (9, 6), (12, 21), (1, 21)])
-    pygame.draw.polygon(image, CLOAK_SHADE, [(7, 6), (9, 6), (12, 21), (7, 21)])
-    pygame.draw.ellipse(image, CLOAK, (3, 0, 8, 9))
+    pygame.draw.polygon(image, cloak, [(4, 6), (9, 6), (12, 21), (1, 21)])
+    pygame.draw.polygon(image, shade, [(7, 6), (9, 6), (12, 21), (7, 21)])
+    pygame.draw.ellipse(image, cloak, (3, 0, 8, 9))
     image.fill(palette.INK, (5, 3, 4, 4))
-    image.fill(EYES, (6, 4, 1, 1))
-    image.fill(EYES, (8, 4, 1, 1))
-    image.fill(CLOAK_DARK, (4, 21, 2, 1))
-    image.fill(CLOAK_DARK, (8, 21, 2, 1))
-    pygame.draw.line(image, CLOAK_DARK, (9, 10), (12, 11))
+    image.fill(eyes, (6, 4, 1, 1))
+    image.fill(eyes, (8, 4, 1, 1))
+    image.fill(dark, (4, 21, 2, 1))
+    image.fill(dark, (8, 21, 2, 1))
+    pygame.draw.line(image, dark, (9, 10), (12, 11))
     image.fill(LANTERN_FRAME, (11, 11, 3, 1))
-    image.fill(palette.EMBER_HOT, (11, 12, 3, 4))
-    image.fill(palette.EMBER_CORE, (12, 13, 1, 2))
+    image.fill(glow, (11, 12, 3, 4))
+    image.fill(core, (12, 13, 1, 2))
     return image
 
 
@@ -130,8 +142,8 @@ class PlayerSprite:
 
     QUANTUM = 0.05
 
-    def __init__(self) -> None:
-        right = _player_image()
+    def __init__(self, skin: Mapping[str, str] | None = None, flame: str | None = None) -> None:
+        right = _player_image(skin, flame)
         self._base = {1: right, -1: pygame.transform.flip(right, True, False)}
         self._cache: dict[tuple[int, int, int], pygame.Surface] = {}
 
