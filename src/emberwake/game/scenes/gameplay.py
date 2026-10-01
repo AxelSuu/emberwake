@@ -7,6 +7,7 @@ import logging
 import operator
 import time
 import tomllib
+from math import floor
 from typing import TYPE_CHECKING
 
 import pygame
@@ -214,6 +215,7 @@ class GameplayScene(Scene):
             (Flag.GRADING, video.grading),
             (Flag.VIGNETTE, video.vignette),
             (Flag.CRT, video.crt),
+            (Flag.SHADOWS, video.shadows),
         )
         return functools.reduce(operator.or_, (flag for flag, on in toggles if on), Flag(0))
 
@@ -458,6 +460,12 @@ class GameplayScene(Scene):
             layer.draw(canvas, (ox, oy))
         frame = self.frame
         frame.clear()
+        size = self.grid.tile_size
+
+        def occluded(x: float, y: float) -> bool:
+            return self.grid.get(floor((x + ox) / size), floor((y + oy) / size)) == Tile.SOLID
+
+        frame.occluded = occluded
         light = self.flicker(self.clock)
         for _, body, beacon in self.world.query(Body, Beacon):
             if beacon.lit:
