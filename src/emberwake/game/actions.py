@@ -14,6 +14,11 @@ class Action(StrEnum):
     DOWN = "down"
     JUMP = "jump"
     DASH = "dash"
+    INTERACT = "interact"
+
+
+INTERACT_KEYS = ["up", "w", "e"]
+INTERACT_BUTTONS = ["y", "dpad_up"]
 
 
 def default_bindings() -> Bindings:
@@ -25,6 +30,7 @@ def default_bindings() -> Bindings:
             Action.DOWN: ["down", "s"],
             Action.JUMP: ["space", "z", "c"],
             Action.DASH: ["x", "left shift", "k"],
+            Action.INTERACT: INTERACT_KEYS,
         },
         buttons={
             Action.LEFT: ["dpad_left", "leftx-"],
@@ -33,5 +39,6 @@ def default_bindings() -> Bindings:
             Action.DOWN: ["dpad_down", "lefty+"],
             Action.JUMP: ["a"],
             Action.DASH: ["x", "b", "rightshoulder"],
+            Action.INTERACT: INTERACT_BUTTONS,
         },
     )
