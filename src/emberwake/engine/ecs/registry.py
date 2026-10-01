@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -24,7 +24,7 @@ class Registry:
     """
 
     def __init__(self) -> None:
-        self._types: dict[str, type] = {}
+        self._types: dict[str, type[Any]] = {}
 
     def register[T: type](self, cls: T) -> T:
         """Register `cls` under its class name; usable as a decorator.
@@ -42,7 +42,7 @@ class Registry:
             raise ValueError(msg)
         return cls
 
-    def __getitem__(self, name: str) -> type:
+    def __getitem__(self, name: str) -> type[Any]:
         try:
             return self._types[name]
         except KeyError:
