@@ -76,6 +76,7 @@ def test_pause_menu_opens_settings_and_quits_to_title(ctx: GameContext):
     scenes.update(STEP)
     key(scenes, pygame.K_ESCAPE)
     key(scenes, pygame.K_DOWN)
+    key(scenes, pygame.K_DOWN)
     key(scenes, pygame.K_RETURN)
     assert isinstance(scenes.top, SettingsScene)
     key(scenes, pygame.K_ESCAPE)

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from emberwake.engine.ui import Button, Label, Panel
 from emberwake.game.data.save import SLOTS, SaveSlot, load_slot
 from emberwake.game.scenes.gameplay import GameplayScene
+from emberwake.game.scenes.how_to_play import HowToPlayScene
 from emberwake.game.scenes.overlay import Overlay
 from emberwake.game.scenes.settings import SettingsScene
 
@@ -80,6 +81,7 @@ class MenuScene(Overlay):
                 Button(t("menu.load"), lambda: self.manager.push(SlotScene(ctx, new=False))),
                 Button(t("menu.trials"), self._trials),
                 Button(t("menu.achievements"), self._achievements),
+                Button(t("menu.help"), lambda: self.manager.push(HowToPlayScene(ctx))),
                 Button(t("menu.settings"), lambda: self.manager.push(SettingsScene(ctx))),
                 Button(t("menu.quit"), self._quit),
             ]
