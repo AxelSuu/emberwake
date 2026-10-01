@@ -65,6 +65,14 @@ def holds(condition: str, flags: dict[str, int]) -> bool:
     return (value == 0) if negate else (value != 0)
 
 
+def flag_of(condition: str) -> str:
+    """The flag a condition reads: ``"trust>=3"`` -> ``"trust"``."""
+    match = _CONDITION.match(condition)
+    if match is None:
+        raise DialogueError(f"bad condition {condition!r}")
+    return match.group(2)
+
+
 @dataclass(slots=True)
 class Choice:
     """An option the player can pick."""
@@ -98,6 +106,16 @@ class Node:
 
 
 type Graph = dict[str, Node]
+
+
+def flags_used(graph: Graph) -> set[str]:
+    """Every flag the graph reads in a condition or writes with `set` or `add`."""
+    names: set[str] = set()
+    for node in graph.values():
+        names |= node.set.keys() | node.add.keys()
+        conditions = [c.if_ for c in node.choices] + [b.if_ for b in node.branches]
+        names |= {flag_of(condition) for condition in conditions if condition}
+    return names
 
 
 def load_dialogues(path: Path) -> dict[str, Graph]:

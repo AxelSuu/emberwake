@@ -7,6 +7,8 @@ import pytest
 from emberwake.engine.core.dialogue import (
     DialogueError,
     DialogueRunner,
+    flag_of,
+    flags_used,
     holds,
     load_dialogues,
 )
@@ -155,3 +157,9 @@ def test_cyclic_branches_do_not_hang(tmp_path: Path) -> None:
     graph = load_dialogues(path)["a"]
     with pytest.raises(DialogueError, match="too many"):
         DialogueRunner(graph, {})
+
+
+def test_flags_used_lists_reads_and_writes(graph) -> None:
+    assert flags_used(graph) == {"met", "trust", "visits"}
+    assert flag_of("!met") == "met"
+    assert flag_of("trust >= 3") == "trust"
