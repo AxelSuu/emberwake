@@ -54,6 +54,12 @@ class Defs:
 
     level_fields: dict[str, FieldSpec] = field(default_factory=dict)
     entities: dict[str, EntitySpec] = field(default_factory=dict)
+    entity_fields: dict[str, FieldSpec] = field(default_factory=dict)
+    """Fields every entity type has after its own, such as the ``Requires`` condition."""
+
+    def fields_of(self, spec: EntitySpec) -> dict[str, FieldSpec]:
+        common = {name: f for name, f in self.entity_fields.items() if name not in spec.fields}
+        return spec.fields | common
 
 
 @dataclass(slots=True)

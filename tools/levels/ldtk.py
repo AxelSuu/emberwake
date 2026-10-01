@@ -123,7 +123,7 @@ class _Compiler:
     def _entity_def(self, name: str, spec: EntitySpec) -> Json:
         fields = [
             _field_def(field, f, self.uids(f"field:{name}.{field}"))
-            for field, f in spec.fields.items()
+            for field, f in self.source.defs.fields_of(spec).items()
         ]
         return _entity_def(name, spec, self.uids(f"entity:{name}"), fields)
 
@@ -192,7 +192,8 @@ class _Compiler:
         width, height = p.columns * GRID, p.rows * GRID
         if not spec.resizable and (width, height) != spec.size:
             raise SourceError(f"{where}: {p.type} must be {spec.size} px, not {(width, height)}")
-        unknown = p.fields.keys() - spec.fields.keys()
+        fields = self.source.defs.fields_of(spec)
+        unknown = p.fields.keys() - fields.keys()
         if unknown:
             raise SourceError(f"{where}: {p.type} has no fields {sorted(unknown)}")
         if spec.max_count and sum(e.type == p.type for e in room.entities) > spec.max_count:
@@ -225,7 +226,7 @@ class _Compiler:
                     p.fields.get(name, f.default),
                     uid_key=f"field:{p.type}.{name}",
                 )
-                for name, f in spec.fields.items()
+                for name, f in fields.items()
             ],
         }
 
