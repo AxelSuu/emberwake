@@ -29,6 +29,8 @@ class GameContext:
     """Save slot the game continues from and saves to."""
     new_game: bool = False
     """Ignore the slot's progress and start over (it is overwritten at the first save)."""
+    flags: dict[str, int] = field(default_factory=dict)
+    """Flags set in every game started this session (``--flags``, for testing content)."""
 
     def t(self, key: str, **values: object) -> str:
         """The text for `key` in the player's language."""

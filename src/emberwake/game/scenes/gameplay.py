@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 import pygame
 
 from emberwake.engine.core.cutscene import CutscenePlayer
-from emberwake.engine.core.dialogue import DialogueError, Graph, load_dialogues
+from emberwake.engine.core.dialogue import DialogueError, Graph, flags_used, load_dialogues
 from emberwake.engine.core.jobs import Jobs
 from emberwake.engine.core.serde import SerdeError
 from emberwake.engine.debug.time_control import TimeControl
@@ -55,11 +55,12 @@ from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdro
 from emberwake.game.render.fx import Flash
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
 from emberwake.game.render.toast import Toasts
+from emberwake.game.scenes.dev import FlagsScene, WarpScene
 from emberwake.game.scenes.dialogue import DialogueScene
 from emberwake.game.scenes.pause import PauseScene
 from emberwake.game.scenes.results import ResultsScene, RunFinished
 from emberwake.game.schedule import gameplay_schedule
-from emberwake.game.shop import EMBER_PER_UPGRADE, HP_PER_UPGRADE
+from emberwake.game.shop import EMBER_PER_UPGRADE, HP_PER_UPGRADE, SPENT
 from emberwake.game.signals import Receiver, Wiring
 from emberwake.game.trials import (
     Ghost,
@@ -172,6 +173,7 @@ class GameplayScene(Scene):
         ctx.new_game = False
         start = room or (save.room if save else DEFAULT_ROOM)
         data = save or SaveSlot(room=start)
+        data.flags.update(ctx.flags)
         self.progress = Progress(data, ctx.storage, ctx.slot if from_slot else None)
         return start
 
@@ -526,6 +528,12 @@ class GameplayScene(Scene):
                 self.show_rooms = not self.show_rooms
             case pygame.K_F5:
                 self.reload()
+            case pygame.K_F6:
+                rooms = sorted(self.rooms.graph.levels)
+                self.manager.push(WarpScene(self.ctx, rooms, self.room, self.warp))
+            case pygame.K_F7:
+                flags = self.progress.data.flags
+                self.manager.push(FlagsScene(self.ctx, flags, self._known_flags()))
             case pygame.K_F9:
                 self.save_replay()
             case pygame.K_p:
@@ -534,6 +542,27 @@ class GameplayScene(Scene):
                 self.time.step()
             case pygame.K_COMMA:
                 self.time.toggle_slow()
+
+    def warp(self, room: str) -> None:
+        """Move the player to `room`'s first PlayerStart, as if it had walked in (dev)."""
+        previous = self.room
+        x, y = self._entry_point(room)
+        self.rooms.enter(room)
+        if not self.motor.dead:
+            body, motor = self.body, self.motor
+            body.x, body.y = x - body.width / 2, y - body.height
+            motor.vx = motor.vy = 0.0
+            motor.previous = (body.x, body.y)
+        self.ctx.bus.publish(RoomEntered(room, previous, x, y))
+        self.spawn_point = (x, y)
+        self.camera.snap(*self._camera_target())
+
+    def _known_flags(self) -> set[str]:
+        """Flags the content reads or writes, for the flag overlay."""
+        names = {SPENT, UP_HP, UP_OIL}
+        for graph in self.dialogues.values():
+            names |= flags_used(graph)
+        return names
 
     def save_replay(self) -> str:
         key = f"replays/{time.strftime('%Y%m%d-%H%M%S')}.json"

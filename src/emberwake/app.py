@@ -64,6 +64,7 @@ async def main(argv: Sequence[str] | None = None) -> None:
         achievements=Achievements.load(load_defs(paths.content("achievements.toml")), storage),
         slot=options.slot,
         new_game=options.new,
+        flags=options.flags,
     )
     scenes = SceneManager()
     if options.replay:
