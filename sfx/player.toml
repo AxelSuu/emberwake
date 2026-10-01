@@ -54,3 +54,30 @@ sustain = 0.01
 decay = 0.08
 lowpass = 0.8
 variants = 2
+
+[kindle]
+wave = "sine"
+freq = 300.0
+slide = 1.2
+sustain = 0.1
+decay = 0.3
+lowpass = 0.7
+variants = 2
+
+[fizzle]
+wave = "noise"
+freq = 400.0
+slide = -0.5
+sustain = 0.01
+decay = 0.12
+lowpass = 0.3
+variants = 2
+
+[throw]
+wave = "noise"
+freq = 900.0
+slide = 0.8
+sustain = 0.0
+decay = 0.08
+lowpass = 0.5
+variants = 2

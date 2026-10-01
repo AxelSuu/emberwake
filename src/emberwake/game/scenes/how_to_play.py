@@ -23,6 +23,7 @@ TIPS = (
     "help.tip.interact",
     "help.tip.flare",
     "help.tip.ember",
+    "help.tip.kindle",
     "help.tip.beacon",
     "help.tip.hazard",
 )

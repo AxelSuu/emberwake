@@ -22,7 +22,7 @@ skin = "Skin"
 lantern = "Lyktfärg"
 assist = "Hjälp"
 invulnerable = "Fiender skadar dig inte"
-no_drain = "Glöden tar aldrig slut"
+no_drain = "Lågan tar aldrig slut"
 infinite_dashes = "Obegränsade rusher"
 speed = "Spelhastighet"
 fullscreen = "Helskärm"
@@ -82,7 +82,8 @@ dash = "Tryck {dash} för att dasha åt åtta håll. Den laddas när du landar."
 swing = "Tryck {swing} för att svinga. I luften: håll {down} för att studsa nedåt."
 interact = "Tryck {interact} vid spakar, fyrtorn och människor."
 flare = "Tryck {flare} för att kasta ett bloss som lyser upp mörkret en stund."
-ember = "Din glöd falnar i mörkret och fylls på i ljus."
+ember = "Din låga brinner ner i mörkret och fylls på i ljus."
+kindle = "Håll {down} och stå still för att göra låga till hälsa."
 beacon = "Tänd fyrtornen igen för att spara. Du fortsätter från det senaste."
 hazard = "Taggar och avgrunden skickar dig tillbaka till rummets ingång."
 
@@ -173,7 +174,7 @@ sold_out = "{name}: slutsåld"
 name = "Segare mantel (+1 liv)"
 
 [shop.oil]
-name = "Lampolja (+25 glöd)"
+name = "Lampolja (+25 låga)"
 
 [dialogue]
 continue = "..."

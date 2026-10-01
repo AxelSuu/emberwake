@@ -38,7 +38,7 @@ from emberwake.engine.world.rooms import Room, RoomEntered, RoomGraph, RoomStrea
 from emberwake.engine.world.spawning import Identity, Spawner
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
-from emberwake.game.beacons import Beacon, BeaconLit
+from emberwake.game.beacons import Beacon, BeaconLit, Rested
 from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
 from emberwake.game.cosmetics import Cosmetics, load_cosmetics
@@ -46,10 +46,11 @@ from emberwake.game.data.records import RunResult, format_time, load_records
 from emberwake.game.data.save import SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
 from emberwake.game.feel import Feel, diff, load_feel
-from emberwake.game.flares import Flare, FlareKit
+from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.interact import Collected, Interactable, Switch
 from emberwake.game.light import Ember, LightSource
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
+from emberwake.game.player.kindle import Kindle, Kindled
 from emberwake.game.player.swing import Swing, SwingHit, SwingStarted
 from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
@@ -225,7 +226,9 @@ class GameplayScene(Scene):
         for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
-        self.world.insert_resource(FlareKit(PropWorld(self.grid, (0, 0, 1, 1))))
+        flares = self.feel.light.flare_charges
+        kit = FlareKit(PropWorld(self.grid, (0, 0, 1, 1)), charges=flares, max_charges=flares)
+        self.world.insert_resource(kit)
         self.schedule = gameplay_schedule()
         self._apply_settings()
         self.player = self.world.spawn(*self._new_player())
@@ -265,6 +268,10 @@ class GameplayScene(Scene):
             *self._track_achievements(bus),
             bus.subscribe(Killed, self._on_killed),
             bus.subscribe(BeaconLit, self._on_beacon_lit),
+            bus.subscribe(Rested, self._on_rested),
+            bus.subscribe(Kindled, self._on_kindled),
+            bus.subscribe(FlareThrown, self._on_flare),
+            bus.subscribe(FlareFizzled, self._on_fizzle),
             *self.progress.subscribe(bus),
         ]
 
@@ -482,7 +489,8 @@ class GameplayScene(Scene):
         hp, most = self._maximums()
         health = Health(hp, iframes=self.feel.enemies.player_iframes)
         swing = Swing(), Hitbox(targets=Team.ENEMY)
-        return body, motor, Ember(most, max=most), health, Hurtbox(Team.PLAYER), *swing
+        hurtbox = Hurtbox(Team.PLAYER)
+        return body, motor, Ember(most, max=most), health, hurtbox, *swing, Kindle()
 
     def _maximums(self) -> tuple[int, float]:
         """The player's health and ember capacity, with the shop upgrades bought so far."""
@@ -767,6 +775,25 @@ class GameplayScene(Scene):
         body, color = self.body, pygame.Color(palette.EMBER_HOT)
         self.texts.spawn(f"+{event.value}", body.center_x, body.y - 4, (color.r, color.g, color.b))
 
+    def _on_flare(self, _: FlareThrown) -> None:
+        self.ctx.audio.sfx("player/throw")
+
+    def _on_fizzle(self, _: FlareFizzled) -> None:
+        self.ctx.audio.sfx("player/fizzle")
+
+    def _on_rested(self, _: Rested) -> None:
+        self.world.resource(FlareKit).fill()
+        if (ember := self.world.find(self.player, Ember)) is not None:
+            ember.current = ember.max
+
+    def _on_kindled(self, event: Kindled) -> None:
+        self.ctx.audio.sfx("player/kindle")
+        self.visual.squash(self.feel.juice.squash * 0.5)
+        if (burst := self.emitters.get("kindle")) is not None:
+            self.particles.burst(burst, event.x, event.y)
+        color = pygame.Color(palette.EMBER_CORE)
+        self.texts.spawn("+1", event.x, event.y - 14, (color.r, color.g, color.b))
+
     def _on_beacon_lit(self, event: BeaconLit) -> None:
         juice = self.feel.juice
         self.camera.shake.add(juice.beacon_trauma)
@@ -925,7 +952,7 @@ class GameplayScene(Scene):
             lantern = lantern_point(swing, self.feel.swing, shoulder, lantern)
             if (arc := trail(swing, self.feel.swing)) is not None:
                 self.frame.sprite(*self._centred(arc, shoulder), layer=Layer.GLOW)
-        self.frame.light(*lantern, GLOW_RADIUS, self.glow, light)
+        self.frame.light(*lantern, self._lantern_radius(), self.glow, light)
         image = self.sprite.image(p.facing, visual.scale_x, visual.scale_y, bare=swinging)
         self._queue_lit(*self._at(image, feet))
         if swing is not None and swinging:
@@ -934,6 +961,16 @@ class GameplayScene(Scene):
             self.frame.sprite(image, shoulder[0] + left, shoulder[1] + top)
             self._queue_lit(*self._centred(self.sprite.lantern, lantern))
         self._queue_ghost(ox, oy)
+
+    def _lantern_radius(self) -> int:
+        """The lantern's glow: shrunk while guttering, swelling while kindling."""
+        radius = float(GLOW_RADIUS)
+        ember, kindle = self.world.find(self.player, Ember), self.world.find(self.player, Kindle)
+        if ember is not None and ember.guttering:
+            radius *= self.feel.light.gutter_radius
+        if kindle is not None and kindle.ticks:
+            radius *= 1.0 + 0.4 * kindle.progress(self.feel.light)
+        return round(radius)
 
     def _queue_ghost(self, ox: int, oy: int) -> None:
         ghost = self.ghost
