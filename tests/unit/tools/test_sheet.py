@@ -58,3 +58,11 @@ def test_sheets_writes_one_png_per_folder(tmp_path: Path) -> None:
         (tmp_path / "lab" / name / "a.pxl").write_text(SKETCH)
     written = sheets(tmp_path / "lab", tmp_path / "out", 2)
     assert sorted(path.name for path in written) == ["lamp.png", "rat.png"]
+
+
+def test_a_tileset_is_shown_as_terrain(tmp_path: Path) -> None:
+    rows = ["oooo" * 4] * 4
+    tiles = tmp_path / "ground.pxl"
+    tiles.write_text('[palette]\no = "#2e222f"\n[layers]\na = """\n' + "\n".join(rows) + '\n"""\n')
+    terrain_width = 20 * 4
+    assert contact_sheet([tiles], 1).get_width() >= 3 * terrain_width
