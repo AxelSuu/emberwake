@@ -1,0 +1,7 @@
+fields = { Backdrop = "ruins" }
+
+[entities.k]
+type = "Beacon"
+
+[entities.e]
+type = "Ember"
