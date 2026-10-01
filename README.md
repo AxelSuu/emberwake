@@ -22,6 +22,7 @@ just web           # browser build into build/web
 | Move | arrows / WASD | d-pad / left stick |
 | Jump | Space, Z, C | A |
 | Dash | X, Left Shift, K | X, B, RB |
+| Interact (levers) | Up, W, E | Y, d-pad up |
 | Drop through platform | Down + Jump | |
 | Back to title | Esc | |
 

@@ -51,7 +51,7 @@ Detailed plans: [M2 World](plans/m2-world.md).
 - [x] Level source: ASCII + TOML compiled to LDtk, Test_Room migrated (#64)
 - [x] World coordinates, room graph, streaming, transitions (#17)
 - [x] Prefabs and LDtk entity spawning, state persisted by iid (#19)
-- [ ] Interactables and signal wiring (#20)
+- [x] Interactables and signal wiring: levers, doors, plates, embers (#20)
 - [ ] Parallax and depth layers (#18)
 - [ ] Beacons and save slots (#21)
 - [ ] Greybox world: five rooms around the test room (#65)
