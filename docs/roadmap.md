@@ -12,7 +12,7 @@
 | M7 | Boss tech | Skeletal rig + IK, cutscene coroutines (the boss itself moves to M9) |
 | M8 | Depth | NPC dialogue and shop, Trials + ghosts, achievements, skins (map moves to M9, abilities to M11) |
 | M9 | The Sunken Quarter | The first area playable start to boss in greybox: lantern swing, HUD, light rules v2, death and Cinder, abilities and flags, lamps and light switches, breakables, lifts, encounters, two enemies and an elite, three NPCs, map screen, 20 rooms, the Lamprey, story beats, art proof |
-| M10 | The Quarter, finished | Art and audio for the slice: sprite bank, tilesets, back walls, decor, bitmap font, every sprite, music stems, sound effects, ambience |
+| M10 | The Quarter, finished | Art and audio for the slice: tilesets, back walls, decor, bitmap font, every sprite, GL backend with shaders (#23), music stems, sound effects, ambience |
 | M11 | Brass Gardens | Area 2: Wickline and Shutter, shadeforms, vines and pollen, three enemies, Moth Queen, Bloomhusk, the Gardener, lenses, journal, fast travel |
 | M12 | Tidal Works | Area 3: water level as world state, swimming with the Bell Jar, Ember glide and steam, four enemies, the Tidekeeper, Brine |
 | M13 | Lantern Spire | Area 4 and the ending: mirrors and beams, light-bridge, shadow-step, three enemies, the Hollow Lamplighter, three endings, the Gloam (optional area) |
@@ -65,7 +65,7 @@ Detailed plans: [M2 World](plans/m2-world.md), [M9 The Sunken Quarter](plans/m9-
 ## M3 to M8 status
 
 - [x] M3: RenderFrame, particles, post effects, soft shadows, light shafts (#22, #24 to #27).
-  Open: GL backend (#23), moved to after 1.0: the browser needs the software path anyway.
+  Open: GL backend (#23), moved to M10 for shaders on desktop; the browser keeps the software path.
 - [x] M4: widgets, main menu, settings, rebinding, pause, strings in English and Swedish,
   results and records (#28 to #34). No pixel font yet (M10).
 - [x] M5: combat basics, animation, three enemies, floating text, props and flares, light rules

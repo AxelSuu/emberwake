@@ -53,7 +53,9 @@ What the player can actually do is thin:
 | D8 | **Areas are a level field** (`Area`); banners, the map, music and light % key off it. | One place to group rooms. |
 | D9 | **Art waits for the greybox**, except the art proof. | Art on rooms that still change is thrown away. |
 
-Needs your call (default in bold; work proceeds on the default unless you say otherwise):
+Answered 2026-10-02: the defaults (in bold), all of them. Also asked for: a how-to-play screen
+with the controls, many art ideas to iterate on, and animation, lighting and shaders as a big
+focus (so the GL backend, #23, goes to M10 rather than after 1.0).
 
 | # | Question | Options |
 |---|---|---|
@@ -90,32 +92,36 @@ an unmerged PR.
 
 | PR | Issue | Size (est.) | Depends on |
 |---|---|---|---|
-| O | Lab region: dev rooms off the map, `Wake` as the start | ~150 | |
-| V | Dev tools: room warp, flag and ability toggles, `--flags` | ~200 | |
-| A | Spec + lantern swing: swing, pogo, recoil, `Struck` events | ~500 | |
-| B | HUD: health pips, flame, flares, embers, area banner slot | ~300 | |
-| C | Light rules v2: gutter, flare charges, kindle, "Flame" | ~400 | |
-| D | Death and recovery: beacon respawn, Cinder, hazard damage, enemy reset | ~400 | C |
-| E | Abilities, inventory, grant pickups, save v2 | ~400 | |
-| F | World flags: `Requires`/`Unless`, `FlagSwitch`, `SetFlag` trigger | ~300 | E |
-| G | Areas: `Area` and `Music` fields, banners, light % and saturation | ~300 | |
-| H | Lamp posts: lit by the swing, protected by beacons, snuffed by Wisp-eaters | ~350 | A, G |
-| I | Photocells, ignitable braziers, bells as signal sources | ~300 | A |
-| J | Breakable walls, crates, pots; crumbling platforms | ~400 | A |
-| K | Pushable crates (pymunk props) that weigh plates | ~250 | #2 spike |
-| L | Moving platforms and lifts driven by signals | ~500 | |
-| M | Encounters: arena locks, waves, rewards | ~350 | R |
-| N | Echoes, signposts, Lost Lights, Trial doors | ~500 | F |
-| P | World validator: reachability by ability, entrances, flags | ~350 | E, F |
-| Q | Drip Lurker and Gearbug | ~450 | A |
-| R | Clockrat King | ~300 | Q |
-| S | Keeper Hesper, Quill, NPC stages, dialogue `give` | ~350 | F |
-| T | Map screen (#55) | ~450 | G |
-| U1-U5 | The 20 rooms, four per PR, with bots | ~300 each | O, then what they use |
-| W | Behavior trees in `engine.core.bt` | ~250 | |
-| X | The Lamprey (#51), in two or three PRs | ~900 | W, H, I |
-| Y | Story beats: intro, Lamprey reveal, Great Lamp, credits stub | ~350 | X |
-| Z | Art proof: sprite bank, tileset, three dressed rooms | see [art plan](art-audio.md) | |
+| O | #111 Lab region: dev rooms off the map, `Wake` as the start | ~150 | |
+| V | #112 Dev tools: room warp, flag and ability toggles, `--flags` | ~200 | |
+| A | #114 Spec + lantern swing: swing, pogo, recoil, `Struck` events | ~500 | |
+| B | #115 HUD: health pips, flame, flares, embers, area banner slot | ~300 | |
+| C | #116 Light rules v2: gutter, flare charges, kindle, "Flame" | ~400 | |
+| D | #117 Death and recovery: beacon respawn, Cinder, hazard damage, enemy reset | ~400 | C |
+| E | #118 Abilities, inventory, grant pickups, save v2 | ~400 | |
+| F | #119 World flags: `Requires`/`Unless`, `FlagSwitch`, `SetFlag` trigger | ~300 | E |
+| G | #120 Areas: `Area` and `Music` fields, banners, light % and saturation | ~300 | |
+| H | #121 Lamp posts: lit by the swing, protected by beacons, snuffed by Wisp-eaters | ~350 | A, G |
+| I | #122 Photocells, ignitable braziers, bells as signal sources | ~300 | A |
+| J | #123 Breakable walls, crates, pots; crumbling platforms | ~400 | A |
+| K | #124 Pushable crates (pymunk props) that weigh plates | ~250 | #2 spike |
+| L | #125 Moving platforms and lifts driven by signals | ~500 | |
+| M | #126 Encounters: arena locks, waves, rewards | ~350 | R |
+| N | #127 Echoes, signposts, Lost Lights, Trial doors | ~500 | F |
+| P | #128 World validator: reachability by ability, entrances, flags | ~350 | E, F |
+| Q | #129 Drip Lurker and Gearbug | ~450 | A |
+| R | #130 Clockrat King | ~300 | Q |
+| S | #131 Keeper Hesper, Quill, NPC stages, dialogue `give` | ~350 | F |
+| T | #55 Map screen | ~450 | G |
+| U1-U5 | #132 to #136 The 20 rooms, four per PR, with bots | ~300 each | O, then what they use |
+| W | #137 Behavior trees in `engine.core.bt` | ~250 | |
+| X | #51 The Lamprey, in two or three PRs | ~900 | W, H, I |
+| Y | #138 Story beats: intro, Lamprey reveal, Great Lamp, credits stub | ~350 | X |
+| Z | #139 Art proof: sprite bank, tileset, three dressed rooms | see [art plan](art-audio.md) | |
+| Tips | #113 How to play: controls and tips screen | ~200 | |
+| Art | #140 Art lab: idea sheets to iterate toward good designs | ongoing | Z |
+| Anim | #141 Animation: entity animator, player clips, secondary motion | ~500 | Z |
+| Light | #142 Lighting: emissive sprites, colored lights, light budget | ~400 | |
 
 About 30 PRs. Each new mechanic starts as a spec in `docs/specs/` (swing, light rules v2, death
 and recovery, lamps, flags, encounters, Lost Lights, the Lamprey).
