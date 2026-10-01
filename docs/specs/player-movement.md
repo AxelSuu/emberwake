@@ -57,8 +57,9 @@ dash ends, velocity becomes `direction * dash_end_speed` (upward part times `das
 Charges refill on landing once the dash has ended. Starting a dash emits `Dashed`, and the scene
 answers with a short hitstop.
 
-**Death.** Touching a hazard tile (hitbox shrunk by `hazard_margin`) or falling below the room
-emits `Died`. The scene respawns the player at the room's `PlayerStart`.
+**Death.** Touching a hazard tile (hitbox shrunk by `hazard_margin`) or falling into the void
+below every room emits `Died`. The scene respawns the player at the active room's PlayerStart
+nearest to where the player entered it.
 
 ## Tuning parameters
 
@@ -106,7 +107,7 @@ for our 16 px tiles.
 - [x] A wall jump moves away from the wall and gains height.
 - [x] A horizontal dash travels about 4.5 tiles, and the charge refills only after landing.
 - [x] Down + jump on a one-way platform drops through it. Jumping up through one works.
-- [x] Touching spikes or falling out of the room emits `Died`.
+- [x] Touching spikes or falling into the void emits `Died`.
 
 ## Tests
 `tests/unit/game/test_player.py`: scenario tests that feed per-tick action sets (the same format

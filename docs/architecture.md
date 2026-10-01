@@ -6,15 +6,15 @@
 emberwake.app        wiring: builds services, pushes the first scene, runs the loop
 emberwake.game       Emberwake content: scenes, components, systems, data models
 emberwake.engine     reusable, game-agnostic
-  core               pure Python: events, clock, serde, log, mathx, noise (later: fsm, tween)
+  core               pure Python: events, clock, serde, log, mathx, noise, jobs (later: fsm, tween)
   ecs                pure Python: entities, component stores, queries, resources, phase schedule
   platform           desktop vs browser: storage, documents, display
   scene              scene stack
   runner             the main loop
   input              per-tick action state, keyboard/gamepad mapper, replays
-  physics            tile grid, sub-stepped kinematic collision
-  render             camera, screen shake (later: backends, lighting, particles)
-  world              LDtk loader (later: rooms, streaming)
+  physics            tile sources, sub-stepped kinematic collision
+  render             camera, screen shake, chunked layers (later: backends, lighting, particles)
+  world              LDtk loader, room graph, world grid, room streaming
   debug              fps overlay, time control (later: console, inspector window)
   (planned) assets, audio, ui
 ```
@@ -104,11 +104,22 @@ Gameplay emits a backend-agnostic `RenderFrame` (draw commands per layer, lights
 
 Tiles are baked into 256x256 chunk surfaces; only visible chunks are drawn with `fblits`.
 
-## World streaming (planned, M2)
+## World streaming (M2)
 
-LDtk GridVania world, one level per room in its own file. Current and neighbouring rooms stay
-loaded; neighbours bake one chunk per frame through a generator. The camera is clamped to room
-bounds and glides across on transitions.
+[ADR 0014](adr/0014-world-coordinates-streamed-rooms.md). The simulation runs in world pixels
+(LDtk `worldX/worldY` of a GridVania world). `RoomGraph` holds every room's rect and computes
+adjacency from shared edges. The active room is the one holding the player's centre;
+`room_system` switches it, publishes `RoomEntered` and gives an upward boost when the player
+comes up through a floor. `RoomStreamer` keeps the active room and its neighbours loaded and
+unloads rooms two steps away (an `on_unload` hook runs first so their entities can be saved).
+`WorldGrid` is the physics `TileSource`: it routes each cell to the loaded room owning it, empty
+elsewhere, and the void below every room kills.
+
+Each loaded room's art is a `ChunkLayer` of 256 px chunks. Its `bake` generator paints one chunk
+per step and runs as a `Jobs` entry pumped for 2 ms per frame; drawing bakes any visible chunk
+that is still missing. On a room change the camera glides into the new room's bounds with faster
+smoothing, and the respawn point becomes that room's PlayerStart nearest to where the player
+entered. F4 shows room rects, names and load state.
 
 ## Persistence
 
