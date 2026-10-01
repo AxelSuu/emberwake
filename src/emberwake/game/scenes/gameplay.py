@@ -21,6 +21,7 @@ from emberwake.engine.platform.documents import save_document
 from emberwake.engine.render.camera import Camera
 from emberwake.engine.render.chunks import ChunkLayer
 from emberwake.engine.render.frame import Layer, RenderFrame
+from emberwake.engine.render.particles import EmitterSpec, ParticleSystem, load_emitters
 from emberwake.engine.render.software import SoftwareBackend
 from emberwake.engine.scene import Scene
 from emberwake.engine.world.ldtk import load_project
@@ -37,7 +38,7 @@ from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor
 from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
 from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdrops
-from emberwake.game.render.fx import Flash, Sparks
+from emberwake.game.render.fx import Flash
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
 from emberwake.game.schedule import gameplay_schedule
 from emberwake.game.signals import Receiver, Wiring
@@ -54,6 +55,7 @@ WORLD = "world.ldtk"
 FEEL = "feel.toml"
 PREFABS = "prefabs.toml"
 BACKDROPS = "backdrops.toml"
+PARTICLES = "particles.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
@@ -93,7 +95,8 @@ class GameplayScene(Scene):
         self.frame = RenderFrame()
         self.backend = SoftwareBackend()
         self.art = EntityArt()
-        self.sparks = Sparks()
+        self.particles = ParticleSystem()
+        self.emitters = self._read_emitters() or {}
         self.flash = Flash()
         self.backdrops = Backdrops(self._read_backdrops() or {}, ctx.canvas_size)
         self.time = TimeControl()
@@ -199,6 +202,13 @@ class GameplayScene(Scene):
             log.error("Could not load %s: %s", PREFABS, error)
             return None
 
+    def _read_emitters(self) -> dict[str, EmitterSpec] | None:
+        try:
+            return load_emitters(paths.content(PARTICLES))
+        except (OSError, tomllib.TOMLDecodeError, SerdeError) as error:
+            log.error("Could not load %s: %s", PARTICLES, error)
+            return None
+
     def _read_backdrops(self) -> dict[str, BackdropSpec] | None:
         try:
             return load_backdrops(paths.content(BACKDROPS))
@@ -270,6 +280,9 @@ class GameplayScene(Scene):
         prefabs = self._read_prefabs()
         if prefabs is not None:
             self.spawner.prefabs = prefabs
+        emitters = self._read_emitters()
+        if emitters is not None:
+            self.emitters = emitters
         backdrops = self._read_backdrops()
         if backdrops is not None:
             self.backdrops = Backdrops(backdrops, self.ctx.canvas_size)
@@ -346,7 +359,7 @@ class GameplayScene(Scene):
             return
         self.clock += dt
         self.progress.tick(dt)
-        self.sparks.update(dt)
+        self.particles.update(dt)
         self.flash.update(dt)
         self.backdrops.update(self._room_lit(), dt)
         juice = self.feel.juice
@@ -415,7 +428,8 @@ class GameplayScene(Scene):
         juice = self.feel.juice
         self.camera.shake.add(juice.beacon_trauma)
         self.flash.start(juice.beacon_flash)
-        self.sparks.burst(event.x, event.y - 14)
+        if (burst := self.emitters.get("beacon_burst")) is not None:
+            self.particles.burst(burst, event.x, event.y - 14)
         self.progress.checkpoint(event.room, event.iid, self.spawner)
 
     # Rendering
@@ -443,7 +457,7 @@ class GameplayScene(Scene):
         if self.respawn_in == 0:
             self._queue_player(light, ox, oy, alpha)
         self.backend.render(frame, canvas)
-        self.sparks.draw(canvas, (ox, oy))
+        self.particles.draw(canvas, (ox, oy))
         self.backdrops.draw_near(canvas, (ox, oy), room_top)
         self.flash.draw(canvas)
         if self.show_colliders:
