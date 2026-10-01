@@ -7,16 +7,33 @@
 [player_start]
 
 [door]
-components = { Sprite = { image = "door" } }
+fields = { Mode = "Receiver.mode", Invert = "Receiver.invert" }
+[door.components]
+Sprite = { image = "door", active_image = "door_open" }
+Receiver = {}
+Door = {}
 
 [lever]
-components = { Sprite = { image = "lever" } }
+fields = { Targets = "Switch.targets", Mode = "Switch.mode" }
+persist = ["Switch"]
+[lever.components]
+Sprite = { image = "lever", active_image = "lever_on" }
+Interactable = { prompt = "pull" }
+Switch = {}
 
 [pressure_plate]
-components = { Sprite = { image = "plate" } }
+fields = { Targets = "Switch.targets" }
+[pressure_plate.components]
+Sprite = { image = "plate", active_image = "plate_down" }
+Trigger = {}
+Switch = { mode = "momentary" }
+PressurePlate = {}
 
 [beacon]
 components = { Sprite = { image = "beacon" } }
 
 [ember]
-components = { Sprite = { image = "ember" } }
+fields = { Value = "Pickup.value" }
+[ember.components]
+Sprite = { image = "ember" }
+Pickup = {}
