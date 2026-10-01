@@ -121,6 +121,12 @@ scanlines on the finished canvas, each behind its `Flag` and its toggle in `sett
 carry a grade in `content/backdrops.toml`; it cross-fades with the backdrop and warms once a
 beacon is lit.
 
+Shadows (`engine.render.shadows`, software): each light ray-casts 48 rays against the frame's
+`occluded` callback (solid tiles, so closed doors cast shadows), fills the visible polygon at half
+resolution, blurs and scales it up, and multiplies the light gradient by it. `Flag.SHADOWS` and
+`settings.video.shadows` switch it off. The GL backend will use an SDF from the occluder mask
+instead (#23).
+
 Particles (`engine.render.particles`): `ParticleSystem` keeps up to 512 particles in preallocated
 lists (swap-remove, no per-frame allocation) and drops bursts that do not fit. Emitters are named
 `EmitterSpec`s in `content/particles.toml`, reloaded with F5; budgets are in `tests/bench`.

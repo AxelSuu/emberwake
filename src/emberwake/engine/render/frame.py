@@ -6,6 +6,7 @@ fills one per draw; a backend (software now, GL later) turns it into pixels.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import IntEnum, IntFlag, auto
 
@@ -30,6 +31,7 @@ class Flag(IntFlag):
     DEPTH_OF_FIELD = auto()
     VIGNETTE = auto()
     CRT = auto()
+    SHADOWS = auto()
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,6 +52,7 @@ class LightCmd:
         radius: Reach in px.
         color: RGB of the light at full strength.
         intensity: 0 to 1; gameplay folds flicker and fades into it.
+        shadows: Whether solid things block this light (when the frame has occluders).
     """
 
     x: float
@@ -57,6 +60,7 @@ class LightCmd:
     radius: int
     color: tuple[int, int, int]
     intensity: float = 1.0
+    shadows: bool = True
 
 
 @dataclass(slots=True)
@@ -66,6 +70,8 @@ class RenderFrame:
     sprites: list[SpriteCmd] = field(default_factory=list)
     lights: list[LightCmd] = field(default_factory=list)
     flags: Flag = Flag.LIGHTING
+    occluded: Callable[[float, float], bool] | None = None
+    """Whether a screen px point blocks light; set per frame by gameplay."""
 
     def sprite(
         self, image: pygame.Surface, x: float, y: float, layer: Layer = Layer.ACTORS
@@ -80,11 +86,14 @@ class RenderFrame:
         radius: int,
         color: tuple[int, int, int],
         intensity: float = 1.0,
+        *,
+        shadows: bool = True,
     ) -> None:
         """Queue a light centred at `(x, y)`."""
-        self.lights.append(LightCmd(x, y, radius, color, intensity))
+        self.lights.append(LightCmd(x, y, radius, color, intensity, shadows))
 
     def clear(self) -> None:
         """Forget every command, keeping the flags."""
         self.sprites.clear()
         self.lights.clear()
+        self.occluded = None

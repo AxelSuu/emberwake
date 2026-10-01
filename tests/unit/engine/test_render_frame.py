@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import pygame
+import pytest
 
 from emberwake.engine.render.frame import Flag, Layer, RenderFrame
+from emberwake.engine.render.shadows import shadow_mask, visible_outline
 from emberwake.engine.render.software import SoftwareBackend
 
 RED, BLUE, BLACK = pygame.Color("red"), pygame.Color("blue"), pygame.Color("black")
@@ -78,3 +80,32 @@ def test_clear_drops_commands_but_keeps_flags():
     frame.light(1, 1, 4, (1, 1, 1))
     frame.clear()
     assert (frame.sprites, frame.lights, frame.flags) == ([], [], Flag.BLOOM)
+
+
+def wall_at(x: int):
+    return lambda px, _py: px >= x
+
+
+def test_shadows_darken_what_a_wall_hides():
+    def lit(flags: Flag) -> tuple[int, int]:
+        frame = RenderFrame(flags=flags)
+        frame.occluded = wall_at(26)
+        frame.light(20, 20, 16, (255, 255, 255))
+        target = canvas()
+        SoftwareBackend().render(frame, target)
+        return target.get_at((21, 20)).r, target.get_at((32, 20)).r
+
+    shadowed = lit(Flag.LIGHTING | Flag.SHADOWS)
+    plain = lit(Flag.LIGHTING)
+    assert shadowed[0] == pytest.approx(plain[0], abs=3)
+    assert plain[1] > 0
+    assert shadowed[1] < plain[1] / 2
+
+
+def test_light_does_not_pass_a_wall_and_a_free_light_is_unmasked():
+    assert visible_outline(lambda *_: False, 20, 20, 16) is None
+    assert visible_outline(lambda *_: True, 20, 20, 16) is None
+    mask = shadow_mask(wall_at(24), 20, 20, 16, canvas())
+    assert mask is not None
+    assert mask.get_at((16, 16)).r > 200
+    assert mask.get_at((30, 16)).r < 60

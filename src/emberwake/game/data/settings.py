@@ -22,6 +22,7 @@ class VideoSettings:
     grading: bool = True
     vignette: bool = True
     crt: bool = False
+    shadows: bool = True
 
 
 @dataclass(slots=True)
@@ -50,7 +51,7 @@ def _add_interact(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def _add_post_effects(data: dict[str, Any]) -> dict[str, Any]:
-    """v2 -> v3: post effect toggles; missing ones take their defaults on load."""
+    """v2 -> v3: post effect and shadow toggles; missing ones take their defaults on load."""
     return data
 
 

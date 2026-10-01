@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import pygame
 
 from emberwake.engine.render.frame import Flag, Layer
+from emberwake.engine.render.shadows import shadow_mask
 
 if TYPE_CHECKING:
     from emberwake.engine.render.frame import LightCmd, RenderFrame
@@ -28,14 +29,19 @@ class SoftwareBackend:
         for layer in Layer:
             if layer is Layer.ACTORS and Flag.LIGHTING in frame.flags:
                 for light in frame.lights:
-                    self._light(canvas, light)
+                    self._light(canvas, light, frame)
             canvas.fblits([(c.image, (c.x, c.y)) for c in frame.sprites if c.layer is layer])
 
-    def _light(self, canvas: pygame.Surface, light: LightCmd) -> None:
+    def _light(self, canvas: pygame.Surface, light: LightCmd, frame: RenderFrame) -> None:
         level = round(min(max(light.intensity, 0.0), 1.0) * (LEVELS - 1))
         if level == 0:
             return
         image = self._gradient(canvas, light.radius, light.color, level)
+        if light.shadows and Flag.SHADOWS in frame.flags and frame.occluded is not None:
+            mask = shadow_mask(frame.occluded, light.x, light.y, light.radius, canvas)
+            if mask is not None:
+                image = image.copy()
+                image.blit(mask, (0, 0), special_flags=pygame.BLEND_RGB_MULT)
         rect = image.get_rect(center=(round(light.x), round(light.y)))
         canvas.blit(image, rect, special_flags=pygame.BLEND_RGB_ADD)
 
