@@ -58,7 +58,7 @@ Later biomes: Brass Gardens, Tidal Works, The Lantern Spire.
 ## Customization and accessibility
 
 Video (window mode, vsync, fps cap, effects toggles, shake intensity), audio sliders, full
-rebinding (keyboard + gamepad), colorblind filters, reduced flashing, text scale, assist mode
+rebinding (keyboard), colorblind filters, reduced flashing, text scale, assist mode
 (game speed, invincibility, infinite dash), English and Swedish.
 
 ## Out of scope

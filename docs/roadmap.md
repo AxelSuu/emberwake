@@ -31,7 +31,7 @@ Detailed plans: [M2 World](plans/m2-world.md).
 ## M1 status
 
 - [x] Player movement spec (#6)
-- [x] Input actions, keyboard/gamepad mapper, rebindable bindings in settings (#3)
+- [x] Input actions, keyboard mapper, rebindable bindings in settings (#3; gamepad removed later, ADR 0018)
 - [x] Run-length encoded replays, `--replay`, F9 to save (#4)
 - [x] Tile grid and sub-stepped kinematic collision (#5)
 - [x] Player controller: run, jump, coyote, buffer, apex hang, corner correction (#7)
@@ -43,7 +43,7 @@ Detailed plans: [M2 World](plans/m2-world.md).
 - [x] LDtk scaffold tool, schema-validated test room, traversal bots (#13)
 - [x] Gameplay scene with placeholder art and lantern glow (#14)
 - [x] Dev tools: F2 colliders, F3 free camera, P pause, `.` step, `,` slow motion (#15)
-- [ ] Hands-on feel pass with a real keyboard and gamepad
+- [ ] Hands-on feel pass with a real keyboard
 
 ## M2 status
 
