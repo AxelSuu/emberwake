@@ -10,13 +10,14 @@ import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from emberwake.engine.core.events import EventBus
 from emberwake.engine.ecs import component
 from emberwake.engine.input import InputState
 from emberwake.engine.physics import Body, PropWorld
 from emberwake.engine.world.rooms import RoomStreamer
 from emberwake.game.actions import Action
 from emberwake.game.interact import player_body
-from emberwake.game.light import LightSource
+from emberwake.game.light import Ember, LightSource, LightTuning
 from emberwake.game.player.controller import Motor
 
 if TYPE_CHECKING:
@@ -46,11 +47,32 @@ class Flare:
 
 @dataclass(slots=True)
 class FlareKit:
-    """The prop world flares live in, and the throw cooldown."""
+    """The prop world flares live in, the throw cooldown and the flares the player carries."""
 
     props: PropWorld
     cooldown: float = 0.0
     since_refresh: float = 0.0
+    charges: int = 2
+    max_charges: int = 2
+    refill: float = 0.0
+    """Seconds spent in light toward the next charge."""
+
+    def fill(self) -> None:
+        """Carry as many flares as possible (resting at a beacon)."""
+        self.charges, self.refill = self.max_charges, 0.0
+
+
+@dataclass(frozen=True, slots=True)
+class FlareThrown:
+    x: float
+    y: float
+    charges: int
+    """Flares left."""
+
+
+@dataclass(frozen=True, slots=True)
+class FlareFizzled:
+    """Throw was pressed with no flares left."""
 
 
 def throw_flare(world: World, kit: FlareKit, x: float, y: float, facing: int) -> int:
@@ -73,9 +95,17 @@ def flare_system(world: World, dt: float) -> None:
     kit.cooldown = max(kit.cooldown - dt, 0.0)
     player = player_body(world)
     actions = world.resource(InputState)
+    _recharge(world, kit, dt)
     if player is not None and kit.cooldown <= 0 and actions.pressed(Action.FLARE):
-        facing = next((m.facing for _, m in world.query(Motor)), 1)
-        throw_flare(world, kit, player.center_x + facing * 6, player.y + 8, facing)
+        bus = world.resource(EventBus)
+        if kit.charges <= 0:
+            bus.publish(FlareFizzled())
+        else:
+            facing = next((m.facing for _, m in world.query(Motor)), 1)
+            x, y = player.center_x + facing * 6, player.y + 8
+            throw_flare(world, kit, x, y, facing)
+            kit.charges -= 1
+            bus.publish(FlareThrown(x, y, kit.charges))
         kit.cooldown = COOLDOWN
     flares = list(world.query(Body, Flare, LightSource))
     if not flares:
@@ -94,6 +124,19 @@ def flare_system(world: World, dt: float) -> None:
         if flare.life <= 0:
             kit.props.remove(flare.handle)
             world.despawn(eid)
+
+
+def _recharge(world: World, kit: FlareKit, dt: float) -> None:
+    """Win a flare back for every `flare_refill` seconds the player stands in light."""
+    if kit.charges >= kit.max_charges:
+        kit.refill = 0.0
+        return
+    if not any(ember.in_light for _, ember in world.query(Ember)):
+        return
+    kit.refill += dt
+    if kit.refill >= world.resource(LightTuning).flare_refill:
+        kit.refill = 0.0
+        kit.charges += 1
 
 
 def _keep_statics_current(world: World, kit: FlareKit, dt: float) -> None:
