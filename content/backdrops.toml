@@ -1,0 +1,22 @@
+# Room backdrops, picked by the level field Backdrop. Layers draw back to front; `factor` is the
+# scroll speed relative to the world (0 fixed, 1 with the world, above 1 in front of it and
+# darkened), `top` the screen y of the layer at the top of the room, `blur` a one-off blur
+# radius for depth, `width` and `gap` ranges for skyline and pillar shapes. Colours come from the
+# Resurrect 64 palette.
+
+[cavern]
+sky = ["#2e222f", "#45293f"]
+layers = [
+  { kind = "mist", factor = 0.08, color = "#694f62", top = 90, height = 280, blur = 6 },
+  { kind = "pillars", factor = 0.25, color = "#3e3546", top = 0, height = 360, blur = 3, width = [18, 40], gap = [60, 180] },
+  { kind = "pillars", factor = 0.5, color = "#45293f", top = 0, height = 360, blur = 1, width = [18, 40], gap = [120, 260] },
+  { kind = "pillars", factor = 1.4, color = "#2e222f", top = 0, height = 360, width = [8, 16], gap = [520, 900] },
+]
+
+[ruins]
+sky = ["#323353", "#6b3e75"]
+layers = [
+  { kind = "skyline", factor = 0.1, color = "#484a77", top = 150, height = 220, blur = 4 },
+  { kind = "skyline", factor = 0.3, color = "#45293f", top = 190, height = 180, blur = 2 },
+  { kind = "mist", factor = 0.45, color = "#694f62", top = 250, height = 120, blur = 3 },
+]
