@@ -116,6 +116,10 @@ layers (`WORLD`, `ACTORS`, `FOREGROUND`, `OVERLAY`), lights, and effect flags, a
 below `ACTORS`. Backdrops, chunk layers, particles and the flash still draw straight to the canvas
 and move into the frame as the GL backend needs them.
 
+Particles (`engine.render.particles`): `ParticleSystem` keeps up to 512 particles in preallocated
+lists (swap-remove, no per-frame allocation) and drops bursts that do not fit. Emitters are named
+`EmitterSpec`s in `content/particles.toml`, reloaded with F5; budgets are in `tests/bench`.
+
 - GL backend (desktop, moderngl): albedo + normal + emissive buffers, deferred 2D lighting with
   normal maps and SDF soft shadows, bloom, LUT color grading, HD-2D depth of field, vignette,
   optional CRT.

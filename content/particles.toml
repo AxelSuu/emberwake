@@ -1,0 +1,11 @@
+# Particle emitters by name. Angles are degrees (0 right, 90 down); speeds px/s, lifetimes
+# seconds, gravity px/s², drag the share of velocity lost per second. `colors` run from young to
+# old and come from the Resurrect 64 palette.
+
+[beacon_burst]
+count = 24
+speed = [40, 130]
+life = [0.35, 0.8]
+gravity = 220
+size = 2
+colors = ["#fbff86", "#fbff86", "#fb6b1d"]
