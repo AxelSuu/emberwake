@@ -16,6 +16,9 @@ class TimeControl:
         self.slow_factor = slow_factor
         self._step = False
         self._counter = 0
+        self.speed = 1.0
+        """Fraction of ticks that run, for assist mode (1 is normal)."""
+        self._owed = 0.0
 
     def toggle_pause(self) -> None:
         """Pause or resume."""
@@ -34,7 +37,13 @@ class TimeControl:
         if self.paused:
             stepping, self._step = self._step, False
             return stepping
-        if not self.slow:
+        if self.slow:
+            self._counter += 1
+            return self._counter % self.slow_factor == 0
+        if self.speed >= 1.0:
             return True
-        self._counter += 1
-        return self._counter % self.slow_factor == 0
+        self._owed += self.speed
+        if self._owed >= 1.0:
+            self._owed -= 1.0
+            return True
+        return False

@@ -1,0 +1,28 @@
+# Player skins (palette swaps of the cloak) and lantern colors. Colors are Resurrect 64 hexes.
+# Names shown in settings are strings: skin.<name> and lantern.<name>.
+
+[skins.default]
+
+[skins.dusk]
+cloak = "#4d9be6"
+cloak_shade = "#4d65b4"
+cloak_dark = "#323353"
+eyes = "#fbff86"
+
+[skins.moss]
+cloak = "#239063"
+cloak_shade = "#165a4c"
+cloak_dark = "#313638"
+eyes = "#d5e04b"
+
+[skins.rose]
+cloak = "#cf657f"
+cloak_shade = "#a24b6f"
+cloak_dark = "#753c54"
+eyes = "#fdcbb0"
+
+[lanterns]
+ember = "#f9c22b"
+mint = "#30e1b9"
+rose = "#ed8099"
+violet = "#a884f3"

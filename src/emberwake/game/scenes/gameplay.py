@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import functools
 import logging
 import math
@@ -38,6 +39,7 @@ from emberwake.game.actions import Action
 from emberwake.game.beacons import Beacon, BeaconLit
 from emberwake.game.combat import Damaged, Health, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
+from emberwake.game.cosmetics import Cosmetics, load_cosmetics
 from emberwake.game.data.save import SaveSlot, load_slot
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.flares import Flare, FlareKit
@@ -69,6 +71,7 @@ FEEL = "feel.toml"
 PREFABS = "prefabs.toml"
 BACKDROPS = "backdrops.toml"
 PARTICLES = "particles.toml"
+COSMETICS = "cosmetics.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
@@ -105,7 +108,9 @@ class GameplayScene(Scene):
         self.camera = Camera(ctx.canvas_size, self.feel.camera)
         self.camera.shake.intensity = ctx.settings.video.screen_shake
         self.visual = PlayerVisual()
+        self.cosmetics = self._read_cosmetics()
         self.sprite = PlayerSprite()
+        self.glow = GLOW
         self.flicker = Flicker()
         self.frame = RenderFrame(flags=self._effects())
         self.post = PostChain(ctx.canvas_size)
@@ -173,6 +178,7 @@ class GameplayScene(Scene):
         self.world.insert_resource(self.grid, key=TileSource)
         self.world.insert_resource(FlareKit(PropWorld(self.grid, (0, 0, 1, 1))))
         self.schedule = gameplay_schedule()
+        self._apply_settings()
         self.player = self.world.spawn(*self._new_player())
         self.world.flush()
 
@@ -209,9 +215,39 @@ class GameplayScene(Scene):
             *self.progress.subscribe(bus),
         ]
 
+    def _read_cosmetics(self) -> Cosmetics:
+        try:
+            return load_cosmetics(paths.content(COSMETICS))
+        except (OSError, tomllib.TOMLDecodeError, SerdeError) as error:
+            log.error("Could not load %s: %s", COSMETICS, error)
+            return Cosmetics()
+
+    def _apply_settings(self) -> None:
+        """Skin, lantern color and game speed from the settings."""
+        settings = self.ctx.settings
+        skin = self.cosmetics.skin(settings.cosmetics.skin)
+        flame = self.cosmetics.lantern(settings.cosmetics.lantern, palette.EMBER_HOT)
+        self.sprite = PlayerSprite({k: v for k, v in dataclasses.asdict(skin).items() if v}, flame)
+        color = pygame.Color(flame)
+        self.glow = (color.r, color.g, color.b)
+        self.time.speed = min(max(settings.assist.game_speed, 0.25), 1.0)
+
+    def _assist(self) -> None:
+        """Keep the player topped up for the assist options that are on."""
+        assist = self.ctx.settings.assist
+        if not self.world.has(self.player, Ember) or self.motor.dead:
+            return
+        if assist.invulnerable:
+            self.world.get(self.player, Health).invulnerable = 1.0
+        if assist.no_ember_drain:
+            self.world.get(self.player, Ember).current = self.feel.light.ember_max
+        if assist.infinite_dashes:
+            self.motor.dash_charges = max(self.motor.dash_charges, self.feel.player.dash_charges)
+
     def on_resume(self) -> None:
         """Apply settings changed in an overlay and drop input held while it was open."""
         settings = self.ctx.settings
+        self._apply_settings()
         self.mapper.bind(settings.controls)
         self.mapper.release_all()
         self.frame.flags = self._effects()
@@ -436,6 +472,7 @@ class GameplayScene(Scene):
             self.respawn_in -= 1
             if self.respawn_in == 0:
                 self.world.add(self.player, *self._new_player())
+        self._assist()
         self.schedule.run(self.world, dt)
         if not self.free_camera:
             self.camera.update(*self._camera_target(), self.motor.facing, dt)
@@ -632,7 +669,7 @@ class GameplayScene(Scene):
         y = py + (body.y - py) * alpha
         feet = (x + body.width / 2 - ox, y + body.height - oy)
         lx, ly = self.sprite.lantern_offset(p.facing, visual.scale_x, visual.scale_y)
-        self.frame.light(feet[0] + lx, feet[1] + ly, GLOW_RADIUS, GLOW, light)
+        self.frame.light(feet[0] + lx, feet[1] + ly, GLOW_RADIUS, self.glow, light)
         image = self.sprite.image(p.facing, visual.scale_x, visual.scale_y)
         self.frame.sprite(*self._at(image, feet))
 

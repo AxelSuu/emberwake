@@ -25,6 +25,7 @@ from emberwake.engine.ui import (
     load_theme,
 )
 from emberwake.game import paths
+from emberwake.game.cosmetics import Cosmetics, load_cosmetics
 from emberwake.game.data.settings import SETTINGS_CODEC, SETTINGS_KEY
 
 if TYPE_CHECKING:
@@ -35,6 +36,8 @@ log = logging.getLogger(__name__)
 THEME = "ui.toml"
 VISIBLE_ROWS = 12
 SHADE = 150
+SPEEDS = (1.0, 0.75, 0.5)
+SPEEDS_LABELS = ["100%", "75%", "50%"]
 
 
 def load_ui_theme() -> Theme:
@@ -46,6 +49,14 @@ def load_ui_theme() -> Theme:
         return Theme()
 
 
+def _load_cosmetics() -> Cosmetics:
+    try:
+        return load_cosmetics(paths.content("cosmetics.toml"))
+    except (OSError, tomllib.TOMLDecodeError, SerdeError) as error:
+        log.error("Could not load cosmetics.toml: %s", error)
+        return Cosmetics()
+
+
 class SettingsScene(Scene):
     """Changes `ctx.settings` directly, so everything below picks it up when this closes."""
 
@@ -54,6 +65,7 @@ class SettingsScene(Scene):
     def __init__(self, ctx: GameContext) -> None:
         self.ctx = ctx
         self.theme = load_ui_theme()
+        self.cosmetics = _load_cosmetics()
         self.ui = self._build()
 
     def on_exit(self) -> None:
@@ -74,6 +86,7 @@ class SettingsScene(Scene):
     def _build(self, focus: int | None = None, scroll: float = 0.0) -> UiRoot:
         ctx, video = self.ctx, self.ctx.settings.video
         a11y, audio = self.ctx.settings.accessibility, self.ctx.settings.audio
+        assist = self.ctx.settings.assist
         t = ctx.t
 
         def toggle(key: str, owner: object, field: str) -> Toggle:
@@ -88,6 +101,13 @@ class SettingsScene(Scene):
 
             return Slider(t(key), getattr(owner, field), on_change=apply)
 
+        cosmetics, cosmetic = self.cosmetics, ctx.settings.cosmetics
+        skins, lanterns = list(cosmetics.skins), list(cosmetics.lanterns)
+        skin_names = [t(f"skin.{name}") for name in skins]
+        lantern_names = [t(f"lantern.{name}") for name in lanterns]
+        skin_index = skins.index(cosmetic.skin) if cosmetic.skin in skins else 0
+        lantern_index = lanterns.index(cosmetic.lantern) if cosmetic.lantern in lanterns else 0
+        speed_index = min(range(len(SPEEDS)), key=lambda i: abs(SPEEDS[i] - assist.game_speed))
         languages = ctx.strings.languages
         chosen = languages.index(ctx.strings.language) if ctx.strings.language in languages else 0
         names = [ctx.strings.tables[code].get("language.name", code) for code in languages]
@@ -109,6 +129,14 @@ class SettingsScene(Scene):
             Button(t("settings.controls"), self._controls),
             Label(t("settings.accessibility"), dim=True),
             toggle("settings.reduce_flashes", a11y, "reduce_flashes"),
+            Label(t("settings.cosmetics"), dim=True),
+            Selector(t("settings.skin"), skin_names, skin_index, self._set_skin),
+            Selector(t("settings.lantern"), lantern_names, lantern_index, self._set_lantern),
+            Label(t("settings.assist"), dim=True),
+            toggle("settings.invulnerable", assist, "invulnerable"),
+            toggle("settings.no_drain", assist, "no_ember_drain"),
+            toggle("settings.infinite_dashes", assist, "infinite_dashes"),
+            Selector(t("settings.speed"), SPEEDS_LABELS, speed_index, self._set_speed),
             Label(t("settings.language"), dim=True),
             Selector(
                 t("settings.language"),
@@ -145,6 +173,15 @@ class SettingsScene(Scene):
                 pygame.display.toggle_fullscreen()
             except pygame.error:
                 log.warning("Could not switch fullscreen")
+
+    def _set_skin(self, index: int) -> None:
+        self.ctx.settings.cosmetics.skin = list(self.cosmetics.skins)[index]
+
+    def _set_lantern(self, index: int) -> None:
+        self.ctx.settings.cosmetics.lantern = list(self.cosmetics.lanterns)[index]
+
+    def _set_speed(self, index: int) -> None:
+        self.ctx.settings.assist.game_speed = SPEEDS[index]
 
     def _set_language(self, code: str) -> None:
         self.ctx.settings.language = code

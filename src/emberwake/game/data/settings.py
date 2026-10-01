@@ -39,10 +39,31 @@ class AccessibilitySettings:
 
 
 @dataclass(slots=True)
+class CosmeticSettings:
+    skin: str = "default"
+    lantern: str = "ember"
+
+
+@dataclass(slots=True)
+class AssistSettings:
+    """Options that make the game easier; none of them changes saves or records."""
+
+    invulnerable: bool = False
+    """Enemies cannot hurt the player."""
+    no_ember_drain: bool = False
+    """The ember never runs out."""
+    infinite_dashes: bool = False
+    game_speed: float = 1.0
+    """Fraction of normal speed, 0.5 to 1."""
+
+
+@dataclass(slots=True)
 class Settings:
     video: VideoSettings = field(default_factory=VideoSettings)
     audio: AudioSettings = field(default_factory=AudioSettings)
     accessibility: AccessibilitySettings = field(default_factory=AccessibilitySettings)
+    cosmetics: CosmeticSettings = field(default_factory=CosmeticSettings)
+    assist: AssistSettings = field(default_factory=AssistSettings)
     controls: Bindings = field(default_factory=default_bindings)
     language: str = "en"
 
@@ -73,6 +94,11 @@ def _add_flare(data: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
+def _add_cosmetics_and_assist(data: dict[str, Any]) -> dict[str, Any]:
+    """v6 -> v7: cosmetic and assist groups; missing fields take their defaults on load."""
+    return data
+
+
 def _drop_gamepad(data: dict[str, Any]) -> dict[str, Any]:
     """v4 -> v5: gamepad support was removed, so saved button bindings go."""
     data.get("controls", {}).pop("buttons", None)
@@ -81,12 +107,13 @@ def _drop_gamepad(data: dict[str, Any]) -> dict[str, Any]:
 
 SETTINGS_CODEC = VersionedCodec(
     Settings,
-    version=6,
+    version=7,
     migrations={
         1: _add_interact,
         2: _add_post_effects,
         3: _add_accessibility,
         4: _drop_gamepad,
         5: _add_flare,
+        6: _add_cosmetics_and_assist,
     },
 )
