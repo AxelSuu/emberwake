@@ -30,3 +30,9 @@ master = "Master volume"
 music = "Music"
 sfx = "Effects"
 reduce_flashes = "Reduce flashes"
+
+[pause]
+title = "Paused"
+resume = "Resume"
+settings = "Settings"
+quit = "Quit to title"
