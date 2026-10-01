@@ -23,6 +23,7 @@ class CameraTuning:
     Attributes:
         deadzone: Width and height of the box the target can move in without moving the camera.
         smoothing: How fast the camera catches up with its goal.
+        glide_smoothing: Catch-up rate while gliding into new bounds (room transitions).
         look_ahead: How far ahead of the target's facing the camera looks.
         look_ahead_rate: How fast the look-ahead swings when facing changes.
         vertical_bias: Added to the goal's y; negative shows more space above the target.
@@ -30,6 +31,7 @@ class CameraTuning:
 
     deadzone: tuple[float, float] = (24.0, 40.0)
     smoothing: float = 7.0
+    glide_smoothing: float = 12.0
     look_ahead: float = 40.0
     look_ahead_rate: float = 2.5
     vertical_bias: float = -12.0
@@ -46,6 +48,7 @@ class Camera:
         self.bounds: pygame.Rect | None = None
         self.x = self.y = 0.0
         self.previous = (0.0, 0.0)
+        self.gliding = False
         self._focus = (0.0, 0.0)
         self._ahead = 0.0
 
@@ -61,6 +64,11 @@ class Camera:
         self.x, self.y = self._clamp(x, y + self.tuning.vertical_bias)
         self.previous = (self.x, self.y)
 
+    def glide_to(self, bounds: pygame.Rect) -> None:
+        """Switch to `bounds`, catching up faster until the view has settled inside them."""
+        self.bounds = bounds
+        self.gliding = True
+
     def update(self, target_x: float, target_y: float, facing: int, dt: float) -> None:
         """Advance one tick toward the target."""
         t = self.tuning
@@ -72,8 +80,11 @@ class Camera:
         self._focus = (fx, fy)
         self._ahead = damp(self._ahead, facing * t.look_ahead, t.look_ahead_rate, dt)
         goal_x, goal_y = self._clamp(fx + self._ahead, fy + t.vertical_bias)
-        self.x = damp(self.x, goal_x, t.smoothing, dt)
-        self.y = damp(self.y, goal_y, t.smoothing, dt)
+        rate = t.glide_smoothing if self.gliding else t.smoothing
+        self.x = damp(self.x, goal_x, rate, dt)
+        self.y = damp(self.y, goal_y, rate, dt)
+        if self.gliding and abs(goal_x - self.x) < 1 and abs(goal_y - self.y) < 1:
+            self.gliding = False
         self.shake.update(dt)
 
     def offset(self, alpha: float = 1.0) -> tuple[int, int]:
