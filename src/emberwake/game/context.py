@@ -8,6 +8,7 @@ from emberwake.engine.audio import Audio
 from emberwake.engine.core.events import EventBus
 from emberwake.engine.core.i18n import Strings
 from emberwake.engine.platform.storage import Storage
+from emberwake.game.achievements import Achievements
 from emberwake.game.data.settings import Settings
 
 
@@ -20,6 +21,8 @@ class GameContext:
     dev: bool = False
     strings: Strings = field(default_factory=Strings)
     """String tables for the player's language (`t`)."""
+    achievements: Achievements = field(default_factory=Achievements)
+    """Lifetime counters and unlocks; empty unless the app loads definitions."""
     audio: Audio = field(default_factory=Audio)
     """Sound and music; silent unless the app gives it a sound directory."""
     slot: int = 1

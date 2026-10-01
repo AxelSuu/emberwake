@@ -49,6 +49,7 @@ from emberwake.game.progress import Progress
 from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdrops
 from emberwake.game.render.fx import Flash
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
+from emberwake.game.render.toast import Toasts
 from emberwake.game.scenes.pause import PauseScene
 from emberwake.game.scenes.results import ResultsScene, RunFinished
 from emberwake.game.schedule import gameplay_schedule
@@ -58,6 +59,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
     from pathlib import Path
 
+    from emberwake.engine.core.events import EventBus
     from emberwake.game.context import GameContext
 
 log = logging.getLogger(__name__)
@@ -111,6 +113,7 @@ class GameplayScene(Scene):
         self.art = EntityArt()
         self.particles = ParticleSystem()
         self.cutscenes = CutscenePlayer()
+        self.toasts = Toasts()
         self.texts = FloatingTexts()
         self.texts.muted = ctx.settings.accessibility.reduce_flashes
         self.emitters = self._read_emitters() or {}
@@ -200,6 +203,7 @@ class GameplayScene(Scene):
             bus.subscribe(RunFinished, self._on_run_finished),
             bus.subscribe(Collected, self._on_collected),
             bus.subscribe(Damaged, self._on_damaged),
+            *self._track_achievements(bus),
             bus.subscribe(Killed, self._on_killed),
             bus.subscribe(BeaconLit, self._on_beacon_lit),
             *self.progress.subscribe(bus),
@@ -415,6 +419,7 @@ class GameplayScene(Scene):
         self.cutscenes.update(dt)
         self.particles.update(dt)
         self.texts.update(dt)
+        self.toasts.update(dt)
         self.flash.update(dt)
         self.backdrops.update(self._room_lit(), dt)
         juice = self.feel.juice
@@ -484,6 +489,42 @@ class GameplayScene(Scene):
 
     def _on_run_finished(self, event: RunFinished) -> None:
         self.manager.push(ResultsScene(self.ctx, event.result))
+
+    def _track_achievements(self, bus: EventBus) -> list[Callable[[], None]]:
+        """Feed gameplay events to the achievement counters and show toasts for unlocks."""
+        tracker = self.ctx.achievements
+        tracker.on_unlock = self._on_achievement
+
+        def count(name: str) -> Callable[[object], None]:
+            def handle(_: object) -> None:
+                tracker.record(name)
+
+            return handle
+
+        def collected(event: Collected) -> None:
+            tracker.record("Collected", event.value)
+
+        def killed(event: Killed) -> None:
+            if event.target != self.player:
+                tracker.record("Killed")
+
+        def entered(event: RoomEntered) -> None:
+            tracker.enter_room(event.room)
+
+        tracker.enter_room(self.room)
+        return [
+            bus.subscribe(Jumped, count("Jumped")),
+            bus.subscribe(Dashed, count("Dashed")),
+            bus.subscribe(Died, count("Died")),
+            bus.subscribe(BeaconLit, count("BeaconLit")),
+            bus.subscribe(Collected, collected),
+            bus.subscribe(Killed, killed),
+            bus.subscribe(RoomEntered, entered),
+        ]
+
+    def _on_achievement(self, ident: str) -> None:
+        name = self.ctx.t(f"achievement.{ident}.name")
+        self.toasts.push(self.ctx.t("achievement.unlocked", name=name))
 
     def _on_damaged(self, event: Damaged) -> None:
         hurt_player = event.target == self.player
@@ -559,6 +600,7 @@ class GameplayScene(Scene):
         self.post.apply(canvas, self.frame.flags, self.backdrops.grade())
         self.flash.draw(canvas)
         self._draw_ember(canvas)
+        self.toasts.draw(canvas)
         if self.show_colliders:
             self._draw_colliders(canvas, ox, oy)
         if self.show_rooms:
