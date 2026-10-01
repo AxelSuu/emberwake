@@ -48,7 +48,7 @@ Detailed plans: [M2 World](plans/m2-world.md).
 ## M2 status
 
 - [x] ECS-lite world with resources and phase schedule, player migrated (#16)
-- [ ] Level source: ASCII + TOML compiled to LDtk (#64)
+- [x] Level source: ASCII + TOML compiled to LDtk, Test_Room migrated (#64)
 - [ ] World coordinates, room graph, streaming, transitions (#17)
 - [ ] Prefabs and LDtk entity spawning (#19)
 - [ ] Interactables and signal wiring (#20)

@@ -1,0 +1,5 @@
+# Room placement on the GridVania grid. One cell is 20x11 tiles (320x176 px); `cell` is the
+# room's top-left corner. Each room is <name in lower case>.txt plus an optional .toml.
+
+[rooms.Test_Room]
+cell = [0, 0]

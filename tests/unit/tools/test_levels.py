@@ -16,6 +16,7 @@ from tools.levels.source import (
     Source,
     SourceError,
     check_layout,
+    load_source,
     make_room,
     read_toml,
 )
@@ -111,6 +112,12 @@ def test_validator_catches_missing_required_fields():
 
 def test_committed_world_matches_ldtk_schema():
     assert errors(json.loads((ROOT / "levels/world.ldtk").read_text())) == []
+
+
+def test_committed_world_is_built_from_source():
+    committed = json.loads((ROOT / "levels/world.ldtk").read_text())
+    rebuilt = build_project(load_source(ROOT / "levels/src"), copy.deepcopy(committed))
+    assert rebuilt == committed, "run `uv run python -m tools.levels build --merge`"
 
 
 def test_loads_through_the_engine_with_fields_and_wiring(tmp_path: Path):
