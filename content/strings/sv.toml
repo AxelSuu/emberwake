@@ -279,6 +279,10 @@ wake_jump = "Hoppa med {jump}. Håll inne för ett högre hopp."
 
 nook_hatch = "Källaren är där nere. Håll {down} och tryck {jump} för att falla genom en planka."
 
+belfry_hook = "En mässingskrok hänger över gapet.\nDu har inget att kasta än."
+pogo = "Håll {down} och slå i luften:\nspetsarna studsar dig upp."
+hook_gap = "En rostig krok på den andra avsatsen.\nGapet är för brett än så länge."
+
 [echo]
 lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."
 wake = "Min sista runda. Upp ur brunnen, sedan fjorton lampor före mörkret. Tidvattnet kom först."

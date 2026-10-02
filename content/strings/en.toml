@@ -280,6 +280,10 @@ wake_jump = "Jump with {jump}. Hold it for a higher one."
 
 nook_hatch = "The cellar is below. Hold {down} and press {jump} to drop through a plank."
 
+belfry_hook = "A brass hook hangs over the gap.\nYou have nothing to throw yet."
+pogo = "Hold {down} and swing in the air:\nspikes bounce you up."
+hook_gap = "A rusted hook on the far ledge.\nThe gap is too wide for now."
+
 [echo]
 lore_hall = "I lit this lamp last. The oil ran out before the street did."
 wake = "My last round. Up the well, then fourteen lamps before dark. The tide came first."

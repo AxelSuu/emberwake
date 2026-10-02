@@ -1,0 +1,40 @@
+# Clock_Face, cell [8, 0] 2x2. Its floor opens on x 8..12 (rows 20..21) onto the top of the
+# Clocktower_Stair, plugged by door d while the King's Encounter Z runs. The Clockrat King
+# (wave 2, spawned at K) calls rats to the r markers.
+# A is Quarter Lamp A: a Beacon behind door o, which the cleared Encounter opens. With Lamp B in
+# the Pump House it powers the Cistern Gate door (a later batch reads Clock_Face:A); it also holds
+# the Belfry's lamps.
+# Shard 3 (S) sits on the ledge top left, past two spike bulbs to pogo off from the catwalk's west
+# end; the steps up are crumbling platforms.
+# The catwalk's east end faces a gap of 12 tiles to a ledge under the east wall: the lamp-hook
+# gap toward Brass Gardens, closed until the Wickline (M11). The way on is the wall at x 39,
+# rows 5..7.
+
+[entities.Z]
+type = "Encounter"
+fields = { Doors = ["d"], Targets = ["o"] }
+[entities.d]
+type = "Door"
+[entities.o]
+type = "Door"
+[entities.a]
+type = "WaveSpawn"
+fields = { Encounter = "Z", Wave = 1, Kind = "clockrat" }
+[entities.K]
+type = "WaveSpawn"
+fields = { Encounter = "Z", Wave = 2, Kind = "clockrat_king" }
+[entities.r]
+type = "RatSpawn"
+[entities.A]
+type = "Beacon"
+[entities.e]
+type = "Ember"
+fields = { Value = 5 }
+[entities.z]
+type = "CrumblingPlatform"
+[entities.S]
+type = "Grant"
+fields = { Thing = "shard" }
+[entities.s]
+type = "Signpost"
+fields = { Text = "hook_gap" }

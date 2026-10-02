@@ -85,3 +85,12 @@ cell = [73, 2]
 
 [rooms.Cistern_Lab]
 cell = [70, 4]
+
+[rooms.Belfry]
+cell = [8, 6]
+
+[rooms.Clocktower_Stair]
+cell = [8, 2]
+
+[rooms.Clock_Face]
+cell = [8, 0]
