@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 STEP = 1 / 60
 HALL_X = 65 * 320
-"""Lever_Hall's left edge in world px; its door is at tile 10."""
+"""Lab_Lever_Hall's left edge in world px; its door is at tile 10."""
 
 
 def play(
@@ -48,7 +48,7 @@ def prefabs(scene: GameplayScene) -> list[str]:
 
 
 def test_closed_door_blocks_the_hall(ctx: GameContext):
-    scene = play(ctx, "Lever_Hall", [(5, []), (60, ["right"])])
+    scene = play(ctx, "Lab_Lever_Hall", [(5, []), (60, ["right"])])
     assert not door(scene).open
     assert scene.body.x + scene.body.width <= HALL_X + 10 * 16
 
@@ -57,7 +57,7 @@ def test_lever_opens_the_door_and_the_ember_is_collected_once(ctx: GameContext):
     collected: list[Collected] = []
     ctx.bus.subscribe(Collected, collected.append)
     runs = [(5, []), (8, ["right"]), (2, ["interact"]), (80, ["right"])]
-    scene = play(ctx, "Lever_Hall", runs)
+    scene = play(ctx, "Lab_Lever_Hall", runs)
     assert door(scene).open
     assert scene.body.x > HALL_X + 16 * 16
     assert len(collected) == 1

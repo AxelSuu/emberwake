@@ -12,6 +12,6 @@ if TYPE_CHECKING:
 
 
 def test_a_room_is_shot_at_the_given_spot(tmp_path: Path, display: Display) -> None:
-    out = shoot("Lever_Hall", tmp_path / "shot.png", at=(60, 120), ticks=2, scale=1)
+    out = shoot("Lab_Lever_Hall", tmp_path / "shot.png", at=(60, 120), ticks=2, scale=1)
     assert pygame.image.load(out).get_size() == (640, 360)
-    assert "Lever_Hall" in all_rooms()
+    assert "Lab_Lever_Hall" in all_rooms()

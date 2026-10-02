@@ -1,0 +1,13 @@
+fields = { Backdrop = "cavern" }
+
+[entities.d]
+type = "DripLurker"
+[entities.B]
+type = "Brazier"
+[entities.g]
+type = "Gloomcrawler"
+[entities.l]
+type = "LostLight"
+fields = { Id = "gloom_cellar" }
+[entities.m]
+type = "Ember"

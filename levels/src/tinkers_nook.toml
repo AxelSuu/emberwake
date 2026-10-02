@@ -1,0 +1,19 @@
+fields = { Backdrop = "ruins" }
+
+[entities.k]
+type = "Beacon"
+[entities.t]
+type = "Tinker"
+[entities.a]
+type = "Lamp"
+fields = { Beacon = "k" }
+[entities.b]
+type = "Lamp"
+fields = { Beacon = "k" }
+[entities.s]
+type = "Signpost"
+fields = { Text = "nook_hatch" }
+[entities.o]
+type = "Pot"
+[entities.d]
+type = "Door"

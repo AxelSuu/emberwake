@@ -7,7 +7,7 @@ from emberwake.game.data.save import SAVE_CODEC, SaveSlot, Stats, load_slot, sav
 V1 = {
     "version": 1,
     "data": {
-        "room": "Lever_Hall",
+        "room": "Lab_Lever_Hall",
         "beacon": "b-1",
         "playtime": 12.5,
         "flags": {"intro_seen": 1},
@@ -22,7 +22,7 @@ V1 = {
 def test_v1_saves_load():
     slot = SAVE_CODEC.load(V1)
     assert slot == SaveSlot(
-        room="Lever_Hall",
+        room="Lab_Lever_Hall",
         beacon="b-1",
         playtime=12.5,
         flags={"intro_seen": 1},
@@ -52,7 +52,7 @@ def test_corrupt_slots_load_as_empty_and_are_kept():
 def test_v1_saves_load_without_a_cinder():
     loaded = SAVE_CODEC.load(V1)
     assert loaded.cinder is None
-    assert loaded.room == "Lever_Hall"
+    assert loaded.room == "Lab_Lever_Hall"
 
 
 def test_new_games_start_with_only_the_dash():

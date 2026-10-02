@@ -1,0 +1,20 @@
+# Clocktower_Stair, cell [8, 2] 1x4. A shaft 5 tiles wide (x 8..12) to climb by wall jumps.
+# Bottom (row 43) opens into the Belfry's chimney, top (row 0) into Clock_Face's floor, both on
+# x 8..12.
+# Left chamber: spikes under a pogo bulb (4, 28); a down swing on it bounces the player up to the
+# ledge where Lost Light 2 waits. It is led up the shaft to Quarter Lamp A in Clock_Face.
+
+[entities.g]
+type = "Gearbug"
+[entities.o]
+type = "Pot"
+[entities.z]
+type = "CrumblingPlatform"
+[entities.L]
+type = "LostLight"
+fields = { Id = "clocktower" }
+[entities.s]
+type = "Signpost"
+fields = { Text = "pogo" }
+[entities.e]
+type = "Ember"

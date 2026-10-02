@@ -1,0 +1,23 @@
+# Belfry, cell [8, 6] 2x2. Its floor is Market_Square's ceiling: the opening is tiles x 28..31 of
+# the bottom row (world tile columns 188..191), so Market_Square must leave those four ceiling
+# tiles open and put a platform below them. The chimney (x 8..12, rows 0..5) is the
+# Clocktower_Stair's bottom: the stair keeps the same columns open.
+# Lantern Shard 4 belongs on the ledge at x 27..31, row 3, out of reach until the Wickline (M11):
+# add a Grant of "shard" at (29, 2) then, not before. The ledge floats 8 tiles from every wall
+# so wall jumps cannot reach it; keep it so.
+
+[entities.l]
+type = "Lamp"
+fields = { Beacon = "Clock_Face:A" }
+[entities.b]
+type = "Bell"
+[entities.w]
+type = "WispEater"
+[entities.q]
+type = "Quill"
+fields = { Unless = "quill_stage>=1" }
+[entities.s]
+type = "Signpost"
+fields = { Text = "belfry_hook" }
+[entities.e]
+type = "Ember"

@@ -3,7 +3,7 @@
 # is <name in lower case>.txt plus an optional .toml.
 
 [rooms.Wake]
-cell = [0, 0]
+cell = [0, 11]
 
 [rooms.Test_Room]
 cell = [60, 0]
@@ -11,14 +11,26 @@ cell = [60, 0]
 [rooms.East_Passage]
 cell = [64, 2]
 
-[rooms.Lever_Hall]
+[rooms.Lab_Lever_Hall]
 cell = [65, 2]
 
 [rooms.Shaft]
 cell = [66, 1]
 
-[rooms.Plate_Room]
+[rooms.Lab_Plate_Room]
 cell = [67, 1]
+
+[rooms.Tinkers_Nook]
+cell = [6, 8]
+
+[rooms.Gloom_Cellar]
+cell = [5, 9]
+
+[rooms.Lever_Hall]
+cell = [4, 10]
+
+[rooms.Cistern_Shaft]
+cell = [4, 11]
 
 [rooms.Upper_Room]
 cell = [68, 0]
@@ -56,6 +68,15 @@ cell = [85, 0]
 [rooms.Lamp_Lab]
 cell = [89, 0]
 
+[rooms.Well_Climb]
+cell = [1, 8]
+
+[rooms.Old_Guild]
+cell = [2, 9]
+
+[rooms.Lamp_Row]
+cell = [2, 8]
+
 [rooms.Arena_Lab]
 cell = [70, 2]
 
@@ -64,6 +85,15 @@ cell = [73, 2]
 
 [rooms.Cistern_Lab]
 cell = [70, 4]
+
+[rooms.Belfry]
+cell = [8, 6]
+
+[rooms.Clocktower_Stair]
+cell = [8, 2]
+
+[rooms.Clock_Face]
+cell = [8, 0]
 
 [rooms.Lift_Lab]
 cell = [76, 2]

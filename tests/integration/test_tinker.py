@@ -28,9 +28,9 @@ def key(scenes: SceneManager, code: int) -> None:
     scenes.update(STEP)
 
 
-def at_the_tinker(ctx: GameContext) -> tuple[SceneManager, GameplayScene]:
+def at_the_tinker(ctx: GameContext, room: str = "Enemy_Yard") -> tuple[SceneManager, GameplayScene]:
     scenes = SceneManager()
-    game = GameplayScene(ctx, room="Enemy_Yard")
+    game = GameplayScene(ctx, room=room)
     scenes.push(game)
     scenes.update(STEP)
     for _, body, _npc in game.world.query(Body, Npc):
