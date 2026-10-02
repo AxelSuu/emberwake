@@ -87,7 +87,7 @@ def _check_encounters(world: Index) -> list[str]:
 
 
 def _written(world: Index, rules: Rules) -> set[str]:
-    flags = set(rules.shop_flags)
+    flags = set(rules.shop_flags) | set(rules.code_flags)
     for graph in rules.dialogues.values():
         for node in graph.values():
             flags |= node.set.keys() | node.add.keys()

@@ -1,2 +1,17 @@
 [entities.k]
 type = "Beacon"
+
+[entities.m]
+type = "Signpost"
+fields = { Text = "wake_move" }
+
+[entities.j]
+type = "Signpost"
+fields = { Text = "wake_jump" }
+
+[entities.e]
+type = "Echo"
+fields = { Id = "wake" }
+
+[entities.o]
+type = "Pot"

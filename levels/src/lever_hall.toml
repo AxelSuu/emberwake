@@ -1,11 +1,13 @@
-fields = { Area = "lab" }
+fields = { Backdrop = "cavern" }
 
 [entities.a]
 type = "Lever"
 fields = { Targets = ["b"] }
-
 [entities.b]
 type = "Door"
-
-[entities.e]
-type = "Ember"
+[entities.c]
+type = "Clockrat"
+[entities.m]
+type = "Lamp"
+[entities.n]
+type = "Lamp"

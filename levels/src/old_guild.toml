@@ -1,0 +1,12 @@
+fields = { Backdrop = "ruins" }
+
+[entities.e]
+type = "Echo"
+fields = { Id = "old_guild" }
+
+[entities.g]
+type = "Grant"
+fields = { Thing = "shard", Count = 1 }
+
+[entities.o]
+type = "Pot"

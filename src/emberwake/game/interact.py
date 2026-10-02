@@ -50,7 +50,16 @@ class Switch:
 @component
 @dataclass(slots=True)
 class PressurePlate:
-    """Its `Switch` is on while its `Trigger` has the player inside."""
+    """Its `Switch` is on while its `Trigger` has the player inside, or a `Weight` rests on it."""
+
+
+@component
+@dataclass(slots=True)
+class Weight:
+    """Presses plates down, as the player does (a pushed crate)."""
+
+    share: float = 0.5
+    """Share of the body's width that must be over a plate."""
 
 
 @component
@@ -84,6 +93,9 @@ class SwitchChanged:
 class Collected:
     iid: str
     value: int
+
+
+EPSILON = 1e-6
 
 
 def overlap(a: Body, b: Body, margin: float = 0.0) -> bool:
@@ -152,8 +164,17 @@ def trigger_system(world: World, dt: float) -> None:
 
 
 def plate_system(world: World, dt: float) -> None:
-    for eid, trigger, switch, _ in world.query(Trigger, Switch, PressurePlate):
-        set_switch(world, eid, switch, trigger.inside)
+    weights = [(body, weight) for _, body, weight in world.query(Body, Weight)]
+    for eid, body, trigger, switch, _ in world.query(Body, Trigger, Switch, PressurePlate):
+        weighed = any(_weighs(thing, plate=body, share=w.share) for thing, w in weights)
+        set_switch(world, eid, switch, trigger.inside or weighed)
+
+
+def _weighs(thing: Body, plate: Body, share: float) -> bool:
+    """Whether `thing` rests in the plate's rows with `share` of its width over the plate."""
+    across = min(thing.x + thing.width, plate.x + plate.width) - max(thing.x, plate.x)
+    level = thing.y < plate.bottom and plate.y < thing.bottom
+    return level and across >= share * thing.width - EPSILON
 
 
 def pickup_system(world: World, dt: float) -> None:

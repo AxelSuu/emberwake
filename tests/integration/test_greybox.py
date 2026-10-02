@@ -7,10 +7,12 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from emberwake.engine.input.replay import Replay, ReplayPlayer
+from emberwake.engine.physics import Body
 from emberwake.engine.scene import SceneManager
 from emberwake.engine.world.rooms import RoomEntered
 from emberwake.game.actions import Action
 from emberwake.game.beacons import BeaconLit
+from emberwake.game.enemies import Brain
 from emberwake.game.interact import Collected
 from emberwake.game.player.controller import wall_side
 from emberwake.game.scenes.gameplay import GameplayScene
@@ -36,7 +38,14 @@ class Leg:
     x: float
     jump: bool = False
     dash: bool = False
+    dash_age: int = 4
     interact: bool = False
+    down: bool = False
+    """Drop through the one-way underfoot."""
+    swing: bool = False
+    """Swing once on the first tick."""
+    fight: bool = False
+    """Stop and swing while an enemy is close ahead."""
     limit: int = 240
 
 
@@ -46,14 +55,22 @@ class Pilot(ReplayPlayer[Action]):
     def __init__(self, scene: GameplayScene, legs: list[Leg]) -> None:
         super().__init__(Replay(), Action)
         self.scene, self.legs = scene, legs
-        self.leg = self.age = 0
+        self.leg = self.age = self.blows = 0
+
+    def foe_ahead(self, side: int) -> bool:
+        body = self.scene.body
+        return any(
+            abs(foe.bottom - body.bottom) < 16 and 0 < (foe.center_x - body.center_x) * side < 36
+            for _, foe, _brain in self.scene.world.query(Body, Brain)
+        )
 
     def sample(self) -> frozenset[Action]:
         if self.finished:
             return frozenset()
         body, motor = self.scene.body, self.scene.motor
         leg = self.legs[self.leg]
-        if self.age > (3 if leg.jump else 0) and abs(body.center_x - leg.x) < 3 and motor.grounded:
+        wait = 6 if leg.down else 3 if leg.jump else 0
+        if self.age > wait and abs(body.center_x - leg.x) < 3 and motor.grounded:
             self.leg, self.age = self.leg + 1, 0
             if self.leg == len(self.legs):
                 self.finished = True
@@ -63,18 +80,27 @@ class Pilot(ReplayPlayer[Action]):
         if self.age > leg.limit:
             msg = f"leg {self.leg} to x={leg.x:.0f} timed out at {body.center_x:.0f}"
             raise AssertionError(msg)
+        if leg.fight and self.foe_ahead(1 if leg.x > body.center_x else -1):
+            self.blows += 1
+            return frozenset({Action.SWING}) if self.blows % 14 == 1 else frozenset()
+        return self.buttons(leg)
+
+    def buttons(self, leg: Leg) -> frozenset[Action]:
+        age, x = self.age, self.scene.body.center_x
         frame = set[Action]()
-        if body.center_x < leg.x - 2:
+        if x < leg.x - 2:
             frame.add(Action.RIGHT)
-        elif body.center_x > leg.x + 2:
+        elif x > leg.x + 2:
             frame.add(Action.LEFT)
-        if leg.jump and self.age <= JUMP_HOLD:
-            frame.add(Action.JUMP)
-        if leg.dash and 4 <= self.age < 6:
-            frame.add(Action.DASH)
-        if leg.interact and self.age == 1:
-            frame.add(Action.INTERACT)
-        return frozenset(frame)
+        if leg.down:
+            frame.add(Action.DOWN)
+        pressed = {
+            Action.JUMP: (leg.jump and age <= JUMP_HOLD) or (leg.down and 3 <= age <= 5),
+            Action.DASH: leg.dash and leg.dash_age <= age < leg.dash_age + 2,
+            Action.INTERACT: leg.interact and age == 1,
+            Action.SWING: leg.swing and age == 1,
+        }
+        return frozenset(frame | {action for action, held in pressed.items() if held})
 
 
 class Climber(ReplayPlayer[Action]):
@@ -210,11 +236,11 @@ def return_hall() -> Phase:
 
 
 def test_shaft_is_climbed_to_its_east_exit(ctx: GameContext):
-    run(ctx, "Shaft", climb(SHAFT_TOP, 1, in_room("Plate_Room")))
+    run(ctx, "Shaft", climb(SHAFT_TOP, 1, in_room("Lab_Plate_Room")))
 
 
 def test_plate_room_is_crossed_by_standing_on_the_plate(ctx: GameContext):
-    run(ctx, "Plate_Room", plate_room())
+    run(ctx, "Lab_Plate_Room", plate_room())
 
 
 def test_upper_room_lights_its_beacon_and_leaves_west(ctx: GameContext):
@@ -246,7 +272,7 @@ def test_the_loop_can_be_walked_using_every_mechanism(ctx: GameContext):
             Leg(at(EAST, 10.5)[0]),
             Leg(at(EAST, 10.5)[0], interact=True),
             Leg(at(hall, 0.5)[0]),
-            until=in_room("Lever_Hall"),
+            until=in_room("Lab_Lever_Hall"),
         ),
         walk(
             Leg(at(hall, 5.5)[0]),
@@ -255,7 +281,7 @@ def test_the_loop_can_be_walked_using_every_mechanism(ctx: GameContext):
             Leg(at(SHAFT, 0.5)[0]),
             until=in_room("Shaft"),
         ),
-        climb(SHAFT_TOP, 1, in_room("Plate_Room")),
+        climb(SHAFT_TOP, 1, in_room("Lab_Plate_Room")),
         plate_room(),
         upper_room(),
         return_hall(),
@@ -263,9 +289,9 @@ def test_the_loop_can_be_walked_using_every_mechanism(ctx: GameContext):
         ticks=4000,
     )
     assert entered == [
-        "Lever_Hall",
+        "Lab_Lever_Hall",
         "Shaft",
-        "Plate_Room",
+        "Lab_Plate_Room",
         "Upper_Room",
         "Return_Hall",
         "Test_Room",

@@ -74,6 +74,7 @@ color = "#8ff8e2"
 doc = "On while the light at it reaches the threshold"
 fields.Targets = { type = "EntityRef", array = true }
 fields.Threshold = { type = "Float", default = 0.4, doc = "Light level, 0 to 1" }
+fields.Sealed = { type = "Bool", default = false, doc = "Dark until a casing breaks (the Lamprey breaks them)" }
 
 [entities.Bell]
 color = "#fbb954"
@@ -121,6 +122,12 @@ color = "#966c6c"
 size = [16, 16]
 pivot = [0.5, 1.0]
 doc = "Where a Clockrat King's rats appear"
+
+[entities.Lamprey]
+color = "#8ff8e2"
+size = [32, 16]
+pivot = [0.5, 0.5]
+doc = "Boss: its head at the water line of its arena (the room); hunts the brightest light"
 
 [entities.Tinker]
 color = "#fbb954"
@@ -205,6 +212,10 @@ doc = "Solid until struck by the lantern"
 color = "#cd683d"
 doc = "Solid breakable; drops embers"
 fields.Embers = { type = "Int", default = 2 }
+
+[entities.PushCrate]
+color = "#6e2727"
+doc = "Pushed by walking into it; falls, stacks, can be stood on and weighs plates"
 
 [entities.Pot]
 color = "#e6904e"

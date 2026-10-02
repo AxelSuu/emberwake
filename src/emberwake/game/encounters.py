@@ -17,7 +17,7 @@ from emberwake.engine.ecs import EntityId, component
 from emberwake.engine.ecs.prefabs import build
 from emberwake.engine.physics import Body
 from emberwake.engine.world.spawning import Identity, Spawner
-from emberwake.game.enemies import KINDS, Brain, Minion, Summoned
+from emberwake.game import enemies
 from emberwake.game.interact import Switch, overlap, player_body, set_switch
 from emberwake.game.signals import Receiver, Wiring
 
@@ -164,7 +164,7 @@ def _spawn_wave(world: World, eid: EntityId, encounter: Encounter, wave: int) ->
         enemy = _spawn_enemy(world, spawner, eid, kind, marker, room, (x, y), player)
         if enemy is not None:
             encounter.enemies.append(enemy)
-            bus.publish(Summoned(enemy, x, y))
+            bus.publish(enemies.Summoned(enemy, x, y))
 
 
 def _spawn_enemy(  # noqa: PLR0917
@@ -178,19 +178,19 @@ def _spawn_enemy(  # noqa: PLR0917
     player: Body | None,
 ) -> EntityId | None:
     prefab = spawner.prefabs.get(kind)
-    if prefab is None or kind not in KINDS:
+    if prefab is None or kind not in enemies.KINDS:
         log.error("Encounter marker %s names %r, which is not an enemy", marker, kind)
         return None
     x, y = feet
-    width, height = KINDS[kind].size
+    width, height = enemies.KINDS[kind].size
     parts = build(prefab, {}, spawner.registry)
     brain = parts["Brain"]
-    assert isinstance(brain, Brain)
+    assert isinstance(brain, enemies.Brain)
     if player is not None:
         brain.facing = 1 if player.center_x >= x else -1
     return world.spawn(
         Identity(f"{marker}:wave", room, kind),
         Body(x - width / 2, y - height, width, height),
-        Minion(owner),
+        enemies.Minion(owner),
         *parts.values(),
     )

@@ -138,6 +138,13 @@ fields = { Unless = "up_hp>=2" }
         found = problems(pair(left, a="zefg"), dialogues=talk, shop_flags={"up_hp"})
         assert [line for line in found if "Ember" in line] == []
 
+    def test_a_flag_the_game_sets_itself_is_known(self):
+        found = problems(
+            pair('[entities.e]\ntype = "Ember"\nfields = { Requires = "boss_dead" }', a="e"),
+            code_flags={"boss_dead"},
+        )
+        assert found == []
+
     def test_a_condition_on_a_flag_switch(self):
         left = '[entities.s]\ntype = "FlagSwitch"\nfields = { Condition = "!lit" }'
         found = problems(pair(left, a="s"))
@@ -255,6 +262,50 @@ fields = { Flag = "lit" }
         rooms["A"] = ((0, 0), partition("..P.l.m...d"), toml)
         assert reaching(problems(rooms)) == []
         rooms["A"] = ((0, 0), partition("..P.l.....d....m"), toml)
+        assert len(reaching(problems(rooms))) == 1
+
+
+PLATE_AND_DOOR = """
+[entities.d]
+type = "Door"
+[entities.p]
+type = "PressurePlate"
+fields = { Targets = ["d"] }
+[entities.c]
+type = "PushCrate"
+"""
+
+
+class TestCrates:
+    def test_a_plate_the_player_cannot_reach_is_pressed_by_a_crate_in_its_room(self):
+        rooms = pair()
+        rooms["A"] = ((0, 0), partition("..P.c.....d....p"), PLATE_AND_DOOR)
+        assert reaching(problems(rooms)) == []
+
+    def test_without_a_crate_the_door_stays_shut(self):
+        rooms = pair()
+        rooms["A"] = (
+            (0, 0),
+            partition("..P.c.....d....p"),
+            PLATE_AND_DOOR.replace("PushCrate", "Pot"),
+        )
+        found = reaching(problems(rooms))
+        assert len(found) == 1
+        assert found[0].startswith("B: not reachable from A, it is behind Door")
+
+    def test_a_crate_in_another_room_does_not_help(self):
+        crate = '[entities.c]\ntype = "PushCrate"'
+        rooms = pair(right=crate, b="c")
+        rooms["A"] = (
+            (0, 0),
+            partition("..P.......d....p"),
+            PLATE_AND_DOOR.split("[entities.c]", maxsplit=1)[0],
+        )
+        assert len(reaching(problems(rooms))) == 1
+
+    def test_a_crate_behind_the_door_is_out_of_reach_too(self):
+        rooms = pair()
+        rooms["A"] = ((0, 0), partition("..P.......d.c..p"), PLATE_AND_DOOR)
         assert len(reaching(problems(rooms))) == 1
 
 

@@ -7,6 +7,7 @@ from emberwake.game.beacons import beacon_system
 from emberwake.game.breakables import breakable_system, crumble_system, loose_ember_system
 from emberwake.game.cinder import cinder_system
 from emberwake.game.combat import combat_system
+from emberwake.game.crates import crate_system, place_crates
 from emberwake.game.dialogue import npc_system
 from emberwake.game.encounters import encounter_system, lock_system
 from emberwake.game.enemies import enemy_system
@@ -14,6 +15,7 @@ from emberwake.game.flags import flag_system, gate_system
 from emberwake.game.flares import flare_system
 from emberwake.game.grants import grant_system
 from emberwake.game.interact import interact_system, pickup_system, plate_system, trigger_system
+from emberwake.game.lamprey_system import lamprey_system
 from emberwake.game.lamps import lamp_system
 from emberwake.game.light import ember_system, lightform_system
 from emberwake.game.lore import echo_system
@@ -68,11 +70,14 @@ def gameplay_schedule() -> Schedule:
     schedule.add("logic", kindle_system)
     schedule.add("logic", beacon_system)
     schedule.add("logic", enemy_system)
+    schedule.add("logic", lamprey_system)
     schedule.add("logic", npc_system)
     schedule.add("logic", echo_system)
     schedule.add("logic", trial_door_system)
     schedule.add("physics", player_system)
+    schedule.add("physics", crate_system)
     for system in POST:
         schedule.add("post", system)
+    schedule.add("render_prep", place_crates)
     schedule.add("render_prep", sprite_system)
     return schedule
