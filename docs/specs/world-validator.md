@@ -12,7 +12,8 @@ Part of `tools.levels validate`. Pure functions over the loaded levels and the c
 
 - **Wiring.** Every entity ref in a `Targets` field names an entity that exists in some level.
 - **Flags.** Every flag a `Requires`, `Unless` or `Condition` reads is written somewhere: a
-  SetFlag, a dialogue `set` or `add`, or a shop item's flag. Every `has.<thing>` names a key of
+  SetFlag, a dialogue `set` or `add`, a shop item's flag, or a flag the game sets itself
+  (`Rules.code_flags`: the Lamprey's `lamprey_drained` and `lamprey_defeated`). Every `has.<thing>` names a key of
   `grants.toml` and the thing is given somewhere: a starting ability, a Grant pickup or a dialogue
   `give:<thing>`. A Grant's `Thing` must be a key of `grants.toml`.
 - **Entrances.** An entrance is a stretch of a shared room edge that is open on both sides (two

@@ -73,9 +73,10 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | PressurePlate | On while something stands on it |
 | Beacon | Interact to relight: saves, refills the dash and becomes the continue point |
 | Brazier | Cold until a swing or a flare lights it (`Lit` places it lit); then a light and an on switch, saved by iid. Its `Targets` are receivers |
-| Photocell | On while the light at it reaches `Threshold` (default 0.4); `Targets` are receivers |
+| Photocell | On while the light at it reaches `Threshold` (default 0.4); `Targets` are receivers. `Sealed` keeps it dark until the Lamprey breaks its casing |
 | Bell | A swing rings it: stuns enemies nearby and pulses its `Targets` for a moment |
 | Lamp | Dead lamp post: a swing lights it, a Wisp-eater snuffs it. `Beacon` (a ref) is the beacon that makes it permanent once both are lit ([spec](../docs/specs/lamps.md)) |
+| Lamprey | Boss ([spec](../docs/specs/lamprey.md)): its head at the water line of its arena, which is the room. `--room Cistern_Lab` has the arena: lamps, sealed photocells and a drain door on a FlagSwitch for `lamprey_drained` |
 | Ember | Collectible |
 | CrackedWall | Solid until the lantern strikes it, then gone for good ([spec](../docs/specs/breakables.md)) |
 | Crate | Solid; breaks for good when struck and flings `Embers` loose embers |
