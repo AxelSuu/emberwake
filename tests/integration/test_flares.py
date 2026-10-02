@@ -8,7 +8,7 @@ import pygame
 
 from emberwake.engine.physics import Body
 from emberwake.engine.scene import SceneManager
-from emberwake.game.flares import FLARE_LIFE, Flare
+from emberwake.game.flares import FLARE_LIFE, Flare, FlareKit
 from emberwake.game.light import Ember, LightSource
 from emberwake.game.scenes.gameplay import GameplayScene
 
@@ -81,3 +81,18 @@ def test_a_dying_flare_fades(ctx: GameContext) -> None:
     _, flare, light = flares(game)[0]
     assert flare.life < 1.0
     assert light.strength < 1.0
+
+
+def test_flares_run_out_and_come_back_in_light(ctx: GameContext) -> None:
+    scenes, game = start(ctx)
+    kit = game.world.resource(FlareKit)
+    for _ in range(kit.max_charges + 1):
+        throw(scenes)
+        for _ in range(45):
+            scenes.update(STEP)
+    assert kit.charges == 0
+    assert len(flares(game)) == kit.max_charges
+    game.world.spawn(Body(game.body.x, game.body.y, 4, 4), LightSource(radius=80))
+    for _ in range(round(game.feel.light.flare_refill * 60) + 5):
+        scenes.update(STEP)
+    assert kit.charges >= 1

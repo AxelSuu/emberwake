@@ -74,3 +74,10 @@ def test_v7_swing_keeps_clear_of_keys_the_player_chose():
     loaded = SETTINGS_CODEC.load({"version": 7, "data": v7})
     assert loaded.controls.keys["jump"] == ["c"]
     assert loaded.controls.keys["swing"] == ["j"]
+
+
+def test_v8_gets_the_brightness_default():
+    v8: Any = to_data(Settings())
+    del v8["video"]["brightness"]
+    loaded = SETTINGS_CODEC.load({"version": 8, "data": v8})
+    assert loaded.video.brightness == 0.0

@@ -11,13 +11,13 @@ import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from emberwake.engine.core.events import EventBus
 from emberwake.engine.ecs import component
 from emberwake.engine.physics import Body, Tile
 from emberwake.engine.world.rooms import WorldGrid
 from emberwake.game.beacons import Beacon
+from emberwake.game.combat import hurt
 from emberwake.game.interact import player_body
-from emberwake.game.player.controller import Died, Motor
+from emberwake.game.player.controller import Motor
 
 if TYPE_CHECKING:
     from emberwake.engine.ecs import World
@@ -36,6 +36,17 @@ class LightTuning:
     """Light level (0 to 1) at which something counts as lit."""
     lantern_radius: float = 56.0
     beacon_radius: float = 96.0
+    gutter_radius: float = 0.33
+    """Share of the lantern's reach left when the flame is out."""
+    gutter_every: float = 4.0
+    """Seconds between the 1 damage a guttering lantern costs."""
+    flare_charges: int = 2
+    flare_refill: float = 2.0
+    """Seconds in light to win back one flare."""
+    kindle_ticks: int = 48
+    """Ticks Down must be held, still, to kindle."""
+    kindle_cost: float = 30.0
+    """Flame spent to heal 1."""
 
 
 @component
@@ -47,6 +58,13 @@ class Ember:
     in_light: bool = True
     max: float = 100.0
     """The most it can hold; shop upgrades raise it."""
+    gutter: float = 0.0
+    """Seconds since the flame went out or last cost health."""
+
+    @property
+    def guttering(self) -> bool:
+        """The flame is out: the lantern shrinks and slowly costs health."""
+        return self.current <= 0
 
 
 @component
@@ -56,6 +74,8 @@ class LightSource:
 
     radius: float = 64.0
     strength: float = 1.0
+    color: str = ""
+    """Hex color of the light; empty is the lantern's warm amber."""
 
 
 @component
@@ -87,23 +107,36 @@ def light_at(world: World, x: float, y: float, *, lantern: bool = True) -> float
         best = max(best, falloff(d, source.radius, source.strength))
     if lantern and (player := player_body(world)) is not None:
         d = math.hypot(x - player.center_x, y - (player.y + player.height / 2))
-        best = max(best, falloff(d, tuning.lantern_radius))
+        best = max(best, falloff(d, lantern_reach(world)))
     return min(best, 1.0)
 
 
+def lantern_reach(world: World) -> float:
+    """How far the player's lantern lights now: smaller while the flame is out."""
+    tuning = world.resource(LightTuning)
+    ember = next((e for _, e in world.query(Ember)), None)
+    if ember is not None and ember.guttering:
+        return tuning.lantern_radius * tuning.gutter_radius
+    return tuning.lantern_radius
+
+
 def ember_system(world: World, dt: float) -> None:
-    """Drain the ember in darkness, refill it in light, and kill the player at zero."""
-    tuning, bus = world.resource(LightTuning), world.resource(EventBus)
-    for _, body, motor, ember in world.query(Body, Motor, Ember):
+    """Drain the flame in darkness, refill it in light; a flame that is out costs health."""
+    tuning = world.resource(LightTuning)
+    for eid, body, motor, ember in world.query(Body, Motor, Ember):
         if motor.dead:
             continue
         centre_y = body.y + body.height / 2
         ember.in_light = light_at(world, body.center_x, centre_y, lantern=False) > 0
         rate = tuning.refill if ember.in_light else -tuning.drain
         ember.current = min(max(ember.current + rate * dt, 0.0), ember.max)
-        if ember.current <= 0:
-            motor.dead = True
-            bus.publish(Died(body.center_x, body.bottom))
+        if not ember.guttering:
+            ember.gutter = 0.0
+            continue
+        ember.gutter += dt
+        if ember.gutter >= tuning.gutter_every:
+            ember.gutter -= tuning.gutter_every
+            hurt(world, eid)
 
 
 def lightform_system(world: World, dt: float) -> None:

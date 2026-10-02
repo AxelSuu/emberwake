@@ -16,8 +16,7 @@ wheels/
 htmlcov/
 site/
 
-# Generated game assets and user data
-/assets/build/
-/assets/sfx/
+# Generated game assets (just art, just sfx) and user data
+/assets/
 /saves/
 *.log

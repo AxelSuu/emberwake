@@ -85,6 +85,12 @@ refill = 25.0
 lit_threshold = 0.05
 lantern_radius = 56.0
 beacon_radius = 96.0
+gutter_radius = 0.33
+gutter_every = 4.0
+flare_charges = 2
+flare_refill = 2.0
+kindle_ticks = 48
+kindle_cost = 30.0
 
 [enemies]
 player_hp = 3

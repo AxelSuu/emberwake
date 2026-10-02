@@ -38,7 +38,7 @@ from emberwake.engine.world.rooms import Room, RoomEntered, RoomGraph, RoomStrea
 from emberwake.engine.world.spawning import Identity, Spawner
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
-from emberwake.game.beacons import Beacon, BeaconLit
+from emberwake.game.beacons import Beacon, BeaconLit, Rested
 from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
 from emberwake.game.cosmetics import Cosmetics, load_cosmetics
@@ -46,15 +46,19 @@ from emberwake.game.data.records import RunResult, format_time, load_records
 from emberwake.game.data.save import SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
 from emberwake.game.feel import Feel, diff, load_feel
-from emberwake.game.flares import Flare, FlareKit
+from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.interact import Collected, Interactable, Switch
 from emberwake.game.light import Ember, LightSource
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
+from emberwake.game.player.kindle import Kindle, Kindled
 from emberwake.game.player.swing import Swing, SwingHit, SwingStarted
 from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
 from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdrops
+from emberwake.game.render.bank import SpriteBank
 from emberwake.game.render.fx import Flash
+from emberwake.game.render.glow import Glows
+from emberwake.game.render.hud import Hud, HudState
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
 from emberwake.game.render.swing_fx import arm, lantern_point, trail
 from emberwake.game.render.toast import Toasts
@@ -63,7 +67,7 @@ from emberwake.game.scenes.dialogue import DialogueScene
 from emberwake.game.scenes.pause import PauseScene
 from emberwake.game.scenes.results import ResultsScene, RunFinished
 from emberwake.game.schedule import gameplay_schedule
-from emberwake.game.shop import EMBER_PER_UPGRADE, HP_PER_UPGRADE, SPENT
+from emberwake.game.shop import EMBER_PER_UPGRADE, HP_PER_UPGRADE, SPENT, wallet
 from emberwake.game.signals import Receiver, Wiring
 from emberwake.game.trials import (
     Ghost,
@@ -99,7 +103,11 @@ COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
 """Seconds per frame spent baking room art in the background."""
-GLOW_RADIUS = 64
+GLOW_RADIUS = 72
+FLICKER_PHASE = 1.37
+"""Seconds of flicker between entities with consecutive ids, so lights do not pulse together."""
+BRIGHTNESS_LIFT = 0.6
+"""How far the brightness setting at full lifts the darkness toward full light."""
 HIT_FLASH = 0.12
 """Seconds an enemy shows white after a hit."""
 SHOULDER = 7
@@ -140,16 +148,11 @@ class GameplayScene(Scene):
         self.visual = PlayerVisual()
         self.cosmetics = self._read_cosmetics()
         self.dialogues = self._read_dialogues()
-        self.sprite = PlayerSprite()
-        self.glow = GLOW
-        self.flicker = Flicker()
-        self.frame = RenderFrame(flags=self._effects())
-        self.post = PostChain(ctx.canvas_size)
-        self.backend = SoftwareBackend()
-        self.art = EntityArt()
+        self._init_render()
         self.particles = ParticleSystem()
         self.cutscenes = CutscenePlayer()
         self.toasts = Toasts()
+        self.hud = Hud()
         self.texts = FloatingTexts()
         self.texts.muted = ctx.settings.accessibility.reduce_flashes
         self.emitters = self._read_emitters() or {}
@@ -173,6 +176,18 @@ class GameplayScene(Scene):
         self.camera.snap(*self._camera_target())
         if self.trial is not None:
             self._begin_attempt()
+
+    def _init_render(self) -> None:
+        self.sprite = PlayerSprite()
+        self.glow = GLOW
+        self.flicker = Flicker()
+        self.frame = RenderFrame(flags=self._effects())
+        self.post = PostChain(self.ctx.canvas_size)
+        self.backend = SoftwareBackend()
+        self.art = EntityArt()
+        self.bank = SpriteBank(paths.sprites())
+        self.glows = Glows()
+        self._colors: dict[str, tuple[int, int, int]] = {}
 
     def _open_progress(self, room: str | None, replay: Replay | None) -> str:
         """Load the slot unless a room or replay was asked for; return the starting room."""
@@ -213,7 +228,9 @@ class GameplayScene(Scene):
         for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
-        self.world.insert_resource(FlareKit(PropWorld(self.grid, (0, 0, 1, 1))))
+        flares = self.feel.light.flare_charges
+        kit = FlareKit(PropWorld(self.grid, (0, 0, 1, 1)), charges=flares, max_charges=flares)
+        self.world.insert_resource(kit)
         self.schedule = gameplay_schedule()
         self._apply_settings()
         self.player = self.world.spawn(*self._new_player())
@@ -253,6 +270,10 @@ class GameplayScene(Scene):
             *self._track_achievements(bus),
             bus.subscribe(Killed, self._on_killed),
             bus.subscribe(BeaconLit, self._on_beacon_lit),
+            bus.subscribe(Rested, self._on_rested),
+            bus.subscribe(Kindled, self._on_kindled),
+            bus.subscribe(FlareThrown, self._on_flare),
+            bus.subscribe(FlareFizzled, self._on_fizzle),
             *self.progress.subscribe(bus),
         ]
 
@@ -470,7 +491,8 @@ class GameplayScene(Scene):
         hp, most = self._maximums()
         health = Health(hp, iframes=self.feel.enemies.player_iframes)
         swing = Swing(), Hitbox(targets=Team.ENEMY)
-        return body, motor, Ember(most, max=most), health, Hurtbox(Team.PLAYER), *swing
+        hurtbox = Hurtbox(Team.PLAYER)
+        return body, motor, Ember(most, max=most), health, hurtbox, *swing, Kindle()
 
     def _maximums(self) -> tuple[int, float]:
         """The player's health and ember capacity, with the shop upgrades bought so far."""
@@ -498,6 +520,8 @@ class GameplayScene(Scene):
         emitters = self._read_emitters()
         if emitters is not None:
             self.emitters = emitters
+        self.bank.reload()
+        self.glows.clear()
         backdrops = self._read_backdrops()
         if backdrops is not None:
             self.backdrops = Backdrops(backdrops, self.ctx.canvas_size)
@@ -606,6 +630,7 @@ class GameplayScene(Scene):
         self.particles.update(dt)
         self.texts.update(dt)
         self.toasts.update(dt)
+        self.hud.update(dt)
         self.flash.update(dt)
         self.flashes = {eid: left - dt for eid, left in self.flashes.items() if left > dt}
         self.backdrops.update(self._room_lit(), dt)
@@ -753,6 +778,25 @@ class GameplayScene(Scene):
         body, color = self.body, pygame.Color(palette.EMBER_HOT)
         self.texts.spawn(f"+{event.value}", body.center_x, body.y - 4, (color.r, color.g, color.b))
 
+    def _on_flare(self, _: FlareThrown) -> None:
+        self.ctx.audio.sfx("player/throw")
+
+    def _on_fizzle(self, _: FlareFizzled) -> None:
+        self.ctx.audio.sfx("player/fizzle")
+
+    def _on_rested(self, _: Rested) -> None:
+        self.world.resource(FlareKit).fill()
+        if (ember := self.world.find(self.player, Ember)) is not None:
+            ember.current = ember.max
+
+    def _on_kindled(self, event: Kindled) -> None:
+        self.ctx.audio.sfx("player/kindle")
+        self.visual.squash(self.feel.juice.squash * 0.5)
+        if (burst := self.emitters.get("kindle")) is not None:
+            self.particles.burst(burst, event.x, event.y)
+        color = pygame.Color(palette.EMBER_CORE)
+        self.texts.spawn("+1", event.x, event.y - 14, (color.r, color.g, color.b))
+
     def _on_beacon_lit(self, event: BeaconLit) -> None:
         juice = self.feel.juice
         self.camera.shake.add(juice.beacon_trauma)
@@ -779,17 +823,18 @@ class GameplayScene(Scene):
             return self.grid.get(column, row) == Tile.SOLID
 
         frame.occluded = occluded
-        light = self.flicker(self.clock)
-        self._queue_world(light, ox, oy)
+        frame.ambient = self._ambient()
+        frame.occluder_version = self.grid.version
+        self._queue_world(ox, oy)
         if self.respawn_in == 0:
-            self._queue_player(light, ox, oy, alpha)
+            self._queue_player(self._flicker(self.player), ox, oy, alpha)
         self.backend.render(frame, canvas)
         self.particles.draw(canvas, (ox, oy))
         self.texts.draw(canvas, (ox, oy))
         self.backdrops.draw_near(canvas, (ox, oy), room_top)
         self.post.apply(canvas, self.frame.flags, self.backdrops.grade())
         self.flash.draw(canvas)
-        self._draw_ember(canvas)
+        self._draw_hud(canvas)
         self._draw_trial_timer(canvas)
         self.toasts.draw(canvas)
         if self.show_colliders:
@@ -798,31 +843,70 @@ class GameplayScene(Scene):
             self._draw_rooms(canvas, ox, oy)
             self._draw_wires(canvas, ox, oy)
 
-    def _queue_world(self, light: float, ox: int, oy: int) -> None:
-        """Lights, shafts and entity sprites into the frame."""
+    def _queue_world(self, ox: int, oy: int) -> None:
+        """Lights, shafts and entity sprites into the frame; each light flickers on its own."""
         frame = self.frame
-        for _, body, beacon in self.world.query(Body, Beacon):
+        for eid, body, beacon in self.world.query(Body, Beacon):
             if beacon.lit:
+                light = self._flicker(eid)
                 bx, by = body.center_x - ox, body.y + 3 - oy
-                frame.light(bx, by, GLOW_RADIUS, GLOW, light)
+                radius = round(self.feel.light.beacon_radius)
+                frame.light(bx, by, radius, GLOW, light, key=self._still(eid, body))
                 for index, spread in enumerate(SHAFT_ANGLES):
                     sway = math.sin(self.clock * 0.7 + index * 2.1) * 6
                     frame.shaft(ShaftCmd(bx, by, 270 + spread + sway, 90, 36, GLOW, light * 0.8))
         for eid, body, source in self.world.query(Body, LightSource):
             fx, fy = body.center_x - ox, body.y + body.height / 2 - oy
-            frame.light(fx, fy, round(source.radius), GLOW, light * source.strength)
+            color = self._light_color(source.color)
+            strength = self._flicker(eid) * source.strength
+            key = None if self.world.has(eid, Flare) else self._still(eid, body)
+            frame.light(fx, fy, round(source.radius), color, strength, key=key)
             if self.world.has(eid, Flare):
                 image = self.art.image("flare", (round(body.width), round(body.height)))
-                frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
+                self._queue_lit(image, round(body.x) - ox, round(body.y) - oy)
         for eid, body, sprite in self.world.query(Body, Sprite):
-            image = self.art.image(sprite.current, (round(body.width), round(body.height)))
+            size = (round(body.width), round(body.height))
+            image = self.bank.image(sprite.current, self.clock)
+            image = image or self.art.image(sprite.current, size)
+            _, x, y = self._at(image, (body.center_x - ox, body.bottom - oy))
             if eid in self.flashes:
-                image = flashed(image, self.flashes[eid] / HIT_FLASH)
-            frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
+                frame.sprite(flashed(image, self.flashes[eid] / HIT_FLASH), x, y)
+            else:
+                self._queue_lit(image, x, y)
         for _, body, interactable in self.world.query(Body, Interactable):
             if interactable.in_range:
                 above = (round(body.center_x) - ox, round(body.y) - oy - 3)
                 frame.sprite(*self._at(self.art.prompt, above), layer=Layer.OVERLAY)
+
+    def _queue_lit(
+        self, image: pygame.Surface, x: int, y: int, layer: Layer = Layer.ACTORS
+    ) -> None:
+        """Queue `image`, and its emissive pixels again on the glow layer."""
+        self.frame.sprite(image, x, y, layer)
+        if (glow := self.glows(image)) is not None:
+            self.frame.sprite(glow, x, y, Layer.GLOW)
+
+    @staticmethod
+    def _still(eid: int, body: Body) -> tuple[int, int, int]:
+        """A key for the shadows of a light that stays where it is."""
+        return eid, round(body.x), round(body.y)
+
+    def _flicker(self, eid: int) -> float:
+        return self.flicker(self.clock + eid * FLICKER_PHASE)
+
+    def _light_color(self, hex_color: str) -> tuple[int, int, int]:
+        if not hex_color:
+            return GLOW
+        if hex_color not in self._colors:
+            color = pygame.Color(hex_color)
+            self._colors[hex_color] = (color.r, color.g, color.b)
+        return self._colors[hex_color]
+
+    def _ambient(self) -> tuple[int, int, int]:
+        """The room's darkness, lifted toward full light by the brightness setting."""
+        lift = self.ctx.settings.video.brightness * BRIGHTNESS_LIFT
+        r, g, b = (round(c + (255 - c) * lift) for c in self.backdrops.ambient())
+        return r, g, b
 
     def _draw_trial_timer(self, canvas: pygame.Surface) -> None:
         if self.trial is None:
@@ -831,16 +915,25 @@ class GameplayScene(Scene):
         text = font.render(format_time(self.trial_time), False, palette.MIST)
         canvas.blit(text, text.get_rect(midtop=(canvas.get_width() // 2, 6)))
 
-    def _draw_ember(self, canvas: pygame.Surface) -> None:
-        """A small bar of the player's ember in the top left corner."""
-        if not self.world.has(self.player, Ember):
+    def _draw_hud(self, canvas: pygame.Surface) -> None:
+        """Health, flame, flares and embers; hidden while a cutscene plays."""
+        health, ember = self.world.find(self.player, Health), self.world.find(self.player, Ember)
+        if health is None or ember is None:
             return
-        ember = self.world.get(self.player, Ember)
-        fraction = ember.current / ember.max
-        x, y, width = 6, 6, 40
-        canvas.fill(palette.INK, (x - 1, y - 1, width + 2, 5))
-        color = palette.EMBER_HOT if fraction > 0.25 else palette.EMBER_COOL
-        canvas.fill(color, (x, y, round(width * fraction), 3))
+        kit = self.world.resource(FlareKit)
+        refill = kit.refill / self.feel.light.flare_refill if self.feel.light.flare_refill else 0
+        state = HudState(
+            health.current,
+            health.max,
+            ember.current,
+            ember.max,
+            kit.charges,
+            kit.max_charges,
+            refill,
+            wallet(self.progress.data),
+        )
+        self.hud.hidden = self.cutscenes.active
+        self.hud.draw(canvas, state)
 
     @staticmethod
     def _centred(
@@ -870,16 +963,26 @@ class GameplayScene(Scene):
             shoulder = (feet[0], y + SHOULDER - oy)
             lantern = lantern_point(swing, self.feel.swing, shoulder, lantern)
             if (arc := trail(swing, self.feel.swing)) is not None:
-                self.frame.sprite(*self._centred(arc, shoulder), layer=Layer.FOREGROUND)
-        self.frame.light(*lantern, GLOW_RADIUS, self.glow, light)
+                self.frame.sprite(*self._centred(arc, shoulder), layer=Layer.GLOW)
+        self.frame.light(*lantern, self._lantern_radius(), self.glow, light)
         image = self.sprite.image(p.facing, visual.scale_x, visual.scale_y, bare=swinging)
-        self.frame.sprite(*self._at(image, feet))
+        self._queue_lit(*self._at(image, feet))
         if swing is not None and swinging:
             shoulder = (round(feet[0]), round(y + SHOULDER - oy))
             image, (left, top) = arm(lantern[0] - shoulder[0], lantern[1] - shoulder[1])
             self.frame.sprite(image, shoulder[0] + left, shoulder[1] + top)
-            self.frame.sprite(*self._centred(self.sprite.lantern, lantern))
+            self._queue_lit(*self._centred(self.sprite.lantern, lantern))
         self._queue_ghost(ox, oy)
+
+    def _lantern_radius(self) -> int:
+        """The lantern's glow: shrunk while guttering, swelling while kindling."""
+        radius = float(GLOW_RADIUS)
+        ember, kindle = self.world.find(self.player, Ember), self.world.find(self.player, Kindle)
+        if ember is not None and ember.guttering:
+            radius *= self.feel.light.gutter_radius
+        if kindle is not None and kindle.ticks:
+            radius *= 1.0 + 0.4 * kindle.progress(self.feel.light)
+        return round(radius)
 
     def _queue_ghost(self, ox: int, oy: int) -> None:
         ghost = self.ghost

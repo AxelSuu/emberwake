@@ -120,3 +120,17 @@ def test_dev_keys_ignored_without_dev(ctx: GameContext):
     scene = play(ctx, RUN_AND_JUMP, 1)
     key(scene, pygame.K_p)
     assert not scene.time.paused
+
+
+def test_rooms_are_dark_and_brightness_lifts_the_dark(ctx: GameContext) -> None:
+    scenes = SceneManager()
+    game = GameplayScene(ctx)
+    scenes.push(game)
+    scenes.update(1 / 60)
+    canvas = pygame.Surface(ctx.canvas_size)
+    scenes.draw(canvas, 1.0)
+    dark = game.frame.ambient
+    assert max(dark) < 160
+    ctx.settings.video.brightness = 1.0
+    scenes.draw(canvas, 1.0)
+    assert all(lifted > before for lifted, before in zip(game.frame.ambient, dark, strict=True))

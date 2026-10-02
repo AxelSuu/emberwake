@@ -26,8 +26,19 @@ Each sprite may ship up to three aligned images, packed together by the atlas pa
 2. Pixel DSL (`art/**/*.pxl`, TOML): palette keys + text grids + frames + layers, compiled to
    PNG. Diffable and easy to author by hand or by an AI assistant. Tiles, props, icons, UI.
    `just art` compiles `art/**/*.pxl` to `assets/**/*.png` (a sheet, plus a `.json` of frame size
-   and timings when there are several frames); `just art-watch` recompiles on save. The format is
-   documented at the top of `tools/pxl/spec.py`.
+   and timings when there are several frames); `just art-watch` recompiles on save; `just run`
+   compiles first. `uses = "base"` pulls in the shared keys of `art/palettes/base.toml`. The
+   format is documented at the top of `tools/pxl/spec.py`.
+   - **Finished sprites** go in `art/sprites/<name>.pxl`, where `<name>` is the name gameplay
+     uses (`clockrat`, `beacon_lit`, see `content/prefabs.toml`). The sprite bank
+     (`game/render/bank.py`) shows them instead of the placeholder, anchored at the bottom
+     centre of the entity, looping multi-frame sheets.
+   - **Ideas** go in `art/lab/<subject>/<idea>.pxl` and never reach the game. `just sheet
+     art/lab/<subject>` renders every idea's frames on a dark, a lit and a mid-tone panel into
+     `build/sheets/<subject>.png`, so many variants are compared side by side; favourites move
+     to `art/sprites`.
+   - **In place**: `just shot <room> --at x,y` renders a room headless as the game draws it, into
+     `build/shots/<room>.png`.
 3. Aseprite files for hand-drawn work, exported through the CLI or parsed directly.
 4. Autotile generator: 47-tile blob sets from a few base pieces, plus matching LDtk rules.
 5. Free CC0 packs only to validate the pipeline early, replaced before release.

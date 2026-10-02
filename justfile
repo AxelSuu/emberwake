@@ -5,7 +5,7 @@ default:
     @just --list
 
 # Run the game (extra args go to the CLI, e.g. `just run --dev`)
-run *args:
+run *args: art-quiet
     SDL_AUDIODRIVER= uv run emberwake {{args}}
 
 # Lint, format check, types, architecture contracts
@@ -35,6 +35,17 @@ cov:
 art:
     uv run python -m tools.pxl build
 
+art-quiet:
+    @uv run python -m tools.pxl build --quiet
+
+# Contact sheets of the sketches in a folder: just sheet art/lab/player (-> build/sheets/)
+sheet *args:
+    uv run python -m tools.sheet {{args}}
+
+# Headless screenshots of rooms: just shot Enemy_Yard --at 300,160 (-> build/shots/)
+shot *args: art-quiet
+    uv run python -m tools.shot {{args}}
+
 # Pack assets/ into albedo, normal and emissive atlases under build/atlas/
 atlas:
     uv run python -m tools.atlas
@@ -55,7 +66,7 @@ sfx *args:
 art-watch:
     uv run python -m tools.pxl watch
 
-web-stage: sfx
+web-stage: sfx art
     rm -rf build/web-src && mkdir -p build/web-src
     cp main.py build/web-src/
     cp -r src/emberwake content levels build/web-src/

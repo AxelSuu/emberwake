@@ -47,8 +47,12 @@ def compile_file(source: Path, art: Path, assets: Path) -> Path:
     return out
 
 
+LAB = "lab"
+"""Idea sketches live in ``art/lab``; `tools.sheet` shows them, the game never loads them."""
+
+
 def sources(art: Path) -> list[Path]:
-    return sorted(art.glob("**/*.pxl"))
+    return sorted(p for p in art.glob("**/*.pxl") if LAB not in p.relative_to(art).parts)
 
 
 def build(art: Path, assets: Path, report: Callable[[str], None] = print) -> int:

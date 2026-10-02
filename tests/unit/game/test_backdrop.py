@@ -87,3 +87,18 @@ def test_grade_cross_fades_and_warms():
     assert backdrops.grade().multiply == (150, 150, 150)
     backdrops.update(warm=False, dt=FADE)
     assert backdrops.grade().multiply == (200, 200, 200)
+
+
+def test_ambient_cross_fades_and_brightens_with_a_lit_beacon():
+    specs = {
+        "a": BackdropSpec(ambient=(40, 40, 40), ambient_lit=(200, 200, 200)),
+        "b": BackdropSpec(ambient=(80, 80, 80), ambient_lit=(240, 240, 240)),
+    }
+    backdrops = Backdrops(specs, SIZE)
+    backdrops.show("a", instantly=True)
+    assert backdrops.ambient() == (40, 40, 40)
+    backdrops.show("b")
+    backdrops.update(warm=False, dt=FADE / 2)
+    assert backdrops.ambient() == (60, 60, 60)
+    backdrops.update(warm=True, dt=10.0)
+    assert backdrops.ambient() == (240, 240, 240)

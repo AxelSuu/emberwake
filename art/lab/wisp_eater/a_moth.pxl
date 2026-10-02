@@ -1,0 +1,48 @@
+# A moth with mint eye-spots; the wings beat. Moths fly to flames.
+uses = "base"
+
+[layers]
+f1 = '''
+................
+...oo......oo...
+..oxXo....oXxo..
+.oxXHXooooXHXxo.
+oxXHmHXooXHmHXxo
+oxXXXXXooXXXXXxo
+oxXXXXoppoXXXXxo
+.oxXXoppppoXXxo.
+..oxop5oo5poxo..
+...oop5oo5poo...
+..oxXop55poXxo..
+.oxXXooppooXXxo.
+.oxXo..oo..oXxo.
+..oo........oo..
+................
+................
+'''
+f2 = '''
+................
+................
+................
+..oooooooooooo..
+.oxXXXoppoXXXxo.
+oxXHmHoppoHmHXxo
+oxXXXXoppoXXXXxo
+.oxXXop55poXXxo.
+..oxop5oo5poxo..
+...oop5oo5poo...
+..oxXop55poXxo..
+.oxXXooppooXXxo.
+..oxo..oo..oxo..
+...o........o...
+................
+................
+'''
+
+[[frames]]
+layers = ["f1"]
+ms = 120
+
+[[frames]]
+layers = ["f2"]
+ms = 120

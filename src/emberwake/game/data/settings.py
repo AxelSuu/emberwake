@@ -30,6 +30,8 @@ class VideoSettings:
     crt: bool = False
     shadows: bool = True
     light_shafts: bool = True
+    brightness: float = 0.0
+    """0 to 1: lifts the darkness of unlit places, for dim screens."""
 
 
 @dataclass(slots=True)
@@ -117,6 +119,11 @@ def _add_swing(data: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
+def _add_brightness(data: dict[str, Any]) -> dict[str, Any]:
+    """v8 -> v9: the brightness setting; missing, it takes its default on load."""
+    return data
+
+
 def _drop_gamepad(data: dict[str, Any]) -> dict[str, Any]:
     """v4 -> v5: gamepad support was removed, so saved button bindings go."""
     data.get("controls", {}).pop("buttons", None)
@@ -125,7 +132,7 @@ def _drop_gamepad(data: dict[str, Any]) -> dict[str, Any]:
 
 SETTINGS_CODEC = VersionedCodec(
     Settings,
-    version=8,
+    version=9,
     migrations={
         1: _add_interact,
         2: _add_post_effects,
@@ -134,5 +141,6 @@ SETTINGS_CODEC = VersionedCodec(
         5: _add_flare,
         6: _add_cosmetics_and_assist,
         7: _add_swing,
+        8: _add_brightness,
     },
 )

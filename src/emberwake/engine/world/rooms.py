@@ -115,6 +115,8 @@ class WorldGrid:
         self._tile_size = tile_size
         self.rooms: list[Room] = []
         self._last: Room | None = None
+        self.version = 0
+        """Counts changes to the tiles, so caches of what blocks light know when to refresh."""
 
     @property
     def tile_size(self) -> int:
@@ -132,10 +134,12 @@ class WorldGrid:
             msg = f"room {room.name} is not aligned to the {size} px grid"
             raise ValueError(msg)
         self.rooms.append(room)
+        self.version += 1
 
     def remove(self, room: Room) -> None:
         """Stop routing queries to `room`."""
         self.rooms.remove(room)
+        self.version += 1
         if self._last is room:
             self._last = None
 
@@ -153,7 +157,9 @@ class WorldGrid:
         if room is None:
             return False
         left, top = room.cell
-        room.grid.set(column - left, row - top, tile)
+        if room.grid.get(column - left, row - top) is not tile:
+            room.grid.set(column - left, row - top, tile)
+            self.version += 1
         return True
 
     def _room(self, column: int, row: int) -> Room | None:

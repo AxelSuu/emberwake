@@ -3,6 +3,7 @@ from __future__ import annotations
 import pygame
 import pytest
 
+from emberwake.engine.render import software
 from emberwake.engine.render.frame import Flag, Layer, RenderFrame, ShaftCmd
 from emberwake.engine.render.shadows import shadow_mask, visible_outline
 from emberwake.engine.render.software import SoftwareBackend
@@ -134,3 +135,70 @@ def test_shafts_need_their_flag():
     target = canvas()
     SoftwareBackend().render(frame, target)
     assert target.get_at((30, 20)) == BLACK
+
+
+def test_in_the_dark_unlit_things_sink_to_the_ambient_and_lit_ones_keep_their_color():
+    frame = RenderFrame(ambient=(64, 64, 64))
+    white = pygame.Color("white")
+    frame.sprite(square(white, 40), 0, 0, Layer.WORLD)
+    frame.light(6, 20, 8, (255, 255, 255))
+    target = canvas()
+    SoftwareBackend().render(frame, target)
+    assert target.get_at((36, 20))[:3] == (64, 64, 64)
+    assert target.get_at((6, 20)).r > 200
+
+
+def test_in_the_dark_actors_are_lit_too_and_glow_stays_bright():
+    frame = RenderFrame(ambient=(32, 32, 32))
+    frame.sprite(square(BLUE), 30, 30, Layer.ACTORS)
+    frame.sprite(square(RED), 2, 2, Layer.GLOW)
+    target = canvas()
+    SoftwareBackend().render(frame, target)
+    assert target.get_at((31, 31)).b < 64
+    assert target.get_at((3, 3)) == RED
+
+
+def test_lights_off_screen_are_skipped():
+    frame = RenderFrame(ambient=(0, 0, 0))
+    frame.light(500, 500, 16, (255, 255, 255))
+    frame.light(20, 20, 16, (255, 255, 255))
+    assert len(software._visible(frame.lights, canvas().get_rect())) == 1
+
+
+def test_only_the_biggest_lights_cast_shadows_in_the_dark(monkeypatch: pytest.MonkeyPatch):
+    calls: list[int] = []
+
+    def mask(occluded, x, y, radius, like):
+        calls.append(radius)
+
+    monkeypatch.setattr(software, "shadow_mask", mask)
+    frame = RenderFrame(flags=Flag.LIGHTING | Flag.SHADOWS, ambient=(0, 0, 0))
+    frame.occluded = lambda x, y: False
+    for i in range(software.SHADOW_BUDGET + 3):
+        frame.light(20, 20, 8 + i, (255, 255, 255))
+    SoftwareBackend().render(frame, canvas())
+    assert len(calls) == software.SHADOW_BUDGET
+    assert min(calls) > round(8 * software.REACH) + 2
+
+
+def test_keyed_lights_cast_shadows_once_until_the_occluders_change(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    calls: list[int] = []
+    real = software.shadow_mask
+
+    def mask(*args):
+        calls.append(1)
+        return real(*args)
+
+    monkeypatch.setattr(software, "shadow_mask", mask)
+    backend = SoftwareBackend()
+    frame = RenderFrame(flags=Flag.LIGHTING | Flag.SHADOWS, ambient=(0, 0, 0))
+    frame.occluded = lambda x, y: x > 30
+    frame.light(20, 20, 16, (255, 255, 255), key="lamp")
+    for _ in range(3):
+        backend.render(frame, canvas())
+    assert len(calls) == 1
+    frame.occluder_version += 1
+    backend.render(frame, canvas())
+    assert len(calls) == 2

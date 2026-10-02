@@ -6,7 +6,7 @@ fills one per draw; a backend (software now, GL later) turns it into pixels.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Hashable
 from dataclasses import dataclass, field
 from enum import IntEnum, IntFlag, auto
 
@@ -14,12 +14,18 @@ import pygame
 
 
 class Layer(IntEnum):
-    """Draw order, back to front. Lights shine on everything below `ACTORS`."""
+    """Draw order, back to front.
+
+    In the dark (`RenderFrame.ambient` below white) lights shine on `WORLD`, `ACTORS` and what the
+    canvas held before; `GLOW` is drawn after the lighting at full brightness, for pixels that
+    give off light (flames, eyes, embers). Without darkness lights only brighten `WORLD`.
+    """
 
     WORLD = 0
     ACTORS = 1
-    FOREGROUND = 2
-    OVERLAY = 3
+    GLOW = 2
+    FOREGROUND = 3
+    OVERLAY = 4
 
 
 class Flag(IntFlag):
@@ -54,6 +60,9 @@ class LightCmd:
         color: RGB of the light at full strength.
         intensity: 0 to 1; gameplay folds flicker and fades into it.
         shadows: Whether solid things block this light (when the frame has occluders).
+        key: For a light that does not move in the world: anything that names it and its
+            place. Its shadows are then cast once and reused until `RenderFrame.occluder_version`
+            changes.
     """
 
     x: float
@@ -62,6 +71,7 @@ class LightCmd:
     color: tuple[int, int, int]
     intensity: float = 1.0
     shadows: bool = True
+    key: Hashable | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,6 +104,10 @@ class RenderFrame:
     flags: Flag = Flag.LIGHTING
     occluded: Callable[[float, float], bool] | None = None
     """Whether a screen px point blocks light; set per frame by gameplay."""
+    ambient: tuple[int, int, int] = (255, 255, 255)
+    """How lit things are where no light reaches; white means no darkness at all."""
+    occluder_version: int = 0
+    """Changes whenever what blocks light changes, so cached shadows of keyed lights refresh."""
 
     def sprite(
         self, image: pygame.Surface, x: float, y: float, layer: Layer = Layer.ACTORS
@@ -110,9 +124,10 @@ class RenderFrame:
         intensity: float = 1.0,
         *,
         shadows: bool = True,
+        key: Hashable | None = None,
     ) -> None:
-        """Queue a light centred at `(x, y)`."""
-        self.lights.append(LightCmd(x, y, radius, color, intensity, shadows))
+        """Queue a light centred at `(x, y)`; see `LightCmd` for `key`."""
+        self.lights.append(LightCmd(x, y, radius, color, intensity, shadows, key))
 
     def shaft(self, cmd: ShaftCmd) -> None:
         """Queue a light shaft; drawn after the lights, over the world layer."""
