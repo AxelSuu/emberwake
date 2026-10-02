@@ -46,7 +46,7 @@ def test_f6_lists_rooms_and_picking_one_warps(ctx: GameContext) -> None:
     warp = scenes.top
     assert isinstance(warp, WarpScene)
     while (current := warp.list.current) is not None and current.text != "Upper_Room":
-        press(scenes, pygame.K_DOWN)
+        press(scenes, pygame.K_UP)
     press(scenes, pygame.K_RETURN)
     scenes.update(STEP)
     assert scenes.top is game

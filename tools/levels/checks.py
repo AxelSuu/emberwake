@@ -15,6 +15,7 @@ from tools.levels.walk import check_reachability
 from tools.levels.world import BODY, NEAR, Index, Rules, Thing, index
 
 from emberwake.engine.core.dialogue import DialogueError, flag_of
+from emberwake.game.enemies import KINDS
 from emberwake.game.flags import HAS, REQUIRES, UNLESS
 from emberwake.game.grants import GIVE
 
@@ -31,6 +32,7 @@ def check_world(project: Project, prefabs: Mapping[str, Prefab], rules: Rules) -
     """Problems with wiring, flags, entrances and reachability, one line each."""
     world = index(project, prefabs)
     problems = _check_wiring(world)
+    problems += _check_encounters(world)
     problems += _check_flags(world, rules)
     problems += _check_entrances(world)
     problems += check_reachability(world, rules)
@@ -49,6 +51,39 @@ def _check_wiring(world: Index) -> list[str]:
         for iid in thing.targets()
         if iid not in known
     ]
+
+
+def _check_encounters(world: Index) -> list[str]:
+    """WaveSpawns name an Encounter in their room and an enemy; waves count up from 1."""
+    things = {thing.iid: thing for thing in world.things}
+    waves: dict[str, set[int]] = {t.iid: set() for t in things.values() if t.kind == "Encounter"}
+    problems = []
+    for thing in things.values():
+        if thing.kind == "Encounter":
+            problems += [
+                f"{_where(thing)}: Doors names {iid}, which is a {things[iid].kind}, not a Door"
+                for iid in thing.entity.values().get("Doors") or []
+                if iid in things and things[iid].kind != "Door"
+            ]
+        if thing.kind != "WaveSpawn":
+            continue
+        entity = thing.entity
+        owner, wave = things.get(entity.values().get("Encounter") or ""), entity.field("Wave", 1)
+        if owner is None or owner.kind != "Encounter":
+            kind = owner.kind if owner is not None else "missing"
+            problems.append(f"{_where(thing)}: Encounter is {kind}, not an Encounter")
+        elif owner.room != thing.room:
+            problems.append(f"{_where(thing)}: Encounter is in {owner.room}, not in this room")
+        else:
+            waves[owner.iid].add(wave)
+        if wave < 1:
+            problems.append(f"{_where(thing)}: Wave {wave} is below 1")
+        if (kind := entity.field("Kind")) not in KINDS:
+            problems.append(f"{_where(thing)}: Kind {kind!r} is not an enemy ({', '.join(KINDS)})")
+    for iid, found in waves.items():
+        if not found or found != set(range(1, len(found) + 1)):
+            problems.append(f"{_where(things[iid])}: waves {sorted(found)} do not run from 1 up")
+    return problems
 
 
 def _written(world: Index, rules: Rules) -> set[str]:

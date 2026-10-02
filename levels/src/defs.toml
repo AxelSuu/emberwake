@@ -223,3 +223,21 @@ color = "#b33831"
 size = [32, 8]
 resizable = true
 doc = "One-way platform that crumbles under the player"
+
+[entities.Encounter]
+color = "#e83b3b"
+size = [64, 48]
+pivot = [0.0, 0.0]
+resizable = true
+doc = "Arena zone: the player's entry shuts its Doors and starts its waves; clearing powers its Targets"
+fields.Doors = { type = "EntityRef", array = true, doc = "Doors shut while it runs" }
+fields.Targets = { type = "EntityRef", array = true, doc = "Powered once cleared" }
+
+[entities.WaveSpawn]
+color = "#e83b3b"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Where an enemy of its Kind appears in its Wave of an Encounter"
+fields.Encounter = { type = "EntityRef", doc = "The Encounter in this room" }
+fields.Wave = { type = "Int", default = 1, doc = "From 1, without gaps" }
+fields.Kind = { type = "String", default = "clockrat", doc = "An enemy prefab: clockrat, gearbug, clockrat_king..." }

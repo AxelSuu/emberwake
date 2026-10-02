@@ -19,7 +19,7 @@ from emberwake.game.grants import START, GrantSpec, load_grants
 from emberwake.game.lamprey import FLAGS as LAMPREY_FLAGS
 from emberwake.game.scenes.gameplay import COLLISIONS, DEFAULT_ROOM
 from emberwake.game.shop import load_shops
-from emberwake.game.signals import TARGETS
+from emberwake.game.signals import LOCKS, TARGETS
 from emberwake.game.trials import load_trials
 
 if TYPE_CHECKING:
@@ -82,11 +82,11 @@ class Thing:
         return self.entity.iid
 
     def targets(self) -> Iterator[str]:
-        """The entities this one signals."""
+        """The entities this one signals or shuts."""
         if self.prefab is not None:
             values = self.entity.values()
             for name, target in self.prefab.fields.items():
-                if target in TARGETS:
+                if target in TARGETS or target in LOCKS:
                     yield from values.get(name) or []
 
 

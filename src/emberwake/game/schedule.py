@@ -8,6 +8,7 @@ from emberwake.game.breakables import breakable_system, crumble_system, loose_em
 from emberwake.game.cinder import cinder_system
 from emberwake.game.combat import combat_system
 from emberwake.game.dialogue import npc_system
+from emberwake.game.encounters import encounter_system, lock_system
 from emberwake.game.enemies import enemy_system
 from emberwake.game.flags import flag_system, gate_system
 from emberwake.game.flares import flare_system
@@ -50,13 +51,15 @@ POST = (
     brazier_system,
     bell_system,
     photocell_system,
+    encounter_system,
     gate_system,
     signal_system,
+    lock_system,
     door_system,
 )
 """In order: rooms may spawn or despawn, then contacts and flags, combat and what the swing struck,
-the switches light and bells drive, the world's gates once the facts settle, signals, what
-signals drive."""
+the switches light and bells drive, encounters, the world's gates once the facts settle, signals,
+the doors encounters shut, what signals drive."""
 
 
 def gameplay_schedule() -> Schedule:

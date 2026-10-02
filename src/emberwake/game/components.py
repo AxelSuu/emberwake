@@ -35,6 +35,7 @@ from emberwake.game import (  # noqa: E402, F401
     cinder,
     combat,
     dialogue,
+    encounters,
     enemies,
     flares,
     grants,

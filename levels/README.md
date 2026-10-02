@@ -19,6 +19,11 @@ rebuilt. Do not edit generated levels in LDtk; the next build overwrites them.
 | `src/<room>.txt` | The room's tiles, one character per 16 px tile; size in whole grid cells |
 | `src/<room>.toml` | Optional: what each marker is, its fields and wiring, plus level fields such as `Backdrop` (a preset in `content/backdrops.toml`, default `cavern`) |
 
+Real rooms start at cell x 0 with `Wake` at [0, 0]. The dev rooms (area `lab`) live at x 60 and
+up so they never touch the real map: the greybox cluster takes x 60 to 69, y 0 to 9; put new lab
+rooms at x 70 and up (or further down at x 60), each clear of every other room, and set
+`Area = "lab"`.
+
 Rooms connect where their edges touch and the tiles there are open. Put a PlayerStart near each
 entrance: it is where the player respawns after a hazard death.
 
@@ -78,6 +83,8 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | Pot | Not solid; breaks like a crate |
 | CrumblingPlatform | One-way; clears 0.5 s after the player lands on it and returns 2 s later |
 | Hesper, Quill | NPCs ([spec](../docs/specs/npcs.md)); gate each spot with `Requires`/`Unless` on `hesper_stage` or `quill_stage`. `--room Npc_Lab` has every spot |
+| Encounter | Arena zone: the player's body in it shuts its `Doors` (open unless it runs; `Mode` and `Invert` are ignored) and starts the waves; clearing it powers its `Targets`, for good ([spec](../docs/specs/encounters.md)) |
+| WaveSpawn | Where an enemy of `Kind` (an enemy prefab) appears in `Wave` (from 1, no gaps) of the `Encounter` (a ref, same room). Markers cannot sit inside a zone, so leave a row free |
 | Grant | Touch to receive an ability or item (`Thing`, a key of `content/grants.toml`, and `Count`) |
 | FlagSwitch | Not drawn: powers its `Targets` while its `Condition` holds, also while its room is unloaded |
 | SetFlag | Invisible zone: stepping in sets `Flag` to `Value`, or adds it with `Mode = "add"` |

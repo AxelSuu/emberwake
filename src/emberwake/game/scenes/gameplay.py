@@ -57,6 +57,7 @@ from emberwake.game.cosmetics import Cosmetics, load_cosmetics
 from emberwake.game.data.records import RunResult, format_time, load_records, save_records, unlock
 from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
+from emberwake.game.encounters import EncounterCleared, EncounterStarted
 from emberwake.game.enemies import KINDS, Brain, Summoned, Toppled, Vented
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.flags import Facts, admits, flags_in
@@ -133,7 +134,7 @@ TRIALS = "trials.toml"
 GRANTS = "grants.toml"
 AREAS = "areas.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
-DEFAULT_ROOM = "Test_Room"
+DEFAULT_ROOM = "Wake"
 BAKE_BUDGET = 0.002
 """Seconds per frame spent baking room art in the background."""
 GLOW_RADIUS = 72
@@ -249,7 +250,7 @@ class GameplayScene(Scene):
         from_slot = room is None and replay is None
         save = load_slot(ctx.storage, ctx.slot) if from_slot and not ctx.new_game else None
         ctx.new_game = False
-        start = room or (save.room if save else DEFAULT_ROOM)
+        start = room or (replay.start if replay else "") or (save.room if save else DEFAULT_ROOM)
         data = save or SaveSlot(room=start)
         data.flags.update(ctx.flags)
         self.progress = Progress(data, ctx.storage, ctx.slot if from_slot else None)
@@ -291,6 +292,7 @@ class GameplayScene(Scene):
             feel.swing,
             feel.switches,
             feel.breakables,
+            feel.encounters,
             feel.lamprey,
         )
         for resource in (*resources, *tunings):
@@ -341,6 +343,8 @@ class GameplayScene(Scene):
             bus.subscribe(Vented, self._on_vented),
             bus.subscribe(Summoned, self._on_summoned),
             bus.subscribe(Toppled, self._on_toppled),
+            bus.subscribe(EncounterStarted, self._on_encounter),
+            bus.subscribe(EncounterCleared, self._on_encounter),
             *self._subscribe_lamprey(bus),
             bus.subscribe(Talk, self._on_talk),
             bus.subscribe(GoalReached, self._on_goal),
@@ -639,6 +643,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.swing)
             self.world.insert_resource(feel.breakables)
             self.world.insert_resource(feel.switches)
+            self.world.insert_resource(feel.encounters)
             self.world.insert_resource(feel.lamprey)
             self.camera.retune(feel.camera)
         prefabs = self._read_prefabs()
@@ -1095,6 +1100,9 @@ class GameplayScene(Scene):
         self.camera.shake.add(self.feel.juice.dash_trauma)
         if (puff := self.emitters.get("land_dust")) is not None:
             self.particles.burst(puff, event.x, event.y + 12)
+
+    def _on_encounter(self, _: EncounterStarted | EncounterCleared) -> None:
+        self.camera.shake.add(self.feel.encounters.trauma)
 
     def _subscribe_lamprey(self, bus: EventBus) -> list[Callable[[], None]]:
         def shake(event: object) -> None:

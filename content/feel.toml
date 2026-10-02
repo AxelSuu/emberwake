@@ -57,6 +57,12 @@ ember_pull = 240.0
 hitstop = 3
 trauma = 0.15
 
+[encounters]
+# docs/specs/encounters.md
+wave_delay = 1.0
+leave_grace = 1.5
+trauma = 0.2
+
 [lamps]
 # docs/specs/lamps.md
 radius = 80.0

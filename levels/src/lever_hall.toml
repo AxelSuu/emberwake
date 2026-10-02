@@ -1,3 +1,5 @@
+fields = { Area = "lab" }
+
 [entities.a]
 type = "Lever"
 fields = { Targets = ["b"] }

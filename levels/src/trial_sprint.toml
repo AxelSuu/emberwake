@@ -1,2 +1,4 @@
+fields = { Area = "lab" }
+
 [entities.G]
 type = "Goal"
