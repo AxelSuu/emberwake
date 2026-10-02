@@ -64,7 +64,7 @@ from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.flags import Facts, admits, flags_in
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
-from emberwake.game.interact import Collected, Interactable, Switch
+from emberwake.game.interact import Collected, Interactable, Interacted, Switch, TriggerEntered
 from emberwake.game.lamprey import (
     Bitten,
     Breached,
@@ -95,11 +95,15 @@ from emberwake.game.render.player_view import Light, PlayerView
 from emberwake.game.render.toast import Toasts
 from emberwake.game.scenes.dev import FlagsScene, WarpScene
 from emberwake.game.scenes.dialogue import DialogueScene
+from emberwake.game.scenes.director import SceneDirector
 from emberwake.game.scenes.pause import PauseScene
 from emberwake.game.scenes.results import ResultsScene, RunFinished
+from emberwake.game.scenes.settings import load_ui_theme
 from emberwake.game.schedule import gameplay_schedule
 from emberwake.game.shop import EMBER_PER_UPGRADE, HP_PER_UPGRADE, SPENT, wallet
 from emberwake.game.signals import Receiver, Wiring
+from emberwake.game.story import SCRIPTS, GreatLamp, StoryBeat
+from emberwake.game.story import flag as story_flag
 from emberwake.game.switches import BellRung, BrazierLit
 from emberwake.game.trials import (
     Ghost,
@@ -192,6 +196,8 @@ class GameplayScene(Scene):
         self._init_render()
         self.particles = ParticleSystem()
         self.cutscenes = CutscenePlayer()
+        self.director = SceneDirector(self)
+        self.caption_theme = load_ui_theme()
         self.toasts = Toasts()
         self.bubbles = Bubbles()
         self.hud = Hud()
@@ -216,6 +222,8 @@ class GameplayScene(Scene):
         self._build_world(start)
         self._show_backdrops()
         self._init_areas()
+        if self.fresh and start == DEFAULT_ROOM and self.trial is None:
+            self.play_story("intro")
         self.camera.snap(*self._camera_target())
         if self.trial is not None:
             self._begin_attempt()
@@ -250,6 +258,8 @@ class GameplayScene(Scene):
         ctx = self.ctx
         from_slot = room is None and replay is None
         save = load_slot(ctx.storage, ctx.slot) if from_slot and not ctx.new_game else None
+        self.fresh = from_slot and ctx.new_game
+        """A new game from the menu, which opens on the intro."""
         ctx.new_game = False
         start = room or (replay.start if replay else "") or (save.room if save else DEFAULT_ROOM)
         data = save or SaveSlot(room=start)
@@ -369,6 +379,8 @@ class GameplayScene(Scene):
             bus.subscribe(BeaconLit, self._on_light_changed),
             bus.subscribe(LampLit, self._on_lamp_lit),
             bus.subscribe(LampSnuffed, self._on_lamp_snuffed),
+            bus.subscribe(TriggerEntered, self._on_trigger),
+            bus.subscribe(Interacted, self._on_interacted),
             *self.progress.subscribe(bus),
         ]
 
@@ -817,6 +829,8 @@ class GameplayScene(Scene):
             self.camera.update(*self._camera_target(), self.motor.facing, dt)
 
     def _camera_target(self) -> tuple[float, float]:
+        if (focus := self.director.stage.focus) is not None:
+            return focus
         body = self.body
         return body.center_x, body.y + body.height / 2
 
@@ -1192,6 +1206,28 @@ class GameplayScene(Scene):
             self.particles.burst(burst, event.x, event.y - 8)
         self._lamps_changed()
 
+    # Story
+
+    def play_story(self, name: str) -> None:
+        """Play the story script `name` unless it has played in this save or another runs."""
+        if self.facts.flags.get(story_flag(name)) or self.cutscenes.active:
+            return
+        self.cutscenes.play(SCRIPTS[name](self.director))
+
+    def recount_light(self) -> None:
+        self._count_light()
+
+    def _on_trigger(self, event: TriggerEntered) -> None:
+        eid = self.spawner.resolve(event.iid)
+        beat = self.world.find(eid, StoryBeat) if eid is not None else None
+        if beat is not None and beat.script in SCRIPTS:
+            self.play_story(beat.script)
+
+    def _on_interacted(self, event: Interacted) -> None:
+        eid = self.spawner.resolve(event.iid)
+        if eid is not None and self.world.has(eid, GreatLamp):
+            self.play_story("great_lamp")
+
     def _on_lamp_snuffed(self, _: LampSnuffed) -> None:
         self.ctx.audio.sfx("player/fizzle")
         self._lamps_changed()
@@ -1232,6 +1268,7 @@ class GameplayScene(Scene):
         self.flash.draw(canvas)
         self._draw_speech(canvas, ox, oy)
         self._draw_hud(canvas)
+        self._draw_stage(canvas)
         self._draw_trial_timer(canvas)
         self.toasts.draw(canvas)
         if self.show_colliders:
@@ -1365,6 +1402,19 @@ class GameplayScene(Scene):
         font = self._hud_font = getattr(self, "_hud_font", None) or pygame.font.Font(None, 16)
         text = font.render(format_time(self.trial_time), False, palette.MIST)
         canvas.blit(text, text.get_rect(midtop=(canvas.get_width() // 2, 6)))
+
+    def _draw_stage(self, canvas: pygame.Surface) -> None:
+        """A story script's fade and caption."""
+        stage = self.director.stage
+        if stage.fade > 0:
+            shade = pygame.Surface(canvas.get_size())
+            shade.fill(palette.INK)
+            shade.set_alpha(round(255 * min(stage.fade, 1.0)))
+            canvas.blit(shade, (0, 0))
+        if stage.caption:
+            text = self.caption_theme.render(self.ctx.t(stage.caption))
+            width, height = canvas.get_size()
+            canvas.blit(text, ((width - text.get_width()) // 2, height * 2 // 3))
 
     def _draw_hud(self, canvas: pygame.Surface) -> None:
         """Health, flame, flares and embers; hidden while a cutscene plays."""
