@@ -1,0 +1,17 @@
+[break]
+wave = "noise"
+freq = 320.0
+slide = -1.2
+sustain = 0.03
+decay = 0.2
+lowpass = 0.5
+variants = 3
+
+[crumble]
+wave = "noise"
+freq = 200.0
+slide = -0.4
+sustain = 0.1
+decay = 0.3
+lowpass = 0.25
+variants = 2

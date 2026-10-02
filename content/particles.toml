@@ -55,3 +55,23 @@ gravity = -40
 drag = 3.0
 size = 1
 colors = ["#9babb2", "#625565"]
+
+[debris]
+count = 14
+speed = [50, 150]
+angle = [180, 360]
+life = [0.3, 0.7]
+gravity = 400
+drag = 0.5
+size = 2
+colors = ["#ab947a", "#966c6c", "#625565"]
+
+[crumble_dust]
+count = 10
+speed = [15, 60]
+angle = [0, 180]
+life = [0.3, 0.6]
+gravity = 200
+drag = 2.0
+size = 1
+colors = ["#ab947a", "#966c6c", "#625565"]
