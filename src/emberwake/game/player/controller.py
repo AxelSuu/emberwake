@@ -13,6 +13,8 @@ from emberwake.engine.physics import Body, Tile, move, overlaps
 from emberwake.game.actions import Action
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from emberwake.engine.input import InputState
     from emberwake.engine.physics import TileSource
     from emberwake.game.player.tuning import PlayerTuning
@@ -102,18 +104,23 @@ def step(  # noqa: PLR0917
     dt: float,
     *,
     can_dash: bool = True,
+    solids: Sequence[Body] = (),
 ) -> list[PlayerEvent]:
-    """Advance the player by one tick and return what happened; `can_dash` gates the dash."""
+    """Advance the player by one tick and return what happened.
+
+    `can_dash` gates the dash; `solids` are boxes (crates) that block like solid tiles.
+    """
     tick = _Tick(body, motor, actions, grid, tuning, dt)
     tick.can_dash = can_dash
+    tick.solids = solids
     return tick.run()
 
 
-def wall_side(grid: TileSource, body: Body, reach: float) -> int:
+def wall_side(grid: TileSource, body: Body, reach: float, solids: Sequence[Body] = ()) -> int:
     """-1 for a solid wall within `reach` px on the left, 1 on the right, else 0."""
-    if overlaps(grid, body.x + body.width, body.y, reach, body.height):
+    if overlaps(grid, body.x + body.width, body.y, reach, body.height, solids=solids):
         return 1
-    if overlaps(grid, body.x - reach, body.y, reach, body.height):
+    if overlaps(grid, body.x - reach, body.y, reach, body.height, solids=solids):
         return -1
     return 0
 
@@ -140,6 +147,7 @@ class _Tick:
         self.intent_x = actions.axis(Action.LEFT, Action.RIGHT)
         self.intent_y = actions.axis(Action.UP, Action.DOWN)
         self.can_dash = True
+        self.solids: Sequence[Body] = ()
 
     def run(self) -> list[PlayerEvent]:
         p, body = self.p, self.body
@@ -213,7 +221,7 @@ class _Tick:
             not p.grounded
             and p.vy >= 0
             and self.intent_x != 0
-            and wall_side(self.grid, self.body, 1) == self.intent_x
+            and wall_side(self.grid, self.body, 1, self.solids) == self.intent_x
         )
         max_fall = t.wall_slide_max if sliding else t.max_fall
         apex = abs(p.vy) < t.apex_threshold and self.actions.down(Action.JUMP)
@@ -246,7 +254,7 @@ class _Tick:
             p.grounded = p.coyote_ok = False
             self.events.append(Jumped(body.center_x, body.bottom))
             return
-        wall = wall_side(self.grid, body, t.wall_jump_reach)
+        wall = wall_side(self.grid, body, t.wall_jump_reach, self.solids)
         if wall:
             self.actions.consume(Action.JUMP)
             p.vx = -wall * t.wall_jump_speed
@@ -275,7 +283,14 @@ class _Tick:
         p, body = self.p, self.body
         dropping = p.drop_ticks > 0
         impact = p.vy
-        contacts = move(self.grid, body, p.vx * self.dt, p.vy * self.dt, drop_through=dropping)
+        contacts = move(
+            self.grid,
+            body,
+            p.vx * self.dt,
+            p.vy * self.dt,
+            drop_through=dropping,
+            solids=self.solids,
+        )
         if contacts.left or contacts.right:
             p.vx = 0.0
         if contacts.ceiling and p.vy < 0:
@@ -288,7 +303,7 @@ class _Tick:
             p.vy = 0.0
         elif p.vy >= 0:
             feet = Body(body.x, body.y, body.width, body.height)
-            probe = move(self.grid, feet, 0, 1, drop_through=dropping)
+            probe = move(self.grid, feet, 0, 1, drop_through=dropping, solids=self.solids)
             p.grounded, p.on_one_way = probe.ground, probe.one_way
         else:
             p.grounded = False
