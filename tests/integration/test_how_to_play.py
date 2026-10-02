@@ -72,6 +72,7 @@ def test_reached_from_the_pause_menu(ctx: GameContext) -> None:
     scenes.update(1 / 60)
     press(scenes, pygame.K_ESCAPE)
     press(scenes, pygame.K_DOWN)
+    press(scenes, pygame.K_DOWN)
     press(scenes, pygame.K_RETURN)
     assert isinstance(scenes.top, HowToPlayScene)
     press(scenes, pygame.K_ESCAPE)
