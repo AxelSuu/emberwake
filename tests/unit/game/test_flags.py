@@ -19,7 +19,8 @@ from emberwake.engine.world.rooms import RoomGraph, RoomStreamer, WorldGrid
 from emberwake.engine.world.spawning import Identity, Spawner
 from emberwake.game import paths
 from emberwake.game.data.save import SaveSlot
-from emberwake.game.flags import Facts, admits, flag_system, gate_system
+from emberwake.game.enemies import Brain
+from emberwake.game.flags import Facts, admits, flag_system, flags_in, gate_system
 from emberwake.game.interact import Pickup, Switch, trigger_system
 from emberwake.game.player.controller import Motor
 from emberwake.game.scenes.gameplay import COLLISIONS
@@ -208,6 +209,40 @@ def test_a_set_flag_with_unless_on_its_own_flag_fires_once():
     assert "set_flag" not in rig.prefabs()
     rig.at(0).step().at(14).step()
     assert rig.data.flags["steps"] == 2
+
+
+def test_flags_in_lists_what_the_levels_read_and_write():
+    rig = Rig()
+    assert flags_in(rig.rooms.graph.levels.values()) == {"open", "steps"}
+
+
+def test_a_killed_enemy_and_a_collected_pickup_stay_gone_when_flags_change():
+    toml = """
+[entities.a]
+type = "Lever"
+[entities.e]
+type = "Ember"
+fields = { Requires = "open" }
+[entities.u]
+type = "Clockrat"
+fields = { Requires = "open" }
+[entities.d]
+type = "Door"
+[entities.z]
+type = "SetFlag"
+"""
+    rig = Rig(toml)
+    rig.data.flags["open"] = 1
+    rig.step()
+    ((rat, _),) = rig.world.query(Brain)
+    ((ember, _),) = rig.world.query(Pickup)
+    rig.world.despawn(rat)
+    rig.spawner.retire(ember)
+    for flags in ({}, {"open": 1}, {}, {"open": 1}):
+        rig.data.flags.clear()
+        rig.data.flags.update(flags)
+        rig.step()
+        assert rig.prefabs() == ["door", "lever", "player_start", "set_flag"]
 
 
 def test_a_malformed_condition_holds_the_entity_back(caplog: pytest.LogCaptureFixture):

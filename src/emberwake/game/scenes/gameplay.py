@@ -48,7 +48,7 @@ from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
 from emberwake.game.enemies import Brain
 from emberwake.game.feel import Feel, diff, load_feel
-from emberwake.game.flags import Facts, admits
+from emberwake.game.flags import Facts, admits, flags_in
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
 from emberwake.game.interact import Collected, Interactable, Switch
@@ -660,7 +660,7 @@ class GameplayScene(Scene):
         names = {SPENT, UP_HP, UP_OIL}
         for graph in self.dialogues.values():
             names |= flags_used(graph)
-        return names
+        return names | flags_in(self.rooms.graph.levels.values())
 
     def save_replay(self) -> str:
         key = f"replays/{time.strftime('%Y%m%d-%H%M%S')}.json"

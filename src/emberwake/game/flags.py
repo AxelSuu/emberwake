@@ -7,22 +7,23 @@ See ``docs/specs/world-flags.md``.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Literal
 
-from emberwake.engine.core.dialogue import DialogueError, holds
+from emberwake.engine.core.dialogue import DialogueError, flag_of, holds
 from emberwake.engine.ecs import component
 from emberwake.engine.world.rooms import RoomStreamer
 from emberwake.engine.world.spawning import Spawner
 from emberwake.game.interact import Trigger
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Iterable, Iterator
 
     from emberwake.engine.ecs import World
-    from emberwake.engine.world.ldtk import EntityInstance
+    from emberwake.engine.world.ldtk import EntityInstance, Level
 
 log = logging.getLogger(__name__)
 
@@ -105,6 +106,20 @@ def admits(entity: EntityInstance, facts: Mapping[str, int]) -> bool:
     except DialogueError as error:
         log.error("%s %s held back: %s", entity.identifier, entity.iid, error)
         return False
+
+
+def flags_in(levels: Iterable[Level]) -> set[str]:
+    """The save flags the levels read (Requires, Unless, Condition) or write (SetFlag)."""
+    names: set[str] = set()
+    for level in levels:
+        for entity in level.entities():
+            for field_name in (REQUIRES, UNLESS, "Condition"):
+                if condition := entity.field(field_name):
+                    with contextlib.suppress(DialogueError):
+                        names.add(flag_of(condition))
+            if entity.identifier == "SetFlag" and (flag := entity.field("Flag")):
+                names.add(flag)
+    return {name for name in names if not name.startswith(HAS)}
 
 
 def holds_safely(condition: str, facts: Mapping[str, int]) -> bool:
