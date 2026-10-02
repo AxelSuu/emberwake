@@ -162,6 +162,34 @@ fields.Value = { type = "Int", default = 1 }
 fields.Mode = { type = "String", default = "set" }
 doc = "Sets a flag when the player enters"
 
+[entities.Signpost]
+color = "#ab947a"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Shows a string with the player's keys while they stand near"
+fields.Text = { type = "String", default = "", doc = "Key suffix of the string sign.<Text>" }
+
+[entities.Echo]
+color = "#8ff8e2"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Interact to watch a lamplighter's last moments: a ghost replay and a line of text"
+fields.Id = { type = "String", default = "", doc = "Names content/echoes/<Id>.json and the string echo.<Id>" }
+
+[entities.LostLight]
+color = "#fbb954"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "A spirit that follows the player to a beacon and is rescued there"
+fields.Id = { type = "String", default = "", doc = "Names the flag lost_light_<Id>" }
+
+[entities.TrialDoor]
+color = "#30e1b9"
+size = [16, 32]
+pivot = [0.5, 1.0]
+doc = "Interact to unlock a Trial in the menu and start it"
+fields.Trial = { type = "String", default = "", doc = "A key of content/trials.toml" }
+
 # Fields every entity type has. Conditions use the dialogue syntax; has.<thing> reads abilities
 # (1 or 0) and item counts. See docs/specs/world-flags.md.
 [entity_fields]

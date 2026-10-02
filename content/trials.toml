@@ -1,5 +1,6 @@
 # Trials: a room, a finish line (the Goal entity) and the times for each medal, in seconds.
 # A bot that runs and jumps at every edge finishes in about 3 s, so gold is just above that.
+# `locked = true` hides a trial from the menu until a TrialDoor unlocks it.
 # Names are strings: trial.<id>.name.
 
 [sprint]

@@ -12,6 +12,7 @@ from emberwake.game.trials import (
     Ghost,
     Trial,
     ghost_key,
+    listed,
     load_ghost,
     load_trials,
     medal_for,
@@ -76,3 +77,11 @@ def test_a_ghost_replays_its_input_and_stops_when_it_ends() -> None:
     stopped = ghost.body.x
     ghost.update(Floor(), 1 / 60)
     assert ghost.body.x == stopped
+
+
+def test_a_locked_trial_is_listed_only_once_unlocked() -> None:
+    locked = Trial(room="R", gold=1.0, silver=2.0, bronze=3.0, locked=True)
+    assert listed("a", TRIAL, [])
+    assert not listed("a", locked, [])
+    assert not listed("a", locked, ["b"])
+    assert listed("a", locked, ["a"])

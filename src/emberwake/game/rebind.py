@@ -16,6 +16,16 @@ def primary(table: dict[str, list[str]], action: Action) -> str:
     return inputs[0] if inputs else ""
 
 
+def key_name(name: str) -> str:
+    """A pygame key name as players read it: "left shift" -> "Left Shift", "e" -> "E"."""
+    return name.title()
+
+
+def labels(table: dict[str, list[str]]) -> dict[str, str]:
+    """The first key of every action by action name, for texts like ``{jump}``."""
+    return {action.value: key_name(primary(table, action) or "-") for action in Action}
+
+
 def rebind(table: dict[str, list[str]], action: Action, new: str) -> Action | None:
     """Make `new` the first input of `action` in the ``Bindings.keys`` `table`.
 

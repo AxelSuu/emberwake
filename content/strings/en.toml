@@ -272,3 +272,13 @@ name = "Flare pouch"
 
 [grant.map.quarter]
 name = "Map of the Sunken Quarter"
+
+[sign]
+lore_move = "Run with {left} and {right}.\nJump with {jump}."
+
+[echo]
+lore_hall = "I lit this lamp last. The oil ran out before the street did."
+
+[lore]
+echo_heard = "Echo heard"
+rescued = "Lost Light rescued"

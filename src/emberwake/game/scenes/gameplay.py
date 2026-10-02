@@ -54,7 +54,7 @@ from emberwake.game.cinder import CinderRecovered, cinder_parts
 from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
 from emberwake.game.cosmetics import Cosmetics, load_cosmetics
-from emberwake.game.data.records import RunResult, format_time, load_records
+from emberwake.game.data.records import RunResult, format_time, load_records, save_records, unlock
 from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
 from emberwake.game.enemies import KINDS, Brain, Summoned, Toppled, Vented
@@ -65,6 +65,8 @@ from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
 from emberwake.game.interact import Collected, Interactable, Switch
 from emberwake.game.lamps import LampLit, LampSnuffed
 from emberwake.game.light import Ember, LightSource
+from emberwake.game.lore import EchoHeard, EchoPlay, speeches
+from emberwake.game.lost_lights import LostLightRescued, Spirit
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.kindle import Kindle, Kindled
 from emberwake.game.player.swing import Swing, SwingHit, SwingStarted
@@ -72,6 +74,7 @@ from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
 from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdrops
 from emberwake.game.render.bank import SpriteBank
+from emberwake.game.render.bubble import Bubbles
 from emberwake.game.render.fx import Flash
 from emberwake.game.render.glow import Glows
 from emberwake.game.render.hud import Hud, HudState
@@ -90,6 +93,7 @@ from emberwake.game.trials import (
     Ghost,
     GoalReached,
     Trial,
+    TrialDoorUsed,
     load_ghost,
     load_trials,
     medal_for,
@@ -177,6 +181,7 @@ class GameplayScene(Scene):
         self.particles = ParticleSystem()
         self.cutscenes = CutscenePlayer()
         self.toasts = Toasts()
+        self.bubbles = Bubbles()
         self.hud = Hud()
         self.texts = FloatingTexts()
         self.texts.muted = ctx.settings.accessibility.reduce_flashes
@@ -326,6 +331,7 @@ class GameplayScene(Scene):
             bus.subscribe(Toppled, self._on_toppled),
             bus.subscribe(Talk, self._on_talk),
             bus.subscribe(GoalReached, self._on_goal),
+            bus.subscribe(TrialDoorUsed, self._on_trial_door),
             *self._track_achievements(bus),
             bus.subscribe(Killed, self._on_killed),
             bus.subscribe(BeaconLit, self._on_beacon_lit),
@@ -333,6 +339,8 @@ class GameplayScene(Scene):
             bus.subscribe(Kindled, self._on_kindled),
             bus.subscribe(CinderRecovered, self._on_cinder),
             bus.subscribe(Give, self._on_give),
+            bus.subscribe(EchoHeard, self._on_echo),
+            bus.subscribe(LostLightRescued, self._on_rescued),
             bus.subscribe(Granted, self._on_granted),
             bus.subscribe(FlareThrown, self._on_flare),
             bus.subscribe(FlareFizzled, self._on_fizzle),
@@ -380,6 +388,18 @@ class GameplayScene(Scene):
         medal = medal_for(self.trial, seconds)
         result = RunResult(key, seconds, deaths=self.trial_deaths, medal=medal)
         self.ctx.bus.publish(RunFinished(result))
+
+    def _on_trial_door(self, event: TrialDoorUsed) -> None:
+        """Unlock the door's trial in the menu and start it."""
+        if self.trial is not None:
+            return
+        if event.trial not in self._read_trials():
+            log.warning("Trial door to unknown trial %r", event.trial)
+            return
+        records = load_records(self.ctx.storage)
+        unlock(records, event.trial)
+        save_records(self.ctx.storage, records)
+        self.manager.switch(GameplayScene(self.ctx, trial=event.trial))
 
     def _read_dialogues(self) -> dict[str, Graph]:
         try:
@@ -907,6 +927,20 @@ class GameplayScene(Scene):
         self._dust("kindle", body.center_x, body.y)
         self.progress.save(self.spawner)
 
+    def _on_echo(self, event: EchoHeard) -> None:
+        if not event.first:
+            return
+        self.toasts.push(self.ctx.t("lore.echo_heard"))
+        self.ctx.audio.sfx("player/kindle")
+        self.progress.save(self.spawner)
+
+    def _on_rescued(self, event: LostLightRescued) -> None:
+        self.toasts.push(self.ctx.t("lore.rescued"))
+        self.ctx.audio.sfx("player/kindle")
+        if (burst := self.emitters.get("kindle")) is not None:
+            self.particles.burst(burst, event.x, event.y)
+        self.progress.save(self.spawner)
+
     def _on_cinder(self, event: CinderRecovered) -> None:
         self.progress.data.cinder = None
         self.cinder = None
@@ -1130,6 +1164,7 @@ class GameplayScene(Scene):
         self.backdrops.draw_near(canvas, (ox, oy), room_top)
         self.post.apply(canvas, self.frame.flags, self.area_grade.apply(self.backdrops.grade()))
         self.flash.draw(canvas)
+        self._draw_speech(canvas, ox, oy)
         self._draw_hud(canvas)
         self._draw_trial_timer(canvas)
         self.toasts.draw(canvas)
@@ -1155,11 +1190,15 @@ class GameplayScene(Scene):
             fx, fy = body.center_x - ox, body.y + body.height / 2 - oy
             color = self._light_color(source.color)
             strength = self._flicker(eid) * source.strength
-            key = None if self.world.has(eid, Flare) else self._still(eid, body)
+            moving = self.world.has(eid, Flare) or self.world.has(eid, Spirit)
+            key = None if moving else self._still(eid, body)
             frame.light(fx, fy, round(source.radius), color, strength, key=key)
             if self.world.has(eid, Flare):
                 image = self.art.image("flare", (round(body.width), round(body.height)))
                 self._queue_lit(image, round(body.x) - ox, round(body.y) - oy)
+        for _, play in self.world.query(EchoPlay):
+            if play.ghost is not None and play.running:
+                self._queue_ghost(play.ghost, ox, oy)
         for eid, body, sprite in self.world.query(Body, Sprite):
             size = (round(body.width), round(body.height))
             image = self._finished(sprite)
@@ -1241,6 +1280,11 @@ class GameplayScene(Scene):
         r, g, b = (round(c + (255 - c) * lift) for c in self.backdrops.ambient())
         return r, g, b
 
+    def _draw_speech(self, canvas: pygame.Surface, ox: int, oy: int) -> None:
+        keys = self.ctx.settings.controls.keys
+        for speech in speeches(self.world, self.ctx.t, keys):
+            self.bubbles.draw(canvas, speech.text, (speech.x - ox, speech.y - oy))
+
     def _draw_trial_timer(self, canvas: pygame.Surface) -> None:
         if self.trial is None:
             return
@@ -1296,7 +1340,8 @@ class GameplayScene(Scene):
             alpha=alpha,
             light=lantern,
         )
-        self._queue_ghost(ox, oy)
+        if self.ghost is not None and not self.ghost.finished:
+            self._queue_ghost(self.ghost, ox, oy)
 
     def _lantern_radius(self) -> int:
         """The lantern's glow: shrunk while guttering, swelling while kindling."""
@@ -1308,10 +1353,7 @@ class GameplayScene(Scene):
             radius *= 1.0 + 0.4 * kindle.progress(self.feel.light)
         return round(radius)
 
-    def _queue_ghost(self, ox: int, oy: int) -> None:
-        ghost = self.ghost
-        if ghost is None or ghost.finished:
-            return
+    def _queue_ghost(self, ghost: Ghost, ox: int, oy: int) -> None:
         body, motor = ghost.body, ghost.motor
         image = self.sprite.image(motor.facing, 1.0, 1.0).copy()
         image.set_alpha(110)

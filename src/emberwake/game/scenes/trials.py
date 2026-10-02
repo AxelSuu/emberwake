@@ -10,7 +10,7 @@ from emberwake.game.data.records import format_time, load_records
 from emberwake.game.scenes.gameplay import GameplayScene
 from emberwake.game.scenes.overlay import Overlay
 from emberwake.game.scenes.results import MEDAL_KEYS
-from emberwake.game.trials import load_trials, medal_for, record_key
+from emberwake.game.trials import listed, load_trials, medal_for, record_key
 
 if TYPE_CHECKING:
     from emberwake.game.context import GameContext
@@ -21,9 +21,12 @@ class TrialsScene(Overlay):
 
     def __init__(self, ctx: GameContext) -> None:
         self.trials = load_trials(paths.content("trials.toml"))
-        records = load_records(ctx.storage).runs
+        stored = load_records(ctx.storage)
+        records = stored.runs
         buttons = []
         for ident, trial in self.trials.items():
+            if not listed(ident, trial, stored.unlocked):
+                continue
             record = records.get(record_key(ident))
             best = format_time(record.best_time) if record else ctx.t("trials.none")
             medal = medal_for(trial, record.best_time) if record else ""

@@ -19,7 +19,7 @@ from emberwake.engine.input.replay import REPLAY_CODEC, ReplayPlayer
 from emberwake.engine.physics import Body
 from emberwake.engine.platform.documents import load_document, save_document
 from emberwake.game.actions import Action
-from emberwake.game.interact import overlap, player_body
+from emberwake.game.interact import Interactable, overlap, player_body
 from emberwake.game.player.controller import new_player, step
 
 if TYPE_CHECKING:
@@ -43,6 +43,8 @@ class Trial:
     gold: float
     silver: float
     bronze: float
+    locked: bool = False
+    """Listed in the Trials menu only once a trial door has unlocked it."""
 
 
 @dataclass(slots=True)
@@ -53,6 +55,11 @@ class TrialFile:
 def load_trials(path: Path) -> dict[str, Trial]:
     """Parse ``content/trials.toml``. Raises `tomllib.TOMLDecodeError` or `SerdeError`."""
     return from_data(TrialFile, {"trials": tomllib.loads(path.read_text(encoding="utf-8"))}).trials
+
+
+def listed(trial_id: str, trial: Trial, unlocked: list[str]) -> bool:
+    """Whether the Trials menu shows `trial`."""
+    return not trial.locked or trial_id in unlocked
 
 
 def record_key(trial_id: str) -> str:
@@ -91,6 +98,26 @@ class Goal:
 @dataclass(frozen=True, slots=True)
 class GoalReached:
     """The player touched a goal."""
+
+
+@component
+@dataclass(slots=True)
+class TrialDoor:
+    """Interact to unlock `trial` in the menu and start it."""
+
+    trial: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class TrialDoorUsed:
+    trial: str
+
+
+def trial_door_system(world: World, dt: float) -> None:
+    """Publish `TrialDoorUsed` for each door the player used."""
+    for _, interactable, door in world.query(Interactable, TrialDoor):
+        if interactable.used:
+            world.resource(EventBus).publish(TrialDoorUsed(door.trial))
 
 
 def goal_system(world: World, dt: float) -> None:

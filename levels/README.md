@@ -80,6 +80,10 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | Grant | Touch to receive an ability or item (`Thing`, a key of `content/grants.toml`, and `Count`) |
 | FlagSwitch | Not drawn: powers its `Targets` while its `Condition` holds, also while its room is unloaded |
 | SetFlag | Invisible zone: stepping in sets `Flag` to `Value`, or adds it with `Mode = "add"` |
+| Signpost | Shows the string `sign.<Text>` while the player is near, `{jump}` and so on as the current keys |
+| Echo | Interact to replay `content/echoes/<Id>.json` as a ghost, with the string `echo.<Id>`; counts toward light % |
+| LostLight | Follows the player to a beacon and is rescued there: sets `lost_light_<Id>` and adds to `lost_lights` |
+| TrialDoor | Interact to unlock the Trial `Trial` in the menu and start it |
 
 ## Level fields
 

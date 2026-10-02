@@ -463,6 +463,37 @@ class EntityArt:
         image.fill(palette.EMBER_HOT, (rect.centerx + 4, rect.bottom - 8, 2, 3))
 
     @staticmethod
+    def _signpost(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(PLANK_DARK, (rect.centerx - 1, rect.top + 6, 2, rect.height - 6))
+        image.fill(PLANK, (rect.left + 1, rect.top + 1, rect.width - 2, 7))
+        image.fill(PLANK_LIGHT, (rect.left + 1, rect.top + 1, rect.width - 2, 1))
+        image.fill(PLANK_DARK, (rect.left + 3, rect.top + 4, rect.width - 6, 1))
+
+    @staticmethod
+    def _echo(image: pygame.Surface, rect: pygame.Rect) -> None:
+        """A small mint flame hanging above a worn stone."""
+        w, h = rect.size
+        image.fill(ROCK_EDGE, (w // 2 - 4, h - 3, 8, 3))
+        pygame.draw.circle(image, EYES, (w // 2, h - 8), 4)
+        pygame.draw.circle(image, palette.MIST, (w // 2, h - 8), 2)
+
+    @staticmethod
+    def _lost_light(image: pygame.Surface, rect: pygame.Rect) -> None:
+        pygame.draw.circle(image, palette.EMBER_WARM, rect.center, 6)
+        pygame.draw.circle(image, palette.EMBER_HOT, rect.center, 4)
+        pygame.draw.circle(image, palette.EMBER_CORE, rect.center, 2)
+
+    @staticmethod
+    def _trial_door(image: pygame.Surface, rect: pygame.Rect) -> None:
+        """An arch of stone around a mint glow."""
+        image.fill(ROCK_EDGE, rect)
+        inner = rect.inflate(-6, -4)
+        inner.bottom = rect.bottom
+        image.fill(ROCK_DARK, inner)
+        image.fill(EYES, inner.inflate(-4, -4))
+        image.fill(palette.MIST, (inner.centerx - 1, inner.top + 4, 2, inner.height - 8))
+
+    @staticmethod
     def _hesper(image: pygame.Surface, rect: pygame.Rect) -> None:
         """A pale lamplighter's ghost in a long cloak, holding a pole with a small flame."""
         x, bottom = rect.centerx, rect.bottom
