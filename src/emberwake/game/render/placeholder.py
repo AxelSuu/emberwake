@@ -263,6 +263,23 @@ class EntityArt:
         image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.top + 1, 2, 3))
 
     @staticmethod
+    def _lamp(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 1, rect.top + 7, 2, rect.height - 7))
+        image.fill(ROCK_EDGE, (rect.centerx - 4, rect.bottom - 2, 8, 2))
+        image.fill(LANTERN_FRAME, (rect.centerx - 4, rect.top + 3, 8, 1))
+        image.fill(ROCK, (rect.centerx - 3, rect.top + 4, 6, 4))
+        image.fill(LANTERN_FRAME, (rect.centerx - 3, rect.top + 1, 6, 2))
+
+    @staticmethod
+    def _lamp_lit(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 1, rect.top + 7, 2, rect.height - 7))
+        image.fill(ROCK_EDGE, (rect.centerx - 4, rect.bottom - 2, 8, 2))
+        image.fill(LANTERN_FRAME, (rect.centerx - 4, rect.top + 3, 8, 1))
+        image.fill(palette.EMBER_WARM, (rect.centerx - 3, rect.top + 4, 6, 4))
+        image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.top + 5, 2, 2))
+        image.fill(LANTERN_FRAME, (rect.centerx - 3, rect.top + 1, 6, 2))
+
+    @staticmethod
     def _lightform(image: pygame.Surface, rect: pygame.Rect) -> None:
         for x in range(rect.left, rect.right, 4):
             image.fill(ROCK_EDGE, (x, rect.top, 2, 1))
@@ -317,8 +334,40 @@ class EntityArt:
     def _brazier(image: pygame.Surface, rect: pygame.Rect) -> None:
         image.fill(LANTERN_FRAME, (rect.centerx - 5, rect.bottom - 6, 10, 2))
         image.fill(ROCK_EDGE, (rect.centerx - 3, rect.bottom - 4, 6, 4))
+        image.fill(ROCK_DARK, (rect.centerx - 3, rect.bottom - 8, 6, 2))
+
+    @staticmethod
+    def _brazier_lit(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(LANTERN_FRAME, (rect.centerx - 5, rect.bottom - 6, 10, 2))
+        image.fill(ROCK_EDGE, (rect.centerx - 3, rect.bottom - 4, 6, 4))
         image.fill(palette.EMBER_WARM, (rect.centerx - 3, rect.bottom - 10, 6, 4))
         image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.bottom - 9, 2, 3))
+
+    @staticmethod
+    def _photocell(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 4, rect.bottom - 8, 8, 8))
+        image.fill(ROCK_DARK, (rect.centerx - 3, rect.bottom - 7, 6, 6))
+        image.fill(ROCK_LIGHT, (rect.centerx - 1, rect.bottom - 5, 2, 2))
+
+    @staticmethod
+    def _photocell_on(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 4, rect.bottom - 8, 8, 8))
+        image.fill(palette.EMBER_WARM, (rect.centerx - 3, rect.bottom - 7, 6, 6))
+        image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.bottom - 5, 2, 2))
+
+    @staticmethod
+    def _bell(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(POST, (rect.centerx - 1, rect.top, 2, 3))
+        pygame.draw.ellipse(image, PLANK_LIGHT, (rect.centerx - 5, rect.top + 2, 10, 10))
+        image.fill(PLANK_LIGHT, (rect.centerx - 5, rect.top + 7, 10, 5))
+        image.fill(PLANK_DARK, (rect.centerx - 5, rect.top + 12, 10, 1))
+        image.fill(ROCK_EDGE, (rect.centerx - 1, rect.top + 13, 2, 2))
+
+    @staticmethod
+    def _bell_ring(image: pygame.Surface, rect: pygame.Rect) -> None:
+        EntityArt._bell(image, rect)
+        image.fill(palette.EMBER_CORE, (rect.centerx - 7, rect.top + 6, 1, 4))
+        image.fill(palette.EMBER_CORE, (rect.centerx + 6, rect.top + 6, 1, 4))
 
     @staticmethod
     def _clockrat(image: pygame.Surface, rect: pygame.Rect) -> None:

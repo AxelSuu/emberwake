@@ -36,6 +36,13 @@ fields.Targets = { type = "EntityRef", array = true }
 color = "#fbff86"
 doc = "Relight to save and set the continue point"
 
+[entities.Lamp]
+color = "#fbb954"
+size = [16, 32]
+pivot = [0.5, 1.0]
+doc = "A dead lamp post: a swing lights it, a Wisp-eater snuffs it unless its beacon is lit"
+fields.Beacon = { type = "EntityRef", doc = "The beacon that holds it once both are lit" }
+
 [entities.Ember]
 color = "#ea4f36"
 pivot = [0.5, 0.5]
@@ -58,7 +65,20 @@ doc = "A one-way platform that exists only while light reaches it"
 
 [entities.Brazier]
 color = "#f9c22b"
-doc = "A fixed light source"
+doc = "Lit by a swing or a flare; then a light and an on switch for good"
+fields.Targets = { type = "EntityRef", array = true }
+fields.Lit = { type = "Bool", default = false, doc = "Placed already lit" }
+
+[entities.Photocell]
+color = "#8ff8e2"
+doc = "On while the light at it reaches the threshold"
+fields.Targets = { type = "EntityRef", array = true }
+fields.Threshold = { type = "Float", default = 0.4, doc = "Light level, 0 to 1" }
+
+[entities.Bell]
+color = "#fbb954"
+doc = "Swing to ring: stuns nearby enemies and pulses its targets"
+fields.Targets = { type = "EntityRef", array = true }
 
 [entities.Clockrat]
 color = "#b33831"
@@ -90,6 +110,21 @@ size = [16, 48]
 pivot = [0.0, 0.0]
 resizable = true
 doc = "Trial finish line"
+
+[entities.FlagSwitch]
+color = "#fbff86"
+fields.Condition = { type = "String", default = "" }
+fields.Targets = { type = "EntityRef", array = true }
+doc = "Powers its targets while a save flag condition holds"
+
+[entities.SetFlag]
+color = "#8ff8e2"
+size = [16, 16]
+resizable = true
+fields.Flag = { type = "String", default = "" }
+fields.Value = { type = "Int", default = 1 }
+fields.Mode = { type = "String", default = "set" }
+doc = "Sets a flag when the player enters"
 
 # Fields every entity type has. Conditions use the dialogue syntax; has.<thing> reads abilities
 # (1 or 0) and item counts. See docs/specs/world-flags.md.

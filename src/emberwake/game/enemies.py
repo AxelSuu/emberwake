@@ -3,7 +3,8 @@
 - **Clockrat** patrols, turns at walls and ledges, and charges when it sees the player.
 - **Gloomcrawler** is a creature of shadow: it creeps toward the player, burns in light and flees
   strong light.
-- **Wisp-eater** drifts toward light and swoops at the player, then retreats.
+- **Wisp-eater** drifts toward light and swoops at the player, then retreats. It hunts lit lamps
+  and snuffs them unless a beacon protects them.
 
 An entity needs only a `Body` and a `Brain`; the system gives it health, a hurt box and a
 contact hit box on its first tick.
@@ -22,6 +23,7 @@ from emberwake.engine.world.rooms import WorldGrid
 from emberwake.game.beacons import Beacon
 from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Knockback, Team
 from emberwake.game.interact import player_body
+from emberwake.game.lamps import nearest_prey, snuff
 from emberwake.game.light import LightSource, LightTuning, falloff, light_at
 from emberwake.game.player.swing import SwingTuning
 
@@ -58,6 +60,10 @@ class EnemyTuning:
     """Hit points lost per second while burning."""
     wisp_hp: int = 2
     wisp_speed: float = 40.0
+    wisp_hunt_speed: float = 70.0
+    """Speed toward a lamp it means to snuff."""
+    wisp_snuff_reach: float = 10.0
+    """How close to a lamp's centre it snuffs it."""
     wisp_swoop_speed: float = 130.0
     wisp_sight: float = 110.0
     wisp_attract: float = 140.0
@@ -247,21 +253,46 @@ def brightest_light(ctx: Ctx, radius: float) -> tuple[float, float] | None:
     return best[1] if best else None
 
 
+def wisp_notices_player(ctx: Ctx) -> bool:
+    """Aims a swoop at the player and returns True if they are within sight."""
+    player, brain = ctx.player, ctx.brain
+    if player is None:
+        return False
+    cx, cy = ctx.centre
+    if math.hypot(player.center_x - cx, player.y - cy) > ctx.tuning.wisp_sight:
+        return False
+    brain.target = (player.center_x, player.y + player.height / 2)
+    return True
+
+
 def wisp_hover(ctx: Ctx, dt: float, t: float) -> str | None:
     t_, brain = ctx.tuning, ctx.brain
-    if (
-        ctx.player is not None
-        and math.hypot(ctx.player.center_x - ctx.centre[0], ctx.player.y - ctx.centre[1])
-        <= t_.wisp_sight
-    ):
-        brain.target = (ctx.player.center_x, ctx.player.y + ctx.player.height / 2)
+    if wisp_notices_player(ctx):
         return "swoop"
+    if nearest_prey(ctx.world, *ctx.centre, t_.wisp_attract) is not None:
+        return "hunt"
     light = brightest_light(ctx, t_.wisp_attract)
     if light is not None:
         toward(ctx, (light[0], light[1] - 18), t_.wisp_speed, dt)
     else:
         bob = (brain.home[0], brain.home[1] + math.sin(t * 2.0) * 6)
         toward(ctx, bob, t_.wisp_speed * 0.5, dt)
+    return None
+
+
+def wisp_hunt(ctx: Ctx, dt: float, t: float) -> str | None:
+    """Fly at the nearest lit, unprotected lamp and snuff it on arrival."""
+    t_ = ctx.tuning
+    if wisp_notices_player(ctx):
+        return "swoop"
+    prey = nearest_prey(ctx.world, *ctx.centre, t_.wisp_attract)
+    if prey is None:
+        return "hover"
+    lamp = ctx.world.get(prey, Body)
+    left = toward(ctx, (lamp.center_x, lamp.y + lamp.height / 2), t_.wisp_hunt_speed, dt)
+    if left <= t_.wisp_snuff_reach:
+        snuff(ctx.world, prey)
+        return "retreat"
     return None
 
 
@@ -275,7 +306,9 @@ def wisp_retreat(ctx: Ctx, dt: float, t: float) -> str | None:
     return "hover" if t >= ctx.tuning.wisp_retreat_time else None
 
 
-WISP_EATER: Fsm[Ctx] = Fsm({"hover": wisp_hover, "swoop": wisp_swoop, "retreat": wisp_retreat})
+WISP_EATER: Fsm[Ctx] = Fsm(
+    {"hover": wisp_hover, "hunt": wisp_hunt, "swoop": wisp_swoop, "retreat": wisp_retreat}
+)
 
 
 @dataclass(frozen=True, slots=True)

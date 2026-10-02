@@ -39,8 +39,10 @@ from emberwake.game import (  # noqa: E402, F401
     flares,
     grants,
     interact,
+    lamps,
     light,
     signals,
+    switches,
     trials,
 )
 from emberwake.game.player import controller, kindle, swing  # noqa: E402, F401

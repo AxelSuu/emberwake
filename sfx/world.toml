@@ -15,3 +15,21 @@ sustain = 0.1
 decay = 0.3
 lowpass = 0.25
 variants = 2
+
+[ignite]
+wave = "noise"
+freq = 700.0
+slide = 1.4
+sustain = 0.05
+decay = 0.25
+lowpass = 0.5
+variants = 2
+
+[bell]
+wave = "sine"
+freq = 520.0
+slide = -0.05
+sustain = 0.25
+decay = 0.9
+lowpass = 0.9
+variants = 2

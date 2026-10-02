@@ -3,26 +3,30 @@
 An area's light % counts the things in its rooms that ``[light]`` in content/areas.toml lists,
 by prefab, with the persisted ``Component.field`` that is true once one is lit. Values come from
 the `WorldState` and, for entities never saved, the level files, so unloaded rooms count too.
+The active area's light scales the colour grade's saturation: colour comes back as it is lit.
 """
 
 from __future__ import annotations
 
+import dataclasses
 import re
 import tomllib
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from emberwake.engine.core.mathx import approach, clamp
 from emberwake.engine.core.serde import SerdeError, from_data
 from emberwake.engine.ecs import COMPONENTS
 from emberwake.engine.ecs.prefabs import build
 from emberwake.engine.world.spawning import prefab_name
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping
+    from collections.abc import Callable, Iterable, Mapping
     from pathlib import Path
 
     from emberwake.engine.ecs import Registry
     from emberwake.engine.ecs.prefabs import Prefab
+    from emberwake.engine.render.post import Grade
     from emberwake.engine.world.ldtk import Level
     from emberwake.engine.world.spawning import WorldState
 
@@ -65,7 +69,7 @@ def music_of(level: Level, areas: Areas) -> str:
 
 
 @dataclass(frozen=True, slots=True)
-class Light:
+class AreaLight:
     lit: int = 0
     total: int = 0
 
@@ -78,6 +82,12 @@ class Light:
     def percent(self) -> int:
         """Rounded down, so 100 means everything."""
         return self.lit * 100 // self.total if self.total else 100
+
+
+def describe(area: str, light: AreaLight, t: Callable[..., str]) -> tuple[str, str]:
+    """The area's name and its light line; the line is empty with nothing to light."""
+    line = t("area.light", percent=light.percent) if light.total else ""
+    return t(f"area.{area}.name"), line
 
 
 @dataclass(frozen=True, slots=True)
@@ -119,7 +129,7 @@ class LightCensus:
                 initial = bool(getattr(placed, attribute, False))
                 self._counted.append(_Counted(area, entity.iid, component, attribute, initial))
 
-    def count(self, state: WorldState) -> dict[str, Light]:
+    def count(self, state: WorldState) -> dict[str, AreaLight]:
         """Each area's light now; every area with rooms is in it."""
         tally = {area: [0, 0] for area in self.areas}
         for counted in self._counted:
@@ -127,4 +137,29 @@ class LightCensus:
             lit = bool(saved.get(counted.field, counted.initial))
             tally[counted.area][0] += lit
             tally[counted.area][1] += 1
-        return {area: Light(lit, total) for area, (lit, total) in tally.items()}
+        return {area: AreaLight(lit, total) for area, (lit, total) in tally.items()}
+
+
+def saturation(light: float, dim: float) -> float:
+    """Share of a grade's saturation an area keeps at `light` (0 to 1): `dim` when dark."""
+    return dim + (1.0 - dim) * clamp(light, 0.0, 1.0)
+
+
+class AreaGrade:
+    """Desaturates the colour grade by the active area's light, easing toward it."""
+
+    def __init__(self, dim: float = 0.7, rate: float = 0.5) -> None:
+        self.dim, self.rate = dim, rate
+        self.light = self.target = 1.0
+
+    def aim(self, light: float, *, instantly: bool = False) -> None:
+        self.target = light
+        if instantly:
+            self.light = light
+
+    def update(self, dt: float) -> None:
+        self.light = approach(self.light, self.target, self.rate * dt)
+
+    def apply(self, grade: Grade) -> Grade:
+        scale = saturation(self.light, self.dim)
+        return dataclasses.replace(grade, saturation=grade.saturation * scale)

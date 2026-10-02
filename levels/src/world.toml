@@ -32,4 +32,10 @@ cell = [0, 6]
 cell = [0, 8]
 
 [rooms.Break_Lab]
+cell = [63, 0]
+
+[rooms.Signal_Lab]
+cell = [60, 0]
+
+[rooms.Lamp_Lab]
 cell = [0, 10]

@@ -1,0 +1,34 @@
+fields = { Area = "lab" }
+
+[entities.B]
+type = "Brazier"
+
+[entities.p]
+type = "Photocell"
+fields = { Targets = ["d"] }
+
+[entities.d]
+type = "Door"
+
+[entities.c]
+type = "Clockrat"
+
+[entities.b]
+type = "Bell"
+fields = { Targets = ["e"] }
+
+[entities.e]
+type = "Door"
+
+[entities.F]
+type = "Brazier"
+fields = { Targets = ["f"] }
+
+[entities.f]
+type = "Door"
+
+[entities.m]
+type = "Ember"
+
+[entities.k]
+type = "Beacon"

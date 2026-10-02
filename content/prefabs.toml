@@ -36,6 +36,15 @@ Sprite = { image = "beacon", active_image = "beacon_lit" }
 Interactable = { prompt = "relight" }
 Beacon = {}
 
+[lamp]
+fields = { Beacon = "Shelter.beacon" }
+persist = ["Lamp"]
+[lamp.components]
+Sprite = { image = "lamp", active_image = "lamp_lit" }
+Strikeable = {}
+Lamp = {}
+Shelter = {}
+
 [ember]
 fields = { Value = "Pickup.value" }
 [ember.components]
@@ -54,9 +63,28 @@ Sprite = { image = "lightform", active_image = "lightform_lit" }
 Lightform = {}
 
 [brazier]
+fields = { Targets = "Switch.targets", Lit = "Brazier.lit" }
+persist = ["Brazier", "Switch"]
 [brazier.components]
-Sprite = { image = "brazier" }
-LightSource = { radius = 72.0, color = "#fb6b1d" }
+Sprite = { image = "brazier", active_image = "brazier_lit" }
+Strikeable = {}
+Brazier = {}
+Switch = {}
+
+[photocell]
+fields = { Targets = "Switch.targets", Threshold = "Photocell.threshold" }
+[photocell.components]
+Sprite = { image = "photocell", active_image = "photocell_on" }
+Photocell = {}
+Switch = {}
+
+[bell]
+fields = { Targets = "Switch.targets" }
+[bell.components]
+Sprite = { image = "bell", active_image = "bell_ring" }
+Strikeable = {}
+Bell = {}
+Switch = {}
 
 [clockrat]
 [clockrat.components]
@@ -108,3 +136,14 @@ Strikeable = {}
 [crumbling_platform.components]
 Sprite = { image = "crumbling_platform", active_image = "crumbling_platform_gone" }
 Crumble = {}
+
+[flag_switch]
+fields = { Condition = "FlagSwitch.condition", Targets = "FlagSwitch.targets" }
+[flag_switch.components]
+FlagSwitch = {}
+
+[set_flag]
+fields = { Flag = "SetFlag.flag", Value = "SetFlag.value", Mode = "SetFlag.mode" }
+[set_flag.components]
+Trigger = {}
+SetFlag = {}
