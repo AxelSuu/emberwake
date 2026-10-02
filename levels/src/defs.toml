@@ -90,6 +90,18 @@ size = [16, 16]
 pivot = [0.5, 1.0]
 doc = "Patrols behind an armored front and vents on a cycle; pogo its back"
 
+[entities.ClockratKing]
+color = "#b33831"
+size = [32, 32]
+pivot = [0.5, 1.0]
+doc = "Elite: armored but for its crown; charges, calls rats to the RatSpawn markers of its room, topples when hit from above"
+
+[entities.RatSpawn]
+color = "#966c6c"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Where a Clockrat King's rats appear"
+
 [entities.Tinker]
 color = "#fbb954"
 size = [16, 16]
