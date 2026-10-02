@@ -1,5 +1,6 @@
 # What the player can find or be given (a Grant pickup, or the dialogue action give:<id>).
 # `kind` is ability or item; items stack up to `max`. Names are strings: grant.<id>.name.
+# Maps are items named map.<area>; the map screen shows an area once it is owned.
 # Effects: every 3 shards add 1 health, each oil flask 20 flame, each flare pouch 1 flare.
 
 [dash]
@@ -19,3 +20,6 @@ max = 6
 [flare_pouch]
 kind = "item"
 max = 4
+
+["map.quarter"]
+kind = "item"

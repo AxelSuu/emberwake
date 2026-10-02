@@ -19,11 +19,13 @@ class PauseScene(Scene):
 
     blocks_draw: ClassVar[bool] = False
 
-    def __init__(self, ctx: GameContext) -> None:
+    def __init__(self, ctx: GameContext, area: str = "", light: str = "") -> None:
         self.ctx = ctx
+        where = [Label(text, dim=True) for text in (area, light) if text]
         panel = Panel(
             [
                 Label(ctx.t("pause.title")),
+                *where,
                 Button(ctx.t("pause.resume"), self._resume),
                 Button(ctx.t("pause.help"), self._help),
                 Button(ctx.t("pause.settings"), self._settings),

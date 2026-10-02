@@ -15,6 +15,7 @@ from emberwake.engine.core.serde import from_data
 from emberwake.engine.ecs import Registry
 from emberwake.engine.ecs.prefabs import Prefab, load_prefabs
 from emberwake.engine.world.ldtk import Project, load_project
+from emberwake.game.areas import Areas, AreaSpec
 
 ROOT = Path(__file__).parents[3]
 DEFS = read_toml(Defs, ROOT / "levels/src/defs.toml")
@@ -53,11 +54,6 @@ GOOD = {
 }
 
 
-def project() -> Project:
-    room = make_room("Hall", (0, 0), ROOM, from_data(RoomFile, tomllib.loads(TOML)))
-    return from_data(Project, build_project(Source(DEFS, [room])))
-
-
 def test_committed_world_matches_the_prefabs_and_backdrops():
     world = load_project(ROOT / "levels/world.ldtk")
     prefabs = load_prefabs(ROOT / "content/prefabs.toml")
@@ -91,6 +87,90 @@ def test_problems(prefabs: dict[str, Prefab | None], message: str):
     assert any(message in problem for problem in problems), problems
     if "no prefab" in message:
         assert len(problems) == 1
+
+
+def project(**fields: str) -> Project:
+    data = {**tomllib.loads(TOML), "fields": fields}
+    room = make_room("Hall", (0, 0), ROOM, from_data(RoomFile, data))
+    return from_data(Project, build_project(Source(DEFS, [room])))
+
+
+AREAS = Areas({"quarter": AreaSpec("quarter"), "lab": AreaSpec()}, {"lever": "Wired.targets"})
+NAMES = {"area.quarter.name": "Quarter", "area.lab.name": "Lab"}
+PERSISTING = {**GOOD, "lever": Prefab(components={"Wired": {}}, persist=["Wired"])}
+
+
+def check_areas(world: Project, areas: Areas = AREAS, names: dict[str, str] = NAMES) -> list[str]:
+    return validate(world, PERSISTING, REGISTRY, areas=areas, strings=names)
+
+
+def test_levels_name_known_areas_and_lowercase_music():
+    assert check_areas(project(Area="lab", Music="boss_two")) == []
+    assert check_areas(project()) == []
+    assert check_areas(project(Area="swamp")) == ["Hall: no area [swamp]"]
+    assert check_areas(project(Music="Boss Two")) == [
+        "Hall: Music 'Boss Two' is not a stem-set name"
+    ]
+
+
+def test_areas_need_names_and_lowercase_music():
+    assert check_areas(project(), Areas({"quarter": AreaSpec("Loud")}), {}) == [
+        "area quarter: music 'Loud' is not a stem-set name",
+        "area quarter: no string area.quarter.name",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("rules", "message"),
+    [
+        ({"ghost": "Wired.targets"}, "light ghost: no prefab [ghost]"),
+        ({"ember": "Value.amount"}, "light ember: prefab ember does not persist Value"),
+        ({"lever": "Wired.nope"}, "light lever: Wired has no field 'nope'"),
+    ],
+)
+def test_light_rules_must_name_a_persisted_field(rules: dict[str, str], message: str):
+    problems = check_areas(project(), Areas({"quarter": AreaSpec()}, rules))
+    assert problems == [message]
+
+
+@REGISTRY.register
+@dataclass(slots=True)
+class Held:
+    beacon: str = ""
+
+
+LAMPS = """
+[entities.b]
+type = "Beacon"
+[entities.x]
+type = "Ember"
+[entities.l]
+type = "Lamp"
+fields = { Beacon = "b" }
+[entities.m]
+type = "Lamp"
+fields = { Beacon = "x" }
+[entities.n]
+type = "Lamp"
+"""
+LAMP_PREFABS = {
+    **GOOD,
+    "lamp": Prefab(components={"Held": {}}, fields={"Beacon": "Held.beacon"}),
+}
+
+
+def lamp_room(toml: str) -> Project:
+    rows = [INSIDE] * 6 + ["#.l.m.n" + "." * 12 + "#"] * 2 + ["#.Pbx" + "." * 14 + "#"]
+    text = "\n".join([WALL, *rows, WALL])
+    room = make_room("Hall", (0, 0), text, from_data(RoomFile, tomllib.loads(toml)))
+    return from_data(Project, build_project(Source(DEFS, [room])))
+
+
+def test_a_lamps_beacon_must_be_a_beacon():
+    problems = validate(lamp_room(LAMPS), LAMP_PREFABS, REGISTRY)
+    assert len(problems) == 1
+    assert "Hall Lamp" in problems[0]
+    assert problems[0].endswith("Beacon is Ember, not a Beacon")
 
 
 def conditioned(entity: str, fields: dict[str, str]) -> list[str]:
