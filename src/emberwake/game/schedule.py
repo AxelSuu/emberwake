@@ -21,7 +21,7 @@ from emberwake.game.player.system import player_system
 from emberwake.game.render.sprites import sprite_system
 from emberwake.game.rooms import room_system
 from emberwake.game.signals import door_system, signal_system
-from emberwake.game.trials import goal_system
+from emberwake.game.trials import goal_system, trial_door_system
 
 PHASES = ("input", "logic", "physics", "post", "camera", "render_prep")
 POST = (
@@ -56,6 +56,7 @@ def gameplay_schedule() -> Schedule:
     schedule.add("logic", enemy_system)
     schedule.add("logic", npc_system)
     schedule.add("logic", echo_system)
+    schedule.add("logic", trial_door_system)
     schedule.add("physics", player_system)
     for system in POST:
         schedule.add("post", system)

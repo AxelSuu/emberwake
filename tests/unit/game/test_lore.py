@@ -10,9 +10,11 @@ from emberwake.game.lore import EchoPlay, Recording, Sign, load_echo, sign_text,
 from emberwake.game.player.controller import Motor
 from emberwake.game.rebind import key_name, labels, rebind
 from emberwake.game.strings import load_strings
+from emberwake.game.trials import load_trials
 
 STRINGS = load_strings("en")
 TABLES = load_tables(paths.content("strings"))
+TRIALS = load_trials(paths.content("trials.toml"))
 
 
 def world_with_sign(player_x: float) -> World:
@@ -69,17 +71,21 @@ def test_an_echo_without_a_replay_still_speaks():
     assert speech.text == STRINGS.t("echo.lore_hall")
 
 
-def test_every_sign_echo_and_lost_light_in_the_world_has_its_content():
+def test_every_lore_entity_in_the_world_has_its_content():
     problems = []
     for level in load_project(paths.levels("world.ldtk")).all_levels:
         for entity in level.entities():
-            ident = entity.field("Id") or entity.field("Text")
+            ident = entity.field("Id") or entity.field("Text") or entity.field("Trial")
             if entity.identifier == "Echo":
                 if load_echo(ident) is None:
                     problems.append(f"{level.identifier}: no replay {ident}")
                 key = f"echo.{ident}"
             elif entity.identifier == "Signpost":
                 key = f"sign.{ident}"
+            elif entity.identifier == "TrialDoor":
+                if ident not in TRIALS:
+                    problems.append(f"{level.identifier}: no trial {ident!r}")
+                continue
             elif entity.identifier == "LostLight":
                 if not ident:
                     problems.append(f"{level.identifier}: a Lost Light has no Id")

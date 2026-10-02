@@ -43,7 +43,7 @@ from emberwake.game.cinder import CinderRecovered, cinder_parts
 from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
 from emberwake.game.cosmetics import Cosmetics, load_cosmetics
-from emberwake.game.data.records import RunResult, format_time, load_records
+from emberwake.game.data.records import RunResult, format_time, load_records, save_records, unlock
 from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
 from emberwake.game.enemies import Brain
@@ -80,6 +80,7 @@ from emberwake.game.trials import (
     Ghost,
     GoalReached,
     Trial,
+    TrialDoorUsed,
     load_ghost,
     load_trials,
     medal_for,
@@ -297,6 +298,7 @@ class GameplayScene(Scene):
             bus.subscribe(Damaged, self._on_damaged),
             bus.subscribe(Talk, self._on_talk),
             bus.subscribe(GoalReached, self._on_goal),
+            bus.subscribe(TrialDoorUsed, self._on_trial_door),
             *self._track_achievements(bus),
             bus.subscribe(Killed, self._on_killed),
             bus.subscribe(BeaconLit, self._on_beacon_lit),
@@ -348,6 +350,18 @@ class GameplayScene(Scene):
         medal = medal_for(self.trial, seconds)
         result = RunResult(key, seconds, deaths=self.trial_deaths, medal=medal)
         self.ctx.bus.publish(RunFinished(result))
+
+    def _on_trial_door(self, event: TrialDoorUsed) -> None:
+        """Unlock the door's trial in the menu and start it."""
+        if self.trial is not None:
+            return
+        if event.trial not in self._read_trials():
+            log.warning("Trial door to unknown trial %r", event.trial)
+            return
+        records = load_records(self.ctx.storage)
+        unlock(records, event.trial)
+        save_records(self.ctx.storage, records)
+        self.manager.switch(GameplayScene(self.ctx, trial=event.trial))
 
     def _read_dialogues(self) -> dict[str, Graph]:
         try:

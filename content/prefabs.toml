@@ -119,3 +119,10 @@ Sprite = { image = "lost_light" }
 LightSource = { radius = 44.0, strength = 0.7, color = "#fbb954" }
 LostLight = {}
 Spirit = {}
+
+[trial_door]
+fields = { Trial = "TrialDoor.trial" }
+[trial_door.components]
+Sprite = { image = "trial_door" }
+Interactable = { prompt = "enter" }
+TrialDoor = {}

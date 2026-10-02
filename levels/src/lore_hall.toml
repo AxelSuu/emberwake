@@ -13,3 +13,7 @@ type = "LostLight"
 fields = { Id = "lore_hall" }
 [entities.k]
 type = "Beacon"
+
+[entities.t]
+type = "TrialDoor"
+fields = { Trial = "sprint" }

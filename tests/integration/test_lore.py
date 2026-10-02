@@ -14,11 +14,16 @@ from emberwake.game.actions import Action
 from emberwake.game.areas import LightCensus, load_areas
 from emberwake.game.combat import Killed
 from emberwake.game.components import Sprite
+from emberwake.game.data.records import load_records
 from emberwake.game.lore import Echo, EchoPlay, Sign, speeches
 from emberwake.game.lost_lights import Spirit
 from emberwake.game.scenes.gameplay import GameplayScene
+from emberwake.game.scenes.trials import TrialsScene
+from emberwake.game.trials import TrialDoor, load_trials
 
 if TYPE_CHECKING:
+    import pytest
+
     from emberwake.game.context import GameContext
 
 STEP = 1 / 60
@@ -201,3 +206,47 @@ def test_dying_sends_the_light_home_and_it_can_be_led_again(ctx: GameContext) ->
     assert game.progress.data.flags.get("lost_lights", 0) == 0
     lead_the_light(scenes, game)
     assert game.progress.data.flags["lost_lights"] == 1
+
+
+class Menu:
+    """The Trials menu with the shipped Pits locked."""
+
+    def __init__(self, ctx: GameContext, monkeypatch: pytest.MonkeyPatch) -> None:
+        trials = load_trials(paths.content("trials.toml"))
+        trials["pits"].locked = True
+        monkeypatch.setattr("emberwake.game.scenes.trials.load_trials", lambda _: trials)
+        self.ctx = ctx
+
+    def rows(self) -> list[str]:
+        return [button.text for button in TrialsScene(self.ctx).buttons]
+
+
+def test_a_trial_door_unlocks_its_trial_and_starts_it(
+    ctx: GameContext, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    menu = Menu(ctx, monkeypatch)
+    assert len(menu.rows()) == 1
+    scenes, game = start(ctx)
+    ((_, door),) = game.world.query(TrialDoor)
+    door.trial = "pits"
+    stand_at(game, TrialDoor)
+    settle(scenes)
+    use(scenes)
+    settle(scenes)
+    assert isinstance(scenes.top, GameplayScene)
+    assert scenes.top is not game
+    assert scenes.top.trial_id == "pits"
+    assert load_records(ctx.storage).unlocked == ["pits"]
+    assert len(menu.rows()) == 2
+
+
+def test_a_trial_door_to_a_missing_trial_does_nothing(ctx: GameContext) -> None:
+    scenes, game = start(ctx)
+    ((_, door),) = game.world.query(TrialDoor)
+    door.trial = "nowhere"
+    stand_at(game, TrialDoor)
+    settle(scenes)
+    use(scenes)
+    settle(scenes)
+    assert scenes.top is game
+    assert load_records(ctx.storage).unlocked == []

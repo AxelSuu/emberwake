@@ -336,6 +336,16 @@ class EntityArt:
         pygame.draw.circle(image, palette.EMBER_CORE, rect.center, 2)
 
     @staticmethod
+    def _trial_door(image: pygame.Surface, rect: pygame.Rect) -> None:
+        """An arch of stone around a mint glow."""
+        image.fill(ROCK_EDGE, rect)
+        inner = rect.inflate(-6, -4)
+        inner.bottom = rect.bottom
+        image.fill(ROCK_DARK, inner)
+        image.fill(EYES, inner.inflate(-4, -4))
+        image.fill(palette.MIST, (inner.centerx - 1, inner.top + 4, 2, inner.height - 8))
+
+    @staticmethod
     def _goal(image: pygame.Surface, rect: pygame.Rect) -> None:
         for y in range(rect.top, rect.bottom, 8):
             image.fill(palette.EMBER_CORE, (rect.left + 2, y, 3, 4))

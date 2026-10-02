@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from emberwake.engine.platform.storage import MemoryStorage
 from emberwake.game.data.records import (
+    RECORDS_KEY,
     Records,
     RunResult,
     format_time,
     load_records,
     save_records,
     submit,
+    unlock,
 )
 
 
@@ -47,3 +49,20 @@ def test_format_time() -> None:
     assert format_time(0) == "0:00.00"
     assert format_time(61.5) == "1:01.50"
     assert format_time(3599.99) == "59:59.99"
+
+
+def test_unlocking_is_kept_once_and_saved() -> None:
+    storage = MemoryStorage()
+    records = Records()
+    unlock(records, "pits")
+    unlock(records, "pits")
+    save_records(storage, records)
+    assert load_records(storage).unlocked == ["pits"]
+
+
+def test_records_from_before_unlocking_still_load() -> None:
+    storage = MemoryStorage()
+    storage.write(RECORDS_KEY, '{"version": 1, "data": {"runs": {"a": {"best_time": 5.0}}}}')
+    records = load_records(storage)
+    assert records.runs["a"].best_time == 5.0
+    assert records.unlocked == []
