@@ -283,6 +283,9 @@ belfry_hook = "En mässingskrok hänger över gapet.\nDu har inget att kasta än
 pogo = "Håll {down} och slå i luften:\nspetsarna studsar dig upp."
 hook_gap = "En rostig krok på den andra avsatsen.\nGapet är för brett än så länge."
 plate_crate = "Tunga saker går att skjuta.\nEn låda på plattan håller dörren öppen."
+gallery_lightform = "Ljusformer finns bara där ljus når dem.\nGå fram till kanten."
+gallery_flare = "En lins sover bland spetsarna. Tryck {flare} för att kasta en fackla mot den."
+gallery_dash = "Hoppa och tryck sedan {dash} för att ta dig över spetsarna."
 
 [echo]
 lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."
