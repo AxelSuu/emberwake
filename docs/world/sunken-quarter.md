@@ -93,6 +93,21 @@ rows with its floor at row 9; Well Climb to Old Guild at rows 19 and 20, behind 
 Codes are the rooms' initials (CF Clock Face, CS Clocktower Stair, PR Plate Room, PG Photocell
 Gallery, CI Cistern, CG Cistern Gate). Only touching edges can connect; every other shared edge stays a wall.
 
+Built passages of the Underways (tiles within each room, 0-based; a "pit" is open floor with a
+one-way plank at its foot that the player drops through with Down and Jump, and climbs back out of):
+
+| Seam | Tiles |
+|---|---|
+| Lamp Row to Tinker's Nook | Nook west wall (col 0), rows 6 to 8; floor from row 9 |
+| Tinker's Nook to Market Square | Nook east wall (col 39), rows 6 to 8, floor from row 9. A barred Door `d` (col 38, rows 6 to 8) is wired to nothing; the Square opens it with `Targets = ["Tinkers_Nook:d"]` on a lever or FlagSwitch. The Square's west wall (col 0) must be open at rows 6 to 8 of its top-left cell |
+| Tinker's Nook to Gloom Cellar | Nook pit, cols 10 to 12, rows 9 to 10, over Gloom Cellar cols 30 to 32 of row 0, a one-way plank |
+| Gloom Cellar to Lever Hall | Gloom west wall (col 0), rows 16 to 18; Lever Hall east wall (col 19), rows 5 to 7; floor from row 19 and row 8 |
+| Lever Hall to Cistern Shaft | Lever Hall pit, cols 1 to 3, rows 8 to 10 (plank on row 10), over Cistern Shaft cols 1 to 3 of row 0 |
+| Cistern Shaft to Plate Room | Shaft east wall (col 19), rows 17 to 19, floor rows 20 to 21; Plate Room west wall (col 0) must be open at rows 6 to 8, floor rows 9 to 10, with a PlayerStart within 6 tiles. A Door (col 17, rows 17 to 19) inside the Shaft shuts that exit until the Shaft's lever (once) is pulled |
+
+The lab keeps its own copies of the greybox rooms as `Lab_Lever_Hall` and `Lab_Plate_Room` (and
+`Shaft`), so the Quarter's `Lever_Hall` and `Plate_Room` do not clash with them.
+
 ## Rooms
 
 Sizes in GridVania cells (one cell is 20x11 tiles, half the screen each way).
@@ -190,7 +205,7 @@ Spots that bring the player back after the slice:
 
 | Today | Becomes |
 |---|---|
-| Lever_Hall, Shaft, Plate_Room | Lever Hall, Cistern Shaft, Plate Room (reworked) |
+| Lever_Hall, Shaft, Plate_Room | Lever Hall, Cistern Shaft, Plate Room (reworked). The lab keeps `Lab_Lever_Hall`, `Lab_Plate_Room` and `Shaft` for tests |
 | Enemy_Yard (not connected to anything) | Rat Warren, connected to the Sluice |
 | Trial_Sprint, Trial_Pits | Trials behind the Trial Gate's doors, kept off the map |
 | Test_Room, Return_Hall, East_Passage, Upper_Room | The lab: a dev region far off the map, kept for tests and `--room` |

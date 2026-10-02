@@ -55,8 +55,8 @@ def test_continue_is_disabled_without_saves(ctx: GameContext) -> None:
 
 def test_continue_resumes_the_most_played_slot(ctx: GameContext) -> None:
     ctx.slot = 1
-    save_slot(ctx.storage, 2, SaveSlot(room="Lever_Hall", playtime=50))
-    save_slot(ctx.storage, 3, SaveSlot(room="Lever_Hall", playtime=90))
+    save_slot(ctx.storage, 2, SaveSlot(room="Lab_Lever_Hall", playtime=50))
+    save_slot(ctx.storage, 3, SaveSlot(room="Lab_Lever_Hall", playtime=90))
     scenes = menu(ctx)
     pick(scenes, "Continue")
     assert isinstance(scenes.top, GameplayScene)
@@ -65,7 +65,7 @@ def test_continue_resumes_the_most_played_slot(ctx: GameContext) -> None:
 
 
 def test_load_offers_only_saved_slots(ctx: GameContext) -> None:
-    save_slot(ctx.storage, 2, SaveSlot(room="Lever_Hall"))
+    save_slot(ctx.storage, 2, SaveSlot(room="Lab_Lever_Hall"))
     scenes = menu(ctx)
     pick(scenes, "Load")
     assert isinstance(scenes.top, SlotScene)
@@ -85,14 +85,14 @@ def test_new_game_on_an_empty_slot_starts_at_once(ctx: GameContext) -> None:
 
 
 def test_new_game_on_an_occupied_slot_needs_confirmation(ctx: GameContext) -> None:
-    save_slot(ctx.storage, 1, SaveSlot(room="Lever_Hall"))
+    save_slot(ctx.storage, 1, SaveSlot(room="Lab_Lever_Hall"))
     scenes = menu(ctx)
     pick(scenes, "New game")
     pick(scenes, "Slot 1")
     assert isinstance(scenes.top, SlotScene)
     pick(scenes, "Overwrite slot 1")
     assert isinstance(scenes.top, GameplayScene)
-    assert scenes.top.progress.data.room != "Lever_Hall"
+    assert scenes.top.progress.data.room != "Lab_Lever_Hall"
 
 
 def test_back_unwinds_to_the_title(ctx: GameContext) -> None:

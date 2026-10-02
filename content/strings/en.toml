@@ -278,6 +278,8 @@ lore_move = "Run with {left} and {right}.\nJump with {jump}."
 wake_move = "Run with {left} and {right}."
 wake_jump = "Jump with {jump}. Hold it for a higher one."
 
+nook_hatch = "The cellar is below. Hold {down} and press {jump} to drop through a plank."
+
 [echo]
 lore_hall = "I lit this lamp last. The oil ran out before the street did."
 wake = "My last round. Up the well, then fourteen lamps before dark. The tide came first."

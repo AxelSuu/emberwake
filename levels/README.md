@@ -33,7 +33,7 @@ empty tiles. Each 4-connected rectangle of one marker is one entity of that size
 PlayerStart without any TOML.
 
 ```toml
-# src/lever_hall.toml
+# src/lab_lever_hall.toml
 [entities.a]
 type = "Lever"
 fields = { Targets = ["b"] }   # entity refs name a marker, or "Other_Room:b"

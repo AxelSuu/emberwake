@@ -93,7 +93,7 @@ def test_relighting_saves_and_continues_at_the_beacon(ctx: GameContext, storage:
 
 
 def test_quitting_keeps_progress_but_not_position(ctx: GameContext, storage: MemoryStorage):
-    save_slot(storage, ctx.slot, SaveSlot(room="Lever_Hall"))
+    save_slot(storage, ctx.slot, SaveSlot(room="Lab_Lever_Hall"))
     scenes, scene = start(ctx)
     drive(scenes, scene, [(5, []), (8, ["right"]), (2, ["interact"]), (80, ["right"])])
     assert scene.progress.data.stats.embers == 1
@@ -113,7 +113,7 @@ def test_quitting_keeps_progress_but_not_position(ctx: GameContext, storage: Mem
 
 
 def test_new_game_ignores_the_slot_once(ctx: GameContext, storage: MemoryStorage):
-    save_slot(storage, ctx.slot, SaveSlot(room="Lever_Hall"))
+    save_slot(storage, ctx.slot, SaveSlot(room="Lab_Lever_Hall"))
     ctx.new_game = True
     _, scene = start(ctx)
     assert scene.room == DEFAULT_ROOM
@@ -122,7 +122,7 @@ def test_new_game_ignores_the_slot_once(ctx: GameContext, storage: MemoryStorage
 
 def test_explicit_rooms_and_replays_never_save(ctx: GameContext, storage: MemoryStorage):
     scenes = SceneManager()
-    scenes.push(GameplayScene(ctx, room="Lever_Hall"))
+    scenes.push(GameplayScene(ctx, room="Lab_Lever_Hall"))
     scenes.push(GameplayScene(ctx, replay=Replay(DEFAULT_ROOM, 0, [(1, [])])))
     scenes.apply_pending()
     scenes.close()

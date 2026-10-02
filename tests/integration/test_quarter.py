@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 from tests.integration.test_greybox import Leg, at, climb, in_room, run, walk
 
+from emberwake.engine.physics import Body
 from emberwake.engine.world.rooms import RoomEntered
 from emberwake.game.beacons import BeaconLit
 from emberwake.game.breakables import Broken
@@ -17,6 +18,7 @@ from emberwake.game.lamps import Lamp, LampLit
 from emberwake.game.scenes.gameplay import GameplayScene
 
 if TYPE_CHECKING:
+    from emberwake.engine.ecs import EntityId
     from emberwake.game.context import GameContext
 
 WAKE = (0, 11)
@@ -105,8 +107,15 @@ def test_a_new_game_starts_on_the_floor_of_wake(ctx: GameContext):
 
 def test_lamp_row_has_four_dead_lamps_and_two_clockrats(ctx: GameContext):
     scene = GameplayScene(ctx, room="Lamp_Row")
-    assert [lamp.lit for _, lamp in scene.world.query(Lamp)] == [False] * 4
-    assert [brain.kind for _, brain in scene.world.query(Brain)] == ["clockrat"] * 2
+    room = scene.rooms.graph.rects["Lamp_Row"]
+
+    def inside(eid: EntityId) -> bool:
+        body = scene.world.get(eid, Body)
+        return room.collidepoint(body.center_x, body.y + body.height / 2)
+
+    assert [lamp.lit for eid, lamp in scene.world.query(Lamp) if inside(eid)] == [False] * 4
+    kinds = [brain.kind for eid, brain in scene.world.query(Brain) if inside(eid)]
+    assert kinds == ["clockrat"] * 2
 
 
 def test_the_water_gap_in_lamp_row_cannot_be_jumped(ctx: GameContext):
