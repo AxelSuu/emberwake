@@ -27,6 +27,7 @@ from emberwake.game.player.system import player_system
 from emberwake.game.render.sprites import sprite_system
 from emberwake.game.rooms import room_system
 from emberwake.game.signals import door_system, signal_system
+from emberwake.game.story import great_lamp_system
 from emberwake.game.switches import bell_system, brazier_system, photocell_system
 from emberwake.game.trials import goal_system, trial_door_system
 
@@ -46,6 +47,7 @@ POST = (
     crumble_system,
     loose_ember_system,
     lamp_system,
+    great_lamp_system,
     goal_system,
     flare_system,
     lightform_system,

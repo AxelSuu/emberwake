@@ -11,7 +11,7 @@
 	"iid": "87b725ab-f0a4-5a9b-ba96-4e58e071114b",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703.0,
-	"nextUid": 200,
+	"nextUid": 207,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -5849,6 +5849,268 @@
 						"doc": "Condition that takes the entity out of the world",
 						"__type": "String",
 						"uid": 155,
+						"type": "F_String",
+						"isArray": false,
+						"canBeNull": true,
+						"arrayMinLength": null,
+						"arrayMaxLength": null,
+						"editorDisplayMode": "NameAndValue",
+						"editorDisplayScale": 1.0,
+						"editorDisplayPos": "Above",
+						"editorLinkStyle": "CurvedArrow",
+						"editorDisplayColor": null,
+						"editorAlwaysShow": false,
+						"editorShowInWorld": true,
+						"editorCutLongValues": true,
+						"editorTextSuffix": null,
+						"editorTextPrefix": null,
+						"useForSmartColor": false,
+						"exportToToc": false,
+						"searchable": false,
+						"min": null,
+						"max": null,
+						"regex": null,
+						"acceptFileTypes": null,
+						"defaultOverride": null,
+						"textLanguageMode": null,
+						"symmetricalRef": false,
+						"autoChainRef": true,
+						"allowOutOfLevelRef": true,
+						"allowedRefs": "Any",
+						"allowedRefsEntityUid": null,
+						"allowedRefTags": [],
+						"tilesetUid": null
+					}
+				]
+			},
+			{
+				"identifier": "StoryBeat",
+				"uid": 203,
+				"tags": [],
+				"exportToToc": false,
+				"allowOutOfBounds": false,
+				"doc": "Invisible zone: entering it plays a story script once per save",
+				"width": 16,
+				"height": 16,
+				"resizableX": true,
+				"resizableY": true,
+				"minWidth": null,
+				"maxWidth": null,
+				"minHeight": null,
+				"maxHeight": null,
+				"keepAspectRatio": false,
+				"tileOpacity": 1.0,
+				"fillOpacity": 0.08,
+				"lineOpacity": 1.0,
+				"hollow": false,
+				"color": "#A884F3",
+				"renderMode": "Rectangle",
+				"showName": true,
+				"tilesetId": null,
+				"tileRenderMode": "FitInside",
+				"tileRect": null,
+				"uiTileRect": null,
+				"nineSliceBorders": [],
+				"maxCount": 0,
+				"limitScope": "PerLevel",
+				"limitBehavior": "MoveLastOne",
+				"pivotX": 0.5,
+				"pivotY": 1.0,
+				"fieldDefs": [
+					{
+						"identifier": "Script",
+						"doc": "A script of game/story.py: lamprey_reveal, ...",
+						"__type": "String",
+						"uid": 200,
+						"type": "F_String",
+						"isArray": false,
+						"canBeNull": false,
+						"arrayMinLength": null,
+						"arrayMaxLength": null,
+						"editorDisplayMode": "NameAndValue",
+						"editorDisplayScale": 1.0,
+						"editorDisplayPos": "Above",
+						"editorLinkStyle": "CurvedArrow",
+						"editorDisplayColor": null,
+						"editorAlwaysShow": false,
+						"editorShowInWorld": true,
+						"editorCutLongValues": true,
+						"editorTextSuffix": null,
+						"editorTextPrefix": null,
+						"useForSmartColor": false,
+						"exportToToc": false,
+						"searchable": false,
+						"min": null,
+						"max": null,
+						"regex": null,
+						"acceptFileTypes": null,
+						"defaultOverride": {
+							"id": "V_String",
+							"params": [
+								""
+							]
+						},
+						"textLanguageMode": null,
+						"symmetricalRef": false,
+						"autoChainRef": true,
+						"allowOutOfLevelRef": true,
+						"allowedRefs": "Any",
+						"allowedRefsEntityUid": null,
+						"allowedRefTags": [],
+						"tilesetUid": null
+					},
+					{
+						"identifier": "Requires",
+						"doc": "Condition for the entity to be in the world",
+						"__type": "String",
+						"uid": 201,
+						"type": "F_String",
+						"isArray": false,
+						"canBeNull": true,
+						"arrayMinLength": null,
+						"arrayMaxLength": null,
+						"editorDisplayMode": "NameAndValue",
+						"editorDisplayScale": 1.0,
+						"editorDisplayPos": "Above",
+						"editorLinkStyle": "CurvedArrow",
+						"editorDisplayColor": null,
+						"editorAlwaysShow": false,
+						"editorShowInWorld": true,
+						"editorCutLongValues": true,
+						"editorTextSuffix": null,
+						"editorTextPrefix": null,
+						"useForSmartColor": false,
+						"exportToToc": false,
+						"searchable": false,
+						"min": null,
+						"max": null,
+						"regex": null,
+						"acceptFileTypes": null,
+						"defaultOverride": null,
+						"textLanguageMode": null,
+						"symmetricalRef": false,
+						"autoChainRef": true,
+						"allowOutOfLevelRef": true,
+						"allowedRefs": "Any",
+						"allowedRefsEntityUid": null,
+						"allowedRefTags": [],
+						"tilesetUid": null
+					},
+					{
+						"identifier": "Unless",
+						"doc": "Condition that takes the entity out of the world",
+						"__type": "String",
+						"uid": 202,
+						"type": "F_String",
+						"isArray": false,
+						"canBeNull": true,
+						"arrayMinLength": null,
+						"arrayMaxLength": null,
+						"editorDisplayMode": "NameAndValue",
+						"editorDisplayScale": 1.0,
+						"editorDisplayPos": "Above",
+						"editorLinkStyle": "CurvedArrow",
+						"editorDisplayColor": null,
+						"editorAlwaysShow": false,
+						"editorShowInWorld": true,
+						"editorCutLongValues": true,
+						"editorTextSuffix": null,
+						"editorTextPrefix": null,
+						"useForSmartColor": false,
+						"exportToToc": false,
+						"searchable": false,
+						"min": null,
+						"max": null,
+						"regex": null,
+						"acceptFileTypes": null,
+						"defaultOverride": null,
+						"textLanguageMode": null,
+						"symmetricalRef": false,
+						"autoChainRef": true,
+						"allowOutOfLevelRef": true,
+						"allowedRefs": "Any",
+						"allowedRefsEntityUid": null,
+						"allowedRefTags": [],
+						"tilesetUid": null
+					}
+				]
+			},
+			{
+				"identifier": "GreatLamp",
+				"uid": 206,
+				"tags": [],
+				"exportToToc": false,
+				"allowOutOfBounds": false,
+				"doc": "The Great Lamp: kindled after the Lamprey, it lights the area (story beat great_lamp)",
+				"width": 32,
+				"height": 48,
+				"resizableX": false,
+				"resizableY": false,
+				"minWidth": null,
+				"maxWidth": null,
+				"minHeight": null,
+				"maxHeight": null,
+				"keepAspectRatio": false,
+				"tileOpacity": 1.0,
+				"fillOpacity": 0.08,
+				"lineOpacity": 1.0,
+				"hollow": false,
+				"color": "#FBB954",
+				"renderMode": "Cross",
+				"showName": true,
+				"tilesetId": null,
+				"tileRenderMode": "FitInside",
+				"tileRect": null,
+				"uiTileRect": null,
+				"nineSliceBorders": [],
+				"maxCount": 0,
+				"limitScope": "PerLevel",
+				"limitBehavior": "MoveLastOne",
+				"pivotX": 0.5,
+				"pivotY": 1.0,
+				"fieldDefs": [
+					{
+						"identifier": "Requires",
+						"doc": "Condition for the entity to be in the world",
+						"__type": "String",
+						"uid": 204,
+						"type": "F_String",
+						"isArray": false,
+						"canBeNull": true,
+						"arrayMinLength": null,
+						"arrayMaxLength": null,
+						"editorDisplayMode": "NameAndValue",
+						"editorDisplayScale": 1.0,
+						"editorDisplayPos": "Above",
+						"editorLinkStyle": "CurvedArrow",
+						"editorDisplayColor": null,
+						"editorAlwaysShow": false,
+						"editorShowInWorld": true,
+						"editorCutLongValues": true,
+						"editorTextSuffix": null,
+						"editorTextPrefix": null,
+						"useForSmartColor": false,
+						"exportToToc": false,
+						"searchable": false,
+						"min": null,
+						"max": null,
+						"regex": null,
+						"acceptFileTypes": null,
+						"defaultOverride": null,
+						"textLanguageMode": null,
+						"symmetricalRef": false,
+						"autoChainRef": true,
+						"allowOutOfLevelRef": true,
+						"allowedRefs": "Any",
+						"allowedRefsEntityUid": null,
+						"allowedRefTags": [],
+						"tilesetUid": null
+					},
+					{
+						"identifier": "Unless",
+						"doc": "Condition that takes the entity out of the world",
+						"__type": "String",
+						"uid": 205,
 						"type": "F_String",
 						"isArray": false,
 						"canBeNull": true,
@@ -13371,10 +13633,17 @@
 								{
 									"__identifier": "Unless",
 									"__type": "String",
-									"__value": null,
+									"__value": "great_lamp",
 									"__tile": null,
 									"defUid": 62,
-									"realEditorValues": []
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"great_lamp"
+											]
+										}
+									]
 								}
 							]
 						},
@@ -41186,6 +41455,55 @@
 							]
 						},
 						{
+							"__identifier": "Quill",
+							"__grid": [
+								22,
+								8
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#AB947A",
+							"__worldX": 2920,
+							"__worldY": 128,
+							"iid": "bdc9890f-6f91-5029-be7b-2afe885a3bcb",
+							"width": 16,
+							"height": 16,
+							"defUid": 125,
+							"px": [
+								360,
+								128
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": "quill_stage>=2",
+									"__tile": null,
+									"defUid": 123,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"quill_stage>=2"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 124,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
 							"__identifier": "Signpost",
 							"__grid": [
 								24,
@@ -48002,6 +48320,48 @@
 							]
 						},
 						{
+							"__identifier": "GreatLamp",
+							"__grid": [
+								51,
+								21
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FBB954",
+							"__worldX": 3376,
+							"__worldY": 1744,
+							"iid": "a7a88b9d-b6ed-5ece-bef8-d53bba42d8b2",
+							"width": 32,
+							"height": 48,
+							"defUid": 206,
+							"px": [
+								816,
+								336
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 204,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 205,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
 							"__identifier": "PlayerStart",
 							"__grid": [
 								75,
@@ -48529,63 +48889,6 @@
 							]
 						},
 						{
-							"__identifier": "Signpost",
-							"__grid": [
-								50,
-								21
-							],
-							"__pivot": [
-								0.5,
-								1.0
-							],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#AB947A",
-							"__worldX": 3368,
-							"__worldY": 1744,
-							"iid": "9cfed107-e5ba-52e7-a1c2-cacb736efd5d",
-							"width": 16,
-							"height": 16,
-							"defUid": 79,
-							"px": [
-								808,
-								336
-							],
-							"fieldInstances": [
-								{
-									"__identifier": "Text",
-									"__type": "String",
-									"__value": "square_great_lamp",
-									"__tile": null,
-									"defUid": 76,
-									"realEditorValues": [
-										{
-											"id": "V_String",
-											"params": [
-												"square_great_lamp"
-											]
-										}
-									]
-								},
-								{
-									"__identifier": "Requires",
-									"__type": "String",
-									"__value": null,
-									"__tile": null,
-									"defUid": 77,
-									"realEditorValues": []
-								},
-								{
-									"__identifier": "Unless",
-									"__type": "String",
-									"__value": null,
-									"__tile": null,
-									"defUid": 78,
-									"realEditorValues": []
-								}
-							]
-						},
-						{
 							"__identifier": "Hesper",
 							"__grid": [
 								53,
@@ -48630,6 +48933,63 @@
 									"__value": null,
 									"__tile": null,
 									"defUid": 121,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "Signpost",
+							"__grid": [
+								55,
+								21
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#AB947A",
+							"__worldX": 3448,
+							"__worldY": 1744,
+							"iid": "9cfed107-e5ba-52e7-a1c2-cacb736efd5d",
+							"width": 16,
+							"height": 16,
+							"defUid": 79,
+							"px": [
+								888,
+								336
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Text",
+									"__type": "String",
+									"__value": "square_great_lamp",
+									"__tile": null,
+									"defUid": 76,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"square_great_lamp"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 77,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 78,
 									"realEditorValues": []
 								}
 							]
@@ -48687,6 +49047,55 @@
 											]
 										}
 									]
+								}
+							]
+						},
+						{
+							"__identifier": "Tinker",
+							"__grid": [
+								59,
+								21
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FBB954",
+							"__worldX": 3512,
+							"__worldY": 1744,
+							"iid": "4aba58fa-91e0-539a-8dc7-77bff72edbad",
+							"width": 16,
+							"height": 16,
+							"defUid": 30,
+							"px": [
+								952,
+								336
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": "great_lamp",
+									"__tile": null,
+									"defUid": 61,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"great_lamp"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 62,
+									"realEditorValues": []
 								}
 							]
 						}
@@ -52760,6 +53169,70 @@
 									"__tile": null,
 									"defUid": 176,
 									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "StoryBeat",
+							"__grid": [
+								30,
+								4
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#A884F3",
+							"__worldX": 3688,
+							"__worldY": 2000,
+							"iid": "1b4f5eaf-ef6f-58e2-b84c-03fca221eb63",
+							"width": 176,
+							"height": 32,
+							"defUid": 203,
+							"px": [
+								488,
+								64
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Script",
+									"__type": "String",
+									"__value": "lamprey_reveal",
+									"__tile": null,
+									"defUid": 200,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"lamprey_reveal"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 201,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": "lamprey_defeated",
+									"__tile": null,
+									"defUid": 202,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"lamprey_defeated"
+											]
+										}
+									]
 								}
 							]
 						},

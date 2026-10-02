@@ -33,3 +33,6 @@ type = "PathNode"
 [entities.E]
 type = "Echo"
 fields = { Id = "cistern", Requires = "lamprey_defeated" }
+[entities.R]
+type = "StoryBeat"
+fields = { Script = "lamprey_reveal", Unless = "lamprey_defeated" }

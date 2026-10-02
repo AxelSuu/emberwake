@@ -305,3 +305,22 @@ cistern = "It drank the oil for a hundred years. The Lantern burned on what it f
 [lore]
 echo_heard = "Echo heard"
 rescued = "Lost Light rescued"
+
+[story.intro]
+1 = "A spark in the cold. The last beacon of the Quarter still remembers fire."
+2 = "Something small and bright wakes at the bottom of the well."
+
+[story.lamprey]
+1 = "Ripples in black water. A light like a lamp drifts under the surface."
+2 = "It is not a lamp. It has been waiting for the oil to come back."
+
+[story.great_lamp]
+1 = "The Great Lamp takes the flame. Light runs down the streets, lamp by lamp."
+2 = "The Sunken Quarter remembers its colours. The road to the Brass Gardens is open."
+
+[credits]
+title = "Emberwake"
+made = "A game by Axel"
+palette = "Colours: Resurrect 64 by Kerrie Lake"
+thanks = "Thank you for playing the Sunken Quarter."
+back = "Back"

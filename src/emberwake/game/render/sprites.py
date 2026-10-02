@@ -11,6 +11,7 @@ from emberwake.game.enemies import KINDS, Brain
 from emberwake.game.interact import Switch
 from emberwake.game.lamps import Lamp
 from emberwake.game.signals import Door
+from emberwake.game.story import GreatLamp
 
 if TYPE_CHECKING:
     from emberwake.engine.ecs import EntityId, World
@@ -39,8 +40,12 @@ def _active(world: World, eid: EntityId) -> bool:
     crumble = world.find(eid, Crumble)
     if crumble is not None and crumble.state == "gone":
         return True
-    beacon = world.find(eid, Beacon)
-    if beacon is not None:
-        return beacon.lit
-    lamp = world.find(eid, Lamp)
-    return lamp is not None and lamp.lit
+    return _lit(world, eid)
+
+
+def _lit(world: World, eid: EntityId) -> bool:
+    """Beacons, lamps and the Great Lamp show active while lit."""
+    for kind in (Beacon, GreatLamp, Lamp):
+        if (thing := world.find(eid, kind)) is not None:
+            return thing.lit
+    return False

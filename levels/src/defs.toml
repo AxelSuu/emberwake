@@ -263,3 +263,16 @@ doc = "Where an enemy of its Kind appears in its Wave of an Encounter"
 fields.Encounter = { type = "EntityRef", doc = "The Encounter in this room" }
 fields.Wave = { type = "Int", default = 1, doc = "From 1, without gaps" }
 fields.Kind = { type = "String", default = "clockrat", doc = "An enemy prefab: clockrat, gearbug, clockrat_king..." }
+
+[entities.StoryBeat]
+color = "#a884f3"
+size = [16, 16]
+resizable = true
+doc = "Invisible zone: entering it plays a story script once per save"
+fields.Script = { type = "String", default = "", doc = "A script of game/story.py: lamprey_reveal, ..." }
+
+[entities.GreatLamp]
+color = "#fbb954"
+size = [32, 48]
+pivot = [0.5, 1.0]
+doc = "The Great Lamp: kindled after the Lamprey, it lights the area (story beat great_lamp)"
