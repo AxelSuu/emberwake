@@ -5,11 +5,13 @@ from emberwake.engine.core.events import EventBus
 from emberwake.engine.ecs import EntityId, World
 from emberwake.engine.physics import Body, Tile, TileGrid
 from emberwake.engine.world.rooms import WorldGrid
+from emberwake.engine.world.spawning import Identity
 from emberwake.game.combat import Blocked, Guard, Health, Hitbox, Hurtbox, Team, combat_system
 from emberwake.game.flares import Flare
 from emberwake.game.lamprey import (
     MODES,
     Bitten,
+    Breached,
     Ctx,
     Lamprey,
     LampreyTuning,
@@ -18,7 +20,7 @@ from emberwake.game.lamprey import (
     phase_for,
 )
 from emberwake.game.lamprey_system import lamprey_system
-from emberwake.game.lamps import Lamp
+from emberwake.game.lamps import Lamp, LampSnuffed
 from emberwake.game.light import LightSource, LightTuning
 from emberwake.game.player.controller import Motor
 
@@ -46,8 +48,12 @@ class Arena:
         self.bus = EventBus()
         self.phases: list[PhaseChanged] = []
         self.bus.subscribe(PhaseChanged, self.phases.append)
+        self.breached: list[Breached] = []
+        self.bus.subscribe(Breached, self.breached.append)
         self.bitten: list[Bitten] = []
         self.bus.subscribe(Bitten, self.bitten.append)
+        self.snuffed: list[LampSnuffed] = []
+        self.bus.subscribe(LampSnuffed, self.snuffed.append)
         self.blocked: list[Blocked] = []
         self.bus.subscribe(Blocked, self.blocked.append)
         for resource in (tuning, LightTuning(), self.bus):
@@ -113,8 +119,12 @@ class Arena:
         self.world.despawn(attacker)
         self.world.flush()
 
-    def lamp(self, x: float, *, lit: bool = True) -> EntityId:
-        eid = self.world.spawn(Body(x - 8, WATER - 80, 16, 32), Lamp(lit=lit))
+    def lamp(self, x: float, *, lit: bool = True, protected: bool = False) -> EntityId:
+        eid = self.world.spawn(
+            Body(x - 8, WATER - 80, 16, 32),
+            Lamp(lit=lit, protected=protected),
+            Identity(f"lamp-{x}", "Arena", "lamp"),
+        )
         self.world.flush()
         return eid
 
@@ -321,4 +331,79 @@ def test_a_phase_change_aborts_the_running_step() -> None:
     assert arena.state.phase == 2
     tree = arena.state.tree
     assert tree is not None
-    assert not tree.root.children[0].running
+    assert tree.root.children[0].running
+    assert not tree.root.children[1].running
+
+
+def second_phase(arena: Arena) -> None:
+    arena.health.current = 12
+    arena.tick()
+    assert arena.state.phase == 2
+
+
+def test_phase_two_swims_warns_leaps_and_rests() -> None:
+    arena = Arena()
+    arena.lamp(500)
+    second_phase(arena)
+    modes = arena.modes(8.0)
+    assert modes[:5] == ["swim", "warn", "swim", "breach", "swim"]
+    assert len(arena.breached) >= 2
+
+
+def test_a_breach_peaks_at_the_lamp_and_snuffs_it() -> None:
+    arena = Arena()
+    lamp = arena.lamp(500)
+    second_phase(arena)
+    head = arena.world.get(arena.boss, Body)
+    arena.run_until("breach")
+    top = (head.center_x, head.y + head.height / 2)
+    while arena.state.mode == "breach":
+        arena.tick()
+        top = min(top, (head.center_x, head.y + head.height / 2), key=lambda p: p[1])
+    assert abs(top[0] - 500) < 12
+    assert abs(top[1] - (WATER - 64)) < 4
+    assert not arena.world.get(lamp, Lamp).lit
+    assert len(arena.snuffed) == 1
+
+
+def test_a_protected_or_dark_lamp_is_left_alone_and_the_player_is_the_quarry() -> None:
+    arena = Arena()
+    held = arena.lamp(500, protected=True)
+    arena.lamp(700, lit=False)
+    player = arena.world.get(arena.player, Body)
+    player.x = 200
+    second_phase(arena)
+    arena.run_until("breach")
+    arena.tick(0.7)
+    head = arena.world.get(arena.boss, Body)
+    assert abs(head.center_x - player.center_x) < 100
+    arena.run_until("swim")
+    assert arena.world.get(held, Lamp).lit
+    assert not arena.snuffed
+
+
+def test_the_breaches_alternate_sides() -> None:
+    arena = Arena()
+    lamp = arena.lamp(500)
+    second_phase(arena)
+    starts = []
+    for _ in range(2):
+        arena.run_until("warn")
+        starts.append(arena.world.get(arena.boss, Body).center_x)
+        arena.run_until("breach")
+        arena.run_until("swim")
+        arena.world.get(lamp, Lamp).lit = True
+    assert starts[0] != starts[1]
+    assert starts[0] + starts[1] == 1000
+
+
+def test_a_breaching_back_is_open_from_above_only() -> None:
+    arena = Arena()
+    arena.lamp(500)
+    second_phase(arena)
+    arena.run_until("breach")
+    arena.strike()
+    assert arena.health.current == 12
+    assert arena.blocked
+    arena.strike(above=True)
+    assert arena.health.current == 11

@@ -23,15 +23,20 @@ from emberwake.engine.core.bt import (
     Tree,
 )
 from emberwake.engine.core.events import EventBus
-from emberwake.engine.physics import move
+from emberwake.engine.physics import Body, move
 from emberwake.game.lamprey import (
     Bitten,
+    Breached,
     Ctx,
+    Lamprey,
     brightest,
+    inside,
+    place,
     set_mode,
     steer,
     swim_to,
 )
+from emberwake.game.lamps import Lamp, nearest_prey, snuff
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -50,7 +55,13 @@ type Leaf = Node[Ctx]
 
 def build_tree() -> Tree[Ctx]:
     """A tree for one Lamprey: nodes keep run state, so every Lamprey needs its own."""
-    return Tree(Selector(Sequence(Condition(in_phase(1)), lure_cycle()), Action(circle)))
+    return Tree(
+        Selector(
+            Sequence(Condition(in_phase(2)), breach_cycle()),
+            Sequence(Condition(in_phase(1)), lure_cycle()),
+            Action(circle),
+        )
+    )
 
 
 def in_phase(phase: int) -> Callable[[Ctx], bool]:
@@ -76,12 +87,41 @@ def lure_cycle(*, armored: bool = False) -> Leaf:
     )
 
 
+def breach_cycle() -> Leaf:
+    """Phase 2: swim to one side of a lit lamp (else the player), warn, leap over it, rest."""
+    return Sequence(
+        Condition(has_quarry),
+        Action(approach),
+        Action(warn),
+        Action(breach),
+        Action(rest),
+    )
+
+
 # Conditions
 
 
 def has_bait(c: Ctx) -> bool:
     """Aim at the brightest light, if there is one."""
     c.bb.target = brightest(c)
+    return c.bb.target is not None
+
+
+def has_quarry(c: Ctx) -> bool:
+    """Aim at the nearest lit lamp it can snuff, else at the player."""
+    x, y = c.centre
+    lamps = [
+        (math.hypot(body.center_x - x, body.y + body.height / 2 - y), eid, body)
+        for eid, body, lamp in c.world.query(Body, Lamp)
+        if lamp.lit and not lamp.protected and inside(c.bb.arena, body.center_x, body.y)
+    ]
+    if lamps:
+        _, _, body = min(lamps, key=lambda lamp: lamp[:2])
+        c.bb.target = (body.center_x, body.y + body.height / 2)
+    elif c.player is not None:
+        c.bb.target = (c.player.center_x, c.player.y + c.player.height / 2)
+    else:
+        c.bb.target = None
     return c.bb.target is not None
 
 
@@ -130,6 +170,53 @@ def stalk(c: Ctx, dt: float, t: float) -> Status:
         bb.target = target
         swim_to(c, (column(c, target[0]), bb.home[1]), c.tuning.swim_speed * 0.5, dt)
     return SUCCESS if t >= c.tuning.stalk_time else RUNNING
+
+
+def approach(c: Ctx, dt: float, t: float) -> Status:
+    """Swim under the point a breach starts from, to one side of the quarry."""
+    bb, tuning = c.bb, c.tuning
+    if bb.target is None:
+        return FAILURE
+    set_mode(bb, "swim")
+    goal = (column(c, bb.target[0] - bb.side * tuning.breach_span), c.deep)
+    return SUCCESS if swim_to(c, goal, tuning.swim_speed, dt) <= 0 else RUNNING
+
+
+def warn(c: Ctx, dt: float, t: float) -> Status:
+    """Ripples and a bobbing lure under the water."""
+    set_mode(c.bb, "warn")
+    return SUCCESS if t >= c.tuning.warn_time else RUNNING
+
+
+def breach(c: Ctx, dt: float, t: float) -> Status:
+    """Leap in an arc whose top is at the quarry, snuffing the lamps it passes."""
+    bb, tuning = c.bb, c.tuning
+    if bb.target is None:
+        return FAILURE
+    x0, tx, ty = bb.start[0] if t else c.centre[0], *bb.target
+    if t == 0.0:
+        bb.start = c.centre
+    top = max(min(ty, bb.home[1] - tuning.depth), _ceiling(bb))
+    s = min((t + dt) / tuning.breach_time, 1.0)
+    x1 = x0 + 2 * (tx - x0)
+    lift = c.deep - top
+    place(c.body, x0 + (x1 - x0) * s, c.deep - lift * 4 * s * (1 - s))
+    steer(bb, x1 - x0, -lift * 4 * (1 - 2 * s))
+    out = c.centre[1] < bb.home[1]
+    bus = c.world.resource(EventBus)
+    if out != (bb.mode == "breach"):
+        bus.publish(Breached(*c.centre))
+    set_mode(bb, "breach" if out else "swim")
+    if out and (prey := nearest_prey(c.world, *c.centre, tuning.snuff_reach)) is not None:
+        snuff(c.world, prey)
+    if s < 1.0:
+        return RUNNING
+    bb.side = -bb.side
+    return SUCCESS
+
+
+def _ceiling(bb: Lamprey) -> float:
+    return bb.arena[1] + MARGIN if bb.arena is not None else -math.inf
 
 
 def lunge(c: Ctx, dt: float, t: float) -> Status:
