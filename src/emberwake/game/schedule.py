@@ -18,6 +18,7 @@ from emberwake.game.player.system import player_system
 from emberwake.game.render.sprites import sprite_system
 from emberwake.game.rooms import room_system
 from emberwake.game.signals import door_system, signal_system
+from emberwake.game.switches import bell_system, brazier_system, photocell_system
 from emberwake.game.trials import goal_system
 
 PHASES = ("input", "logic", "physics", "post", "camera", "render_prep")
@@ -34,11 +35,14 @@ POST = (
     flare_system,
     lightform_system,
     ember_system,
+    brazier_system,
+    bell_system,
+    photocell_system,
     signal_system,
     door_system,
 )
-"""In order: rooms may spawn or despawn, then contacts, combat and what the swing struck,
-signals, what signals drive."""
+"""In order: rooms may spawn or despawn, then contacts, combat and what the swing struck, the
+switches light and bells drive, signals, what signals drive."""
 
 
 def gameplay_schedule() -> Schedule:

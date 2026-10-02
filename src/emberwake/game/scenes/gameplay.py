@@ -72,6 +72,7 @@ from emberwake.game.scenes.results import ResultsScene, RunFinished
 from emberwake.game.schedule import gameplay_schedule
 from emberwake.game.shop import EMBER_PER_UPGRADE, HP_PER_UPGRADE, SPENT, wallet
 from emberwake.game.signals import Receiver, Wiring
+from emberwake.game.switches import BellRung, BrazierLit
 from emberwake.game.trials import (
     Ghost,
     GoalReached,
@@ -242,7 +243,7 @@ class GameplayScene(Scene):
         self.camera.bounds = self.rooms.graph.rects[start]
         resources = (self.actions, self.ctx.bus, self.grid, self.wiring, self.rooms, self.spawner)
         feel = self.feel
-        tunings = (feel.player, feel.rooms, feel.light, feel.enemies, feel.swing)
+        tunings = (feel.player, feel.rooms, feel.light, feel.enemies, feel.swing, feel.switches)
         for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
@@ -299,6 +300,8 @@ class GameplayScene(Scene):
             bus.subscribe(Granted, self._on_granted),
             bus.subscribe(FlareThrown, self._on_flare),
             bus.subscribe(FlareFizzled, self._on_fizzle),
+            bus.subscribe(BrazierLit, self._on_brazier_lit),
+            bus.subscribe(BellRung, self._on_bell),
             *self.progress.subscribe(bus),
         ]
 
@@ -559,6 +562,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.light)
             self.world.insert_resource(feel.enemies)
             self.world.insert_resource(feel.swing)
+            self.world.insert_resource(feel.switches)
             self.camera.retune(feel.camera)
         prefabs = self._read_prefabs()
         if prefabs is not None:
@@ -934,6 +938,15 @@ class GameplayScene(Scene):
 
     def _on_fizzle(self, _: FlareFizzled) -> None:
         self.ctx.audio.sfx("player/fizzle")
+
+    def _on_brazier_lit(self, event: BrazierLit) -> None:
+        self.ctx.audio.sfx("world/ignite")
+        if (burst := self.emitters.get("beacon_burst")) is not None:
+            self.particles.burst(burst, event.x, event.y - 6)
+
+    def _on_bell(self, _: BellRung) -> None:
+        self.ctx.audio.sfx("world/bell")
+        self.camera.shake.add(self.feel.switches.bell_trauma)
 
     def _on_rested(self, _: Rested) -> None:
         self.world.resource(FlareKit).fill()

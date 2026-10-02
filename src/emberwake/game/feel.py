@@ -13,6 +13,7 @@ from emberwake.game.light import LightTuning
 from emberwake.game.player.swing import SwingTuning
 from emberwake.game.player.tuning import PlayerTuning
 from emberwake.game.rooms import RoomTuning
+from emberwake.game.switches import SwitchTuning
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -46,6 +47,7 @@ class Feel:
     light: LightTuning = field(default_factory=LightTuning)
     enemies: EnemyTuning = field(default_factory=EnemyTuning)
     swing: SwingTuning = field(default_factory=SwingTuning)
+    switches: SwitchTuning = field(default_factory=SwitchTuning)
 
 
 def load_feel(path: Path) -> Feel:
