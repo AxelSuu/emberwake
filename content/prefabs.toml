@@ -73,6 +73,16 @@ Brain = { kind = "gloomcrawler" }
 Sprite = { image = "wisp_eater" }
 Brain = { kind = "wisp_eater" }
 
+[drip_lurker]
+[drip_lurker.components]
+Sprite = { image = "drip_lurker", active_image = "drip_lurker_hidden" }
+Brain = { kind = "drip_lurker" }
+
+[gearbug]
+[gearbug.components]
+Sprite = { image = "gearbug", active_image = "gearbug_open" }
+Brain = { kind = "gearbug" }
+
 [tinker]
 [tinker.components]
 Sprite = { image = "tinker" }

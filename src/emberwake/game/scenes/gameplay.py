@@ -46,7 +46,7 @@ from emberwake.game.cosmetics import Cosmetics, load_cosmetics
 from emberwake.game.data.records import RunResult, format_time, load_records
 from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
-from emberwake.game.enemies import Brain
+from emberwake.game.enemies import KINDS, Brain, Vented
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
@@ -114,6 +114,8 @@ BRIGHTNESS_LIFT = 0.6
 """How far the brightness setting at full lifts the darkness toward full light."""
 WALKING = frozenset({"patrol", "charge", "creep", "flee"})
 """Brain states in which a placeholder enemy bobs as it walks."""
+TREMBLING = frozenset({"warn", "hiss"})
+"""Brain states in which a placeholder enemy shakes before it acts."""
 LANDING_DUST = 0.35
 """Share of the fall speed above which a landing kicks up dust."""
 HIT_FLASH = 0.12
@@ -287,6 +289,7 @@ class GameplayScene(Scene):
             bus.subscribe(RunFinished, self._on_run_finished),
             bus.subscribe(Collected, self._on_collected),
             bus.subscribe(Damaged, self._on_damaged),
+            bus.subscribe(Vented, self._on_vented),
             bus.subscribe(Talk, self._on_talk),
             bus.subscribe(GoalReached, self._on_goal),
             *self._track_achievements(bus),
@@ -919,6 +922,10 @@ class GameplayScene(Scene):
         color = pygame.Color(palette.EMBER_COOL if hurt_player else palette.MIST)
         self.texts.spawn(f"-{event.amount}", event.x, event.y - 8, (color.r, color.g, color.b))
 
+    def _on_vented(self, event: Vented) -> None:
+        if (puff := self.emitters.get("steam")) is not None:
+            self.particles.burst(puff, event.x, event.y - 6)
+
     def _on_killed(self, event: Killed) -> None:
         if event.target == self.player and not self.motor.dead:
             self.motor.dead = True
@@ -1020,6 +1027,7 @@ class GameplayScene(Scene):
             image = self._finished(sprite)
             lift = 0 if image is not None else self._bob(eid)
             image = image or self.art.image(sprite.current, size)
+            image = self._facing(eid, image)
             _, x, y = self._at(image, (body.center_x - ox, body.bottom - oy - lift))
             if eid in self.flashes:
                 frame.sprite(flashed(image, self.flashes[eid] / HIT_FLASH), x, y)
@@ -1038,6 +1046,13 @@ class GameplayScene(Scene):
                 return clip
         return self.bank.image(sprite.current, self.clock)
 
+    def _facing(self, eid: EntityId, image: pygame.Surface) -> pygame.Surface:
+        """Placeholder art faces right; mirror it for enemies facing left."""
+        brain = self.world.find(eid, Brain)
+        if brain is not None and brain.facing < 0 and KINDS[brain.kind].directional:
+            return pygame.transform.flip(image, True, False)
+        return image
+
     def _bob(self, eid: EntityId) -> int:
         """A little life for placeholder enemies: walkers bob, fliers float."""
         brain = self.world.find(eid, Brain)
@@ -1046,6 +1061,8 @@ class GameplayScene(Scene):
         phase = self.clock + eid * FLICKER_PHASE
         if brain.kind == "wisp_eater":
             return round(math.sin(phase * 3.0) * 2)
+        if brain.state in TREMBLING:
+            return round(abs(math.sin(phase * 40.0)))
         return round(abs(math.sin(phase * 14.0))) if brain.state in WALKING else 0
 
     def _queue_lit(
