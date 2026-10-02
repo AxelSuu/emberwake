@@ -36,6 +36,15 @@ Sprite = { image = "beacon", active_image = "beacon_lit" }
 Interactable = { prompt = "relight" }
 Beacon = {}
 
+[lamp]
+fields = { Beacon = "Shelter.beacon" }
+persist = ["Lamp"]
+[lamp.components]
+Sprite = { image = "lamp", active_image = "lamp_lit" }
+Strikeable = {}
+Lamp = {}
+Shelter = {}
+
 [ember]
 fields = { Value = "Pickup.value" }
 [ember.components]

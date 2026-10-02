@@ -47,6 +47,12 @@ hitstop = 2
 trauma = 0.12
 stagger = 0.25
 
+[lamps]
+# docs/specs/lamps.md
+radius = 80.0
+strength = 1.0
+color = "#fbb954"
+
 [camera]
 deadzone = [24, 40]
 smoothing = 7.0

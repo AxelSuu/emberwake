@@ -254,7 +254,7 @@ class GameplayScene(Scene):
         self.camera.bounds = self.rooms.graph.rects[start]
         resources = (self.actions, self.ctx.bus, self.grid, self.wiring, self.rooms, self.spawner)
         feel = self.feel
-        tunings = (feel.player, feel.rooms, feel.light, feel.enemies, feel.swing)
+        tunings = (feel.player, feel.rooms, feel.light, feel.lamps, feel.enemies, feel.swing)
         for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
@@ -570,6 +570,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.player)
             self.world.insert_resource(feel.rooms)
             self.world.insert_resource(feel.light)
+            self.world.insert_resource(feel.lamps)
             self.world.insert_resource(feel.enemies)
             self.world.insert_resource(feel.swing)
             self.camera.retune(feel.camera)
