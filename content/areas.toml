@@ -10,6 +10,7 @@ rate = 0.5
 
 [light]
 beacon = "Beacon.lit"
+echo = "Echo.seen"
 
 [areas.quarter]
 music = "quarter"

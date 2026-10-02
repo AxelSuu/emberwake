@@ -322,6 +322,14 @@ class EntityArt:
         image.fill(PLANK_DARK, (rect.left + 3, rect.top + 4, rect.width - 6, 1))
 
     @staticmethod
+    def _echo(image: pygame.Surface, rect: pygame.Rect) -> None:
+        """A small mint flame hanging above a worn stone."""
+        w, h = rect.size
+        image.fill(ROCK_EDGE, (w // 2 - 4, h - 3, 8, 3))
+        pygame.draw.circle(image, EYES, (w // 2, h - 8), 4)
+        pygame.draw.circle(image, palette.MIST, (w // 2, h - 8), 2)
+
+    @staticmethod
     def _goal(image: pygame.Surface, rect: pygame.Rect) -> None:
         for y in range(rect.top, rect.bottom, 8):
             image.fill(palette.EMBER_CORE, (rect.left + 2, y, 3, 4))

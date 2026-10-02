@@ -13,6 +13,7 @@ from emberwake.game.flares import flare_system
 from emberwake.game.grants import grant_system
 from emberwake.game.interact import interact_system, pickup_system, plate_system, trigger_system
 from emberwake.game.light import ember_system, lightform_system
+from emberwake.game.lore import echo_system
 from emberwake.game.player.kindle import kindle_system
 from emberwake.game.player.swing import strike_system, swing_system
 from emberwake.game.player.system import player_system
@@ -52,6 +53,7 @@ def gameplay_schedule() -> Schedule:
     schedule.add("logic", beacon_system)
     schedule.add("logic", enemy_system)
     schedule.add("logic", npc_system)
+    schedule.add("logic", echo_system)
     schedule.add("physics", player_system)
     for system in POST:
         schedule.add("post", system)

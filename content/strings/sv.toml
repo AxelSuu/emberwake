@@ -226,3 +226,9 @@ name = "Blosspung"
 
 [sign]
 lore_move = "Spring med {left} och {right}.\nHoppa med {jump}."
+
+[echo]
+lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."
+
+[lore]
+echo_heard = "Eko hört"

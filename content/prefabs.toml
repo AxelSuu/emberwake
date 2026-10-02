@@ -100,3 +100,13 @@ fields = { Text = "Sign.text" }
 [signpost.components]
 Sprite = { image = "signpost" }
 Sign = {}
+
+[echo]
+fields = { Id = "Recording.id" }
+persist = ["Echo"]
+[echo.components]
+Sprite = { image = "echo" }
+Interactable = { prompt = "listen" }
+LightSource = { radius = 36.0, strength = 0.6, color = "#8ff8e2" }
+Echo = {}
+Recording = {}

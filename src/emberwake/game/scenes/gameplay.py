@@ -53,7 +53,7 @@ from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
 from emberwake.game.interact import Collected, Interactable, Switch
 from emberwake.game.light import Ember, LightSource
-from emberwake.game.lore import speeches
+from emberwake.game.lore import EchoHeard, EchoPlay, speeches
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.kindle import Kindle, Kindled
 from emberwake.game.player.swing import Swing, SwingHit, SwingStarted
@@ -303,6 +303,7 @@ class GameplayScene(Scene):
             bus.subscribe(Kindled, self._on_kindled),
             bus.subscribe(CinderRecovered, self._on_cinder),
             bus.subscribe(Give, self._on_give),
+            bus.subscribe(EchoHeard, self._on_echo),
             bus.subscribe(Granted, self._on_granted),
             bus.subscribe(FlareThrown, self._on_flare),
             bus.subscribe(FlareFizzled, self._on_fizzle),
@@ -852,6 +853,13 @@ class GameplayScene(Scene):
         self._dust("kindle", body.center_x, body.y)
         self.progress.save(self.spawner)
 
+    def _on_echo(self, event: EchoHeard) -> None:
+        if not event.first:
+            return
+        self.toasts.push(self.ctx.t("lore.echo_heard"))
+        self.ctx.audio.sfx("player/kindle")
+        self.progress.save(self.spawner)
+
     def _on_cinder(self, event: CinderRecovered) -> None:
         self.progress.data.cinder = None
         self.cinder = None
@@ -1023,6 +1031,9 @@ class GameplayScene(Scene):
             if self.world.has(eid, Flare):
                 image = self.art.image("flare", (round(body.width), round(body.height)))
                 self._queue_lit(image, round(body.x) - ox, round(body.y) - oy)
+        for _, play in self.world.query(EchoPlay):
+            if play.ghost is not None and play.running:
+                self._queue_ghost(play.ghost, ox, oy)
         for eid, body, sprite in self.world.query(Body, Sprite):
             size = (round(body.width), round(body.height))
             image = self._finished(sprite)
@@ -1146,7 +1157,8 @@ class GameplayScene(Scene):
             alpha=alpha,
             light=lantern,
         )
-        self._queue_ghost(ox, oy)
+        if self.ghost is not None and not self.ghost.finished:
+            self._queue_ghost(self.ghost, ox, oy)
 
     def _lantern_radius(self) -> int:
         """The lantern's glow: shrunk while guttering, swelling while kindling."""
@@ -1158,10 +1170,7 @@ class GameplayScene(Scene):
             radius *= 1.0 + 0.4 * kindle.progress(self.feel.light)
         return round(radius)
 
-    def _queue_ghost(self, ox: int, oy: int) -> None:
-        ghost = self.ghost
-        if ghost is None or ghost.finished:
-            return
+    def _queue_ghost(self, ghost: Ghost, ox: int, oy: int) -> None:
         body, motor = ghost.body, ghost.motor
         image = self.sprite.image(motor.facing, 1.0, 1.0).copy()
         image.set_alpha(110)
