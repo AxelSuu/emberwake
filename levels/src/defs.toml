@@ -131,3 +131,24 @@ doc = "Sets a flag when the player enters"
 [entity_fields]
 Requires = { type = "String", doc = "Condition for the entity to be in the world" }
 Unless = { type = "String", doc = "Condition that takes the entity out of the world" }
+
+[entities.CrackedWall]
+color = "#966c6c"
+resizable = true
+doc = "Solid until struck by the lantern"
+
+[entities.Crate]
+color = "#cd683d"
+doc = "Solid breakable; drops embers"
+fields.Embers = { type = "Int", default = 2 }
+
+[entities.Pot]
+color = "#e6904e"
+doc = "Breakable; drops embers"
+fields.Embers = { type = "Int", default = 1 }
+
+[entities.CrumblingPlatform]
+color = "#b33831"
+size = [32, 8]
+resizable = true
+doc = "One-way platform that crumbles under the player"

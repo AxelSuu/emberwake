@@ -49,6 +49,7 @@ from emberwake.game.areas import (
     music_of,
 )
 from emberwake.game.beacons import Beacon, BeaconLit, Rested
+from emberwake.game.breakables import Broken, Crumble, Crumbled
 from emberwake.game.cinder import CinderRecovered, cinder_parts
 from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
@@ -130,6 +131,8 @@ WALKING = frozenset({"patrol", "charge", "creep", "flee"})
 """Brain states in which a placeholder enemy bobs as it walks."""
 LANDING_DUST = 0.35
 """Share of the fall speed above which a landing kicks up dust."""
+TREMBLE_RATE = 30.0
+"""Sideways flips per second of a crumbling platform about to go."""
 HIT_FLASH = 0.12
 """Seconds an enemy shows white after a hit."""
 SHAFT_ANGLES = (-22, 0, 22)
@@ -269,6 +272,7 @@ class GameplayScene(Scene):
             feel.enemies,
             feel.swing,
             feel.switches,
+            feel.breakables,
         )
         for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
@@ -308,6 +312,8 @@ class GameplayScene(Scene):
             bus.subscribe(Dashed, self._on_dashed),
             bus.subscribe(SwingStarted, self._on_swing),
             bus.subscribe(SwingHit, self._on_swing_hit),
+            bus.subscribe(Broken, self._on_broken),
+            bus.subscribe(Crumbled, self._on_crumbled),
             bus.subscribe(Died, self._on_died),
             bus.subscribe(RoomEntered, self._on_room_entered),
             bus.subscribe(RunFinished, self._on_run_finished),
@@ -510,7 +516,9 @@ class GameplayScene(Scene):
         return name
 
     def _room_loaded(self, room: Room) -> None:
-        layer = ChunkLayer(room.rect.topleft, room.rect.size, tile_painter(room.grid))
+        # Baked over later frames, by when doors, walls and platforms have changed their cells.
+        level_tiles = dataclasses.replace(room.grid, cells=bytearray(room.grid.cells))
+        layer = ChunkLayer(room.rect.topleft, room.rect.size, tile_painter(level_tiles))
         job = layer.bake()
         self.layers[room.name] = (layer, job)
         self.jobs.add(job)
@@ -591,6 +599,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.lamps)
             self.world.insert_resource(feel.enemies)
             self.world.insert_resource(feel.swing)
+            self.world.insert_resource(feel.breakables)
             self.world.insert_resource(feel.switches)
             self.camera.retune(feel.camera)
         prefabs = self._read_prefabs()
@@ -792,6 +801,17 @@ class GameplayScene(Scene):
         self.ctx.audio.sfx("player/hit" if event.enemy else "player/clang")
         if (sparks := self.emitters.get("swing_sparks")) is not None:
             self.particles.burst(sparks, event.x, event.y)
+
+    def _on_broken(self, event: Broken) -> None:
+        tuning = self.feel.breakables
+        self.hitstop = max(self.hitstop, tuning.hitstop)
+        self.camera.shake.add(tuning.trauma)
+        self.ctx.audio.sfx("world/break")
+        self._dust("debris", event.x + event.width / 2, event.y + event.height / 2)
+
+    def _on_crumbled(self, event: Crumbled) -> None:
+        self.ctx.audio.sfx("world/crumble")
+        self._dust("crumble_dust", event.x + event.width / 2, event.y + event.height / 2)
 
     def _on_died(self, event: Died) -> None:
         juice = self.feel.juice
@@ -1128,6 +1148,7 @@ class GameplayScene(Scene):
             lift = 0 if image is not None else self._bob(eid)
             image = image or self.art.image(sprite.current, size)
             _, x, y = self._at(image, (body.center_x - ox, body.bottom - oy - lift))
+            x += self._tremble(eid)
             if eid in self.flashes:
                 frame.sprite(flashed(image, self.flashes[eid] / HIT_FLASH), x, y)
             else:
@@ -1144,6 +1165,13 @@ class GameplayScene(Scene):
             if clip is not None:
                 return clip
         return self.bank.image(sprite.current, self.clock)
+
+    def _tremble(self, eid: EntityId) -> int:
+        """Sideways shake of a crumbling platform that is about to give way."""
+        crumble = self.world.find(eid, Crumble)
+        if crumble is None or crumble.state != "shaking":
+            return 0
+        return 1 if int(self.clock * TREMBLE_RATE) % 2 else -1
 
     def _bob(self, eid: EntityId) -> int:
         """A little life for placeholder enemies: walkers bob, fliers float."""

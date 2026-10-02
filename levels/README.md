@@ -69,6 +69,10 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | Bell | A swing rings it: stuns enemies nearby and pulses its `Targets` for a moment |
 | Lamp | Dead lamp post: a swing lights it, a Wisp-eater snuffs it. `Beacon` (a ref) is the beacon that makes it permanent once both are lit ([spec](../docs/specs/lamps.md)) |
 | Ember | Collectible |
+| CrackedWall | Solid until the lantern strikes it, then gone for good ([spec](../docs/specs/breakables.md)) |
+| Crate | Solid; breaks for good when struck and flings `Embers` loose embers |
+| Pot | Not solid; breaks like a crate |
+| CrumblingPlatform | One-way; clears 0.5 s after the player lands on it and returns 2 s later |
 | Grant | Touch to receive an ability or item (`Thing`, a key of `content/grants.toml`, and `Count`) |
 | FlagSwitch | Not drawn: powers its `Targets` while its `Condition` holds, also while its room is unloaded |
 | SetFlag | Invisible zone: stepping in sets `Flag` to `Value`, or adds it with `Mode = "add"` |

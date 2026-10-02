@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from emberwake.engine.ecs import Schedule
 from emberwake.game.beacons import beacon_system
+from emberwake.game.breakables import breakable_system, crumble_system, loose_ember_system
 from emberwake.game.cinder import cinder_system
 from emberwake.game.combat import combat_system
 from emberwake.game.dialogue import npc_system
@@ -34,6 +35,9 @@ POST = (
     grant_system,
     combat_system,
     strike_system,
+    breakable_system,
+    crumble_system,
+    loose_ember_system,
     lamp_system,
     goal_system,
     flare_system,
