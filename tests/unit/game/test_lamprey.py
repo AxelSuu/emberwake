@@ -5,12 +5,13 @@ from emberwake.engine.core.events import EventBus
 from emberwake.engine.ecs import EntityId, World
 from emberwake.engine.physics import Body, Tile, TileGrid
 from emberwake.engine.world.rooms import WorldGrid
-from emberwake.engine.world.spawning import Identity
+from emberwake.engine.world.spawning import Identity, Spawner, WorldState
 from emberwake.game.combat import Blocked, Guard, Health, Hitbox, Hurtbox, Team, combat_system
 from emberwake.game.flags import Facts
 from emberwake.game.flares import Flare
 from emberwake.game.interact import Switch
 from emberwake.game.lamprey import (
+    DEFEATED,
     DRAINED,
     MODES,
     Bitten,
@@ -19,6 +20,7 @@ from emberwake.game.lamprey import (
     Ctx,
     Drained,
     Lamprey,
+    LampreyDefeated,
     LampreyTuning,
     PhaseChanged,
     brightest,
@@ -555,3 +557,61 @@ def test_a_stale_drained_flag_is_cleared_when_it_spawns() -> None:
     world.flush()
     lamprey_system(world, STEP)
     assert DRAINED not in facts.flags
+
+
+def test_killing_it_retires_it_by_iid_and_sets_the_flags() -> None:
+    arena = Arena()
+    state = WorldState()
+    arena.world.insert_resource(Spawner(arena.world, {}, state))
+    arena.world.add(arena.boss, Identity("the-lamprey", "Arena", "lamprey"))
+    arena.world.flush()
+    defeated: list[LampreyDefeated] = []
+    arena.bus.subscribe(LampreyDefeated, defeated.append)
+    arena.health.current, arena.health.dead = 0, True
+    arena.tick()
+    assert state.removed == ["the-lamprey"]
+    assert arena.boss not in arena.world
+    assert (arena.facts.flags[DEFEATED], arena.facts.flags[DRAINED]) == (1, 1)
+    assert len(defeated) == 1
+
+
+def test_a_dead_player_starts_the_fight_over() -> None:
+    arena, cells = drained_arena()
+    arena.world.get(arena.boss, Lamprey).side = -1
+    for cell in cells:
+        arena.world.get(cell, Photocell).sealed = False
+    arena.state.broken.extend(cells)
+    arena.tick(0.1)
+    assert arena.state.drained
+    arena.health.current = 2
+    arena.world.get(arena.player, Health).dead = True
+    arena.tick()
+    state = arena.state
+    assert (arena.health.current, state.phase, state.drained) == (TUNING.hp, 1, False)
+    assert all(arena.world.get(cell, Photocell).sealed for cell in cells)
+    assert not state.broken
+    assert DRAINED not in arena.facts.flags
+    assert state.mode == "swim"
+    head = arena.world.get(arena.boss, Body)
+    assert head.y + head.height / 2 == state.home[1] + TUNING.depth
+
+
+def test_a_hazard_that_only_cost_a_pip_does_not_reset_it() -> None:
+    arena = Arena()
+    arena.health.current = 10
+    arena.world.get(arena.player, Motor).dead = True
+    arena.tick()
+    assert arena.health.current == 10
+
+
+def test_after_a_reset_the_phases_are_walked_again() -> None:
+    arena = Arena()
+    arena.health.current = 5
+    arena.tick()
+    arena.world.get(arena.player, Health).dead = True
+    arena.tick()
+    arena.world.get(arena.player, Health).dead = False
+    arena.health.current = 12
+    arena.tick()
+    assert arena.state.phase == 2
+    assert [event.phase for event in arena.phases] == [3, 2]

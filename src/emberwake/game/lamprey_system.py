@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from emberwake.engine.core.events import EventBus
 from emberwake.engine.physics import Body
 from emberwake.engine.world.rooms import RoomStreamer, WorldGrid
-from emberwake.engine.world.spawning import Identity
+from emberwake.engine.world.spawning import Identity, Spawner
 from emberwake.game.combat import Guard, Health, Hitbox, Hurtbox, Knockback, Team
 from emberwake.game.flags import Facts
 from emberwake.game.interact import Switch, overlap, player_body
@@ -22,6 +22,7 @@ from emberwake.game.lamprey import (
     Ctx,
     Drained,
     Lamprey,
+    LampreyDefeated,
     LampreyTuning,
     PhaseChanged,
     inside,
@@ -31,6 +32,7 @@ from emberwake.game.lamprey import (
 )
 from emberwake.game.lamprey_tree import build_tree
 from emberwake.game.light import LightSource
+from emberwake.game.player.controller import Motor
 from emberwake.game.switches import Photocell
 
 if TYPE_CHECKING:
@@ -52,6 +54,12 @@ def lamprey_system(world: World, dt: float) -> None:
             continue
         health = world.get(eid, Health)
         ctx = Ctx(world, eid, body, lamprey, tuning, grid, player)
+        if health.dead:
+            _defeat(ctx, bus)
+            continue
+        if _player_died(world):
+            _reset(ctx, health)
+            continue
         lamprey.awake = player is not None and inside(lamprey.arena, *_centre(player))
         if lamprey.awake:
             _advance(ctx, health, bus)
@@ -114,6 +122,39 @@ def _advance(ctx: Ctx, health: Health, bus: EventBus) -> None:
     if bb.tree is not None:
         bb.tree.reset(ctx)
     bus.publish(PhaseChanged(phase))
+
+
+def _player_died(world: World) -> bool:
+    """The player has no health left (a death, not a hazard that cost one pip)."""
+    return any(health.dead for _, _motor, health in world.query(Motor, Health))
+
+
+def _reset(ctx: Ctx, health: Health) -> None:
+    """Start the fight over: full health, phase 1, casings sealed, the water back."""
+    bb, world = ctx.bb, ctx.world
+    health.current, health.invulnerable = health.max, 0.0
+    bb.phase, bb.drained, bb.bit, bb.side, bb.casings = 1, False, False, 1, []
+    for cid in bb.broken:
+        if world.reserved(cid):
+            world.get(cid, Photocell).sealed = True
+    bb.broken.clear()
+    world.resource(Facts).flags.pop(DRAINED, None)
+    if bb.tree is not None:
+        bb.tree.reset(ctx)
+    place(ctx.body, bb.home[0], ctx.deep)
+    set_mode(bb, "swim")
+
+
+def _defeat(ctx: Ctx, bus: EventBus) -> None:
+    """It is dead for good: retired by iid, the flags set and the arena left drained."""
+    world = ctx.world
+    flags = world.resource(Facts).flags
+    flags[DEFEATED] = flags[DRAINED] = 1
+    bus.publish(LampreyDefeated(*ctx.centre))
+    if world.has_resource(Spawner) and world.has(ctx.eid, Identity):
+        world.resource(Spawner).retire(ctx.eid)
+    else:
+        world.despawn(ctx.eid)
 
 
 def _drain(ctx: Ctx, bus: EventBus) -> None:

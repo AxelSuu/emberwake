@@ -16,6 +16,7 @@ from emberwake.engine.physics import Tile
 from emberwake.engine.world.ldtk import EntityInstance, Level, Project
 from emberwake.engine.world.spawning import prefab_name
 from emberwake.game.grants import START, GrantSpec, load_grants
+from emberwake.game.lamprey import FLAGS as LAMPREY_FLAGS
 from emberwake.game.scenes.gameplay import COLLISIONS, DEFAULT_ROOM
 from emberwake.game.shop import load_shops
 from emberwake.game.signals import TARGETS
@@ -41,6 +42,8 @@ class Rules:
     grants: Mapping[str, GrantSpec] = field(default_factory=dict)
     dialogues: Mapping[str, Graph] = field(default_factory=dict)
     shop_flags: Collection[str] = ()
+    code_flags: Collection[str] = ()
+    """Flags the game itself sets, such as a boss's defeat."""
     shop_grants: Collection[str] = ()
     trials: Collection[str] = ()
     """Rooms entered from the menu, outside the world."""
@@ -55,6 +58,7 @@ def load_rules(content: Path) -> Rules:
         grants=load_grants(content / "grants.toml"),
         dialogues=load_dialogues(content / "dialogue.toml"),
         shop_flags={item.flag for item in items if item.flag},
+        code_flags=LAMPREY_FLAGS,
         shop_grants={item.grant for item in items if item.grant},
         trials={trial.room for trial in load_trials(content / "trials.toml").values()},
     )

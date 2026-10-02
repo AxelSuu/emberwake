@@ -138,6 +138,13 @@ fields = { Unless = "up_hp>=2" }
         found = problems(pair(left, a="zefg"), dialogues=talk, shop_flags={"up_hp"})
         assert [line for line in found if "Ember" in line] == []
 
+    def test_a_flag_the_game_sets_itself_is_known(self):
+        found = problems(
+            pair('[entities.e]\ntype = "Ember"\nfields = { Requires = "boss_dead" }', a="e"),
+            code_flags={"boss_dead"},
+        )
+        assert found == []
+
     def test_a_condition_on_a_flag_switch(self):
         left = '[entities.s]\ntype = "FlagSwitch"\nfields = { Condition = "!lit" }'
         found = problems(pair(left, a="s"))

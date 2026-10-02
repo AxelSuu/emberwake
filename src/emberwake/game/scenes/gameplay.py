@@ -63,7 +63,15 @@ from emberwake.game.flags import Facts, admits, flags_in
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
 from emberwake.game.interact import Collected, Interactable, Switch
-from emberwake.game.lamprey import Lamprey
+from emberwake.game.lamprey import (
+    Bitten,
+    Breached,
+    CasingBroken,
+    Drained,
+    Lamprey,
+    LampreyDefeated,
+    PhaseChanged,
+)
 from emberwake.game.lamps import LampLit, LampSnuffed
 from emberwake.game.light import Ember, LightSource
 from emberwake.game.lore import EchoHeard, EchoPlay, speeches
@@ -333,6 +341,7 @@ class GameplayScene(Scene):
             bus.subscribe(Vented, self._on_vented),
             bus.subscribe(Summoned, self._on_summoned),
             bus.subscribe(Toppled, self._on_toppled),
+            *self._subscribe_lamprey(bus),
             bus.subscribe(Talk, self._on_talk),
             bus.subscribe(GoalReached, self._on_goal),
             bus.subscribe(TrialDoorUsed, self._on_trial_door),
@@ -1086,6 +1095,33 @@ class GameplayScene(Scene):
         self.camera.shake.add(self.feel.juice.dash_trauma)
         if (puff := self.emitters.get("land_dust")) is not None:
             self.particles.burst(puff, event.x, event.y + 12)
+
+    def _subscribe_lamprey(self, bus: EventBus) -> list[Callable[[], None]]:
+        def shake(event: object) -> None:
+            self.camera.shake.add(self.feel.juice.dash_trauma)
+
+        def burst(emitter: str) -> Callable[[Bitten | Breached | CasingBroken], None]:
+            return lambda event: self._dust(emitter, event.x, event.y)
+
+        return [
+            bus.subscribe(Bitten, shake),
+            bus.subscribe(Bitten, burst("debris")),
+            bus.subscribe(Breached, burst("land_dust")),
+            bus.subscribe(CasingBroken, burst("debris")),
+            bus.subscribe(CasingBroken, shake),
+            bus.subscribe(Drained, shake),
+            bus.subscribe(PhaseChanged, shake),
+            bus.subscribe(LampreyDefeated, self._on_lamprey_defeated),
+        ]
+
+    def _on_lamprey_defeated(self, event: LampreyDefeated) -> None:
+        juice = self.feel.juice
+        self.hitstop = max(self.hitstop, juice.death_hitstop)
+        self.camera.shake.add(juice.death_trauma)
+        self.flash.start(juice.beacon_flash)
+        self._dust("debris", event.x, event.y)
+        self.ctx.audio.sfx("world/break")
+        self.progress.save(self.spawner)
 
     def _on_killed(self, event: Killed) -> None:
         if event.target == self.player and not self.motor.dead:
