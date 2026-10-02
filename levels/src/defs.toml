@@ -213,6 +213,10 @@ color = "#cd683d"
 doc = "Solid breakable; drops embers"
 fields.Embers = { type = "Int", default = 2 }
 
+[entities.PushCrate]
+color = "#6e2727"
+doc = "Pushed by walking into it; falls, stacks, can be stood on and weighs plates"
+
 [entities.Pot]
 color = "#e6904e"
 doc = "Breakable; drops embers"

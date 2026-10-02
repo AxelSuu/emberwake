@@ -26,7 +26,8 @@ Part of `tools.levels validate`. Pure functions over the loaded levels and the c
     6, wall jumps refill the jump, the `dash` ability adds 2 up and 4 across. Hazards, closed doors
     and the void block; a Lightform is a one-way.
   - *Doors* open once their sources are available: a Lever or PressurePlate the search reaches, a
-    FlagSwitch whose condition holds. Mode `all` needs every source; an inverted door is open.
+    PressurePlate in a room where the search reaches a PushCrate (the crate is assumed to be
+    pushed onto it), a FlagSwitch whose condition holds. Mode `all` needs every source; an inverted door is open.
   - *Facts* grow from what the search reaches: a Grant gives its thing, a SetFlag sets or adds, an
     NPC runs its whole dialogue (flags, `give:`, the shop). An entity counts once its `Requires`
     holds; `Unless` is ignored, since it can only take things away later. A flag some SetFlag adds

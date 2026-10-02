@@ -59,5 +59,8 @@ cell = [89, 0]
 [rooms.Arena_Lab]
 cell = [70, 2]
 
+[rooms.Crate_Lab]
+cell = [73, 2]
+
 [rooms.Cistern_Lab]
 cell = [70, 4]

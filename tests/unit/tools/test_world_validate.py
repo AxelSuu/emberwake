@@ -265,6 +265,50 @@ fields = { Flag = "lit" }
         assert len(reaching(problems(rooms))) == 1
 
 
+PLATE_AND_DOOR = """
+[entities.d]
+type = "Door"
+[entities.p]
+type = "PressurePlate"
+fields = { Targets = ["d"] }
+[entities.c]
+type = "PushCrate"
+"""
+
+
+class TestCrates:
+    def test_a_plate_the_player_cannot_reach_is_pressed_by_a_crate_in_its_room(self):
+        rooms = pair()
+        rooms["A"] = ((0, 0), partition("..P.c.....d....p"), PLATE_AND_DOOR)
+        assert reaching(problems(rooms)) == []
+
+    def test_without_a_crate_the_door_stays_shut(self):
+        rooms = pair()
+        rooms["A"] = (
+            (0, 0),
+            partition("..P.c.....d....p"),
+            PLATE_AND_DOOR.replace("PushCrate", "Pot"),
+        )
+        found = reaching(problems(rooms))
+        assert len(found) == 1
+        assert found[0].startswith("B: not reachable from A, it is behind Door")
+
+    def test_a_crate_in_another_room_does_not_help(self):
+        crate = '[entities.c]\ntype = "PushCrate"'
+        rooms = pair(right=crate, b="c")
+        rooms["A"] = (
+            (0, 0),
+            partition("..P.......d....p"),
+            PLATE_AND_DOOR.split("[entities.c]", maxsplit=1)[0],
+        )
+        assert len(reaching(problems(rooms))) == 1
+
+    def test_a_crate_behind_the_door_is_out_of_reach_too(self):
+        rooms = pair()
+        rooms["A"] = ((0, 0), partition("..P.......d.c..p"), PLATE_AND_DOOR)
+        assert len(reaching(problems(rooms))) == 1
+
+
 def gapped(grant_at: str = "", grant: str = "dash") -> dict[str, Any]:
     """A hall with an 8 tile pit; `grant_at` places a Grant of dash in it."""
     floor = {9: "#" * 6 + "." * 8 + "#" * 6, 10: "#" * 6 + "." * 8 + "#" * 6}

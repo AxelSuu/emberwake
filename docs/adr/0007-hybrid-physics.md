@@ -16,3 +16,7 @@ import time by `HAS_PYMUNK`. The pymunk backend meshes solid tiles greedily into
 mirrors the player as a kinematic body; the fallback gives props gravity, bounce and friction
 through the tile mover, without prop-prop or player collision. Whether pymunk runs in the browser
 build is still open (issue #2); the fallback is what the web build uses until it is checked.
+
+**Pushable crates (#124).** Crates are not on `PropWorld`. They are axis-aligned boxes stepped by
+`kinematic.move` with `solids`, which the player's own collision also reads, so stacking, standing
+on them and replays behave the same with or without pymunk. See `docs/specs/push-crates.md`.

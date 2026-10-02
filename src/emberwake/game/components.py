@@ -34,6 +34,7 @@ from emberwake.game import (  # noqa: E402, F401
     breakables,
     cinder,
     combat,
+    crates,
     dialogue,
     encounters,
     enemies,

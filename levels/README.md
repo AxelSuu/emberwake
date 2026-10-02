@@ -70,7 +70,7 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | PlayerStart | Spawn point; after a hazard death the one nearest the room's entrance (pivot: bottom centre) |
 | Door | Solid while closed; opens while its sources are on (Mode any/all, Invert) |
 | Lever | Interact to switch its targets (Mode toggle/momentary/once) |
-| PressurePlate | On while something stands on it |
+| PressurePlate | On while the player stands on it or a PushCrate rests on it |
 | Beacon | Interact to relight: saves, refills the dash and becomes the continue point |
 | Brazier | Cold until a swing or a flare lights it (`Lit` places it lit); then a light and an on switch, saved by iid. Its `Targets` are receivers |
 | Photocell | On while the light at it reaches `Threshold` (default 0.4); `Targets` are receivers. `Sealed` keeps it dark until the Lamprey breaks its casing |
@@ -79,6 +79,7 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | Lamprey | Boss ([spec](../docs/specs/lamprey.md)): its head at the water line of its arena, which is the room. `--room Cistern_Lab` has the arena: lamps, sealed photocells and a drain door on a FlagSwitch for `lamprey_drained` |
 | Ember | Collectible |
 | CrackedWall | Solid until the lantern strikes it, then gone for good ([spec](../docs/specs/breakables.md)) |
+| PushCrate | A box the player pushes by walking into it; falls, stacks, can be stood on and weighs plates; saved by iid, home again after a beacon rest ([spec](../docs/specs/push-crates.md)) |
 | Crate | Solid; breaks for good when struck and flings `Embers` loose embers |
 | Pot | Not solid; breaks like a crate |
 | CrumblingPlatform | One-way; clears 0.5 s after the player lands on it and returns 2 s later |
