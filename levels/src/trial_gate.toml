@@ -1,0 +1,12 @@
+# Trial_Gate, cell [12, 8] 2x1. West (col 0, rows 6 to 8, floor row 9) is Market_Square's east.
+fields = { Backdrop = "ruins" }
+
+[entities.t]
+type = "TrialDoor"
+fields = { Trial = "sprint" }
+[entities.u]
+type = "TrialDoor"
+fields = { Trial = "pits" }
+[entities.s]
+type = "Signpost"
+fields = { Text = "trial_gate" }
