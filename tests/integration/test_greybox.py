@@ -36,7 +36,9 @@ class Leg:
     x: float
     jump: bool = False
     dash: bool = False
+    dash_age: int = 4
     interact: bool = False
+    swing: bool = False
     limit: int = 240
 
 
@@ -70,10 +72,12 @@ class Pilot(ReplayPlayer[Action]):
             frame.add(Action.LEFT)
         if leg.jump and self.age <= JUMP_HOLD:
             frame.add(Action.JUMP)
-        if leg.dash and 4 <= self.age < 6:
+        if leg.dash and leg.dash_age <= self.age < leg.dash_age + 2:
             frame.add(Action.DASH)
         if leg.interact and self.age == 1:
             frame.add(Action.INTERACT)
+        if leg.swing and self.age == 1:
+            frame.add(Action.SWING)
         return frozenset(frame)
 
 
