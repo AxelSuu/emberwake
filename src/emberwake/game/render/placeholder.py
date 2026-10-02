@@ -320,6 +320,17 @@ class EntityArt:
         image.fill(PLANK_LIGHT, (rect.left + 3, rect.top + 1, rect.width - 6, 1))
 
     @staticmethod
+    def _platform(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, rect)
+        image.fill(PLANK, (rect.left, rect.top, rect.width, rect.height - 3))
+        image.fill(PLANK_LIGHT, (rect.left, rect.top, rect.width, 1))
+        for x in range(rect.left + 4, rect.right - 2, 8):
+            image.fill(PLANK_DARK, (x, rect.top + 2, 1, rect.height - 6))
+        image.fill(ROCK_DARK, (rect.left, rect.bottom - 3, rect.width, 1))
+        for x in range(rect.left, rect.right, 16):
+            image.fill(LANTERN_FRAME, (x + 1, rect.bottom - 2, 2, 2))
+
+    @staticmethod
     def _pot(image: pygame.Surface, rect: pygame.Rect) -> None:
         w, h = rect.size
         pygame.draw.ellipse(image, PLANK_DARK, (1, 3, w - 2, h - 3))

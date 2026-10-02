@@ -63,6 +63,11 @@ push_speed = 60.0
 gravity = 1200.0
 max_fall = 360.0
 
+[platforms]
+# docs/specs/lifts.md
+speed = 48.0
+dwell = 0.8
+
 [encounters]
 # docs/specs/encounters.md
 wave_delay = 1.0

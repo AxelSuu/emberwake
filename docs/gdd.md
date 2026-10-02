@@ -167,7 +167,7 @@ and drains its arena, the **Hollow Lamplighter** uses your own abilities against
 | Cracked wall, crate, pot | planned | Breakable; secrets and embers; walls stay broken |
 | Crumbling platform | planned | Falls a moment after you land, comes back |
 | Pushable crate | planned | Physics prop that weighs plates down |
-| Moving platform, lift | planned | Driven by signals; carries the player |
+| Moving platform, lift | done | Driven by signals; carries the player |
 | Shortcut door | planned | Opens from one side only, stays open |
 | Flag gate | planned | An entity exists only while a flag is set (or unset): NPCs move, rooms change after events |
 | Encounter | planned | Locks its doors, spawns waves, powers its targets when cleared |

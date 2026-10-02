@@ -319,6 +319,65 @@ def gapped(grant_at: str = "", grant: str = "dash") -> dict[str, Any]:
     return rooms
 
 
+PIT = "#" * 4 + "^" * 14 + "#" * 2
+LIFT = """
+[entities.L]
+type = "Platform"
+fields = { Path = ["n"] }
+[entities.n]
+type = "PathNode"
+[entities.l]
+type = "Lever"
+fields = { Targets = ["L"] }
+"""
+
+
+def gap(floor: str, toml: str = LIFT) -> dict[str, Any]:
+    """Two halls, the first with a 14 tile pit of spikes that a platform `L` crosses to `n`."""
+    rooms = pair()
+    rooms["A"] = ((0, 0), hall({8: floor, 9: PIT}), toml)
+    return rooms
+
+
+class TestLifts:
+    def test_a_pit_too_wide_to_jump_cuts_the_world_in_two(self):
+        rooms = pair()
+        rooms["A"] = ((0, 0), hall({8: "..P", 9: PIT}), "")
+        assert len(reaching(problems(rooms))) == 1
+
+    def test_a_looping_platform_is_a_way_across(self):
+        toml = LIFT.split("[entities.l]", maxsplit=1)[0]
+        assert reaching(problems(gap("..P.LLL........n", toml))) == []
+
+    def test_a_lift_whose_lever_can_be_pulled_is_a_way_across(self):
+        assert reaching(problems(gap(".lP.LLL........n"))) == []
+
+    def test_a_lift_whose_lever_is_across_the_pit_is_not(self):
+        found = reaching(problems(gap("..P.LLL........n..l")))
+        assert len(found) == 1
+        assert "is behind Platform" in found[0]
+
+    def test_a_platform_over_the_pit_without_a_path_is_reported(self):
+        toml = '[entities.L]\ntype = "Platform"\nfields = { Path = [] }\n'
+        found = problems(gap("..P.LLL", toml))
+        assert [line.split(": ")[1] for line in found if "Platform" in line] == ["has no Path"]
+
+    def test_a_path_must_name_path_nodes_in_the_platforms_room(self):
+        rooms = gap(".lP.LLL........n")
+        rooms["B"] = ((1, 0), hall({8: "..Pn"}), '[entities.n]\ntype = "PathNode"')
+        project = world(rooms)
+        platform = project.level("A").entities("Platform")[0]
+        elsewhere = project.level("B").entities("PathNode")[0]
+        for target, expect in (
+            ("nowhere", "which does not exist"),
+            (platform.iid, "not a PathNode"),
+            (elsewhere.iid, "PathNode in B"),
+        ):
+            platform.field_instances[0].value = [{"entityIid": target}]
+            found = check_world(project, PREFABS, Rules(start="A", grants=GRANTS))
+            assert any(expect in line for line in found), found
+
+
 class TestAbilities:
     def test_a_gap_only_the_dash_crosses(self):
         found = reaching(problems(gapped()))

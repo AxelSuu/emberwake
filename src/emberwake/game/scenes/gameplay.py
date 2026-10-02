@@ -294,6 +294,7 @@ class GameplayScene(Scene):
             feel.switches,
             feel.breakables,
             feel.crates,
+            feel.platforms,
             feel.encounters,
             feel.lamprey,
         )
@@ -648,6 +649,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.swing)
             self.world.insert_resource(feel.breakables)
             self.world.insert_resource(feel.crates)
+            self.world.insert_resource(feel.platforms)
             self.world.insert_resource(feel.switches)
             self.world.insert_resource(feel.encounters)
             self.world.insert_resource(feel.lamprey)

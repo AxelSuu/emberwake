@@ -20,6 +20,7 @@ from emberwake.game.lamps import lamp_system
 from emberwake.game.light import ember_system, lightform_system
 from emberwake.game.lore import echo_system
 from emberwake.game.lost_lights import lost_light_system
+from emberwake.game.platforms import platform_system
 from emberwake.game.player.kindle import kindle_system
 from emberwake.game.player.swing import strike_system, swing_system
 from emberwake.game.player.system import player_system
@@ -74,6 +75,7 @@ def gameplay_schedule() -> Schedule:
     schedule.add("logic", npc_system)
     schedule.add("logic", echo_system)
     schedule.add("logic", trial_door_system)
+    schedule.add("physics", platform_system)
     schedule.add("physics", player_system)
     schedule.add("physics", crate_system)
     for system in POST:

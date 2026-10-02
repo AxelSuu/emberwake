@@ -33,6 +33,7 @@ def check_world(project: Project, prefabs: Mapping[str, Prefab], rules: Rules) -
     world = index(project, prefabs)
     problems = _check_wiring(world)
     problems += _check_encounters(world)
+    problems += _check_paths(world)
     problems += _check_flags(world, rules)
     problems += _check_entrances(world)
     problems += check_reachability(world, rules)
@@ -83,6 +84,27 @@ def _check_encounters(world: Index) -> list[str]:
     for iid, found in waves.items():
         if not found or found != set(range(1, len(found) + 1)):
             problems.append(f"{_where(things[iid])}: waves {sorted(found)} do not run from 1 up")
+    return problems
+
+
+def _check_paths(world: Index) -> list[str]:
+    """A Platform's Path names PathNodes in its room, and names at least one."""
+    things = {thing.iid: thing for thing in world.things}
+    problems = []
+    for thing in things.values():
+        if thing.kind != "Platform":
+            continue
+        path = thing.entity.values().get("Path") or []
+        if not path:
+            problems.append(f"{_where(thing)}: has no Path")
+        for iid in path:
+            node = things.get(iid)
+            if node is None:
+                problems.append(f"{_where(thing)}: Path names {iid}, which does not exist")
+            elif node.kind != "PathNode":
+                problems.append(f"{_where(thing)}: Path names a {node.kind}, not a PathNode")
+            elif node.room != thing.room:
+                problems.append(f"{_where(thing)}: Path names a PathNode in {node.room}")
     return problems
 
 

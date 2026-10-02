@@ -94,3 +94,6 @@ cell = [8, 2]
 
 [rooms.Clock_Face]
 cell = [8, 0]
+
+[rooms.Lift_Lab]
+cell = [76, 2]
