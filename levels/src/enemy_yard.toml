@@ -12,3 +12,17 @@ type = "Lightform"
 type = "Beacon"
 [entities.t]
 type = "Tinker"
+[entities.s]
+type = "FlagSwitch"
+fields = { Condition = "met_tinker", Targets = ["d"] }
+[entities.d]
+type = "Door"
+[entities.m]
+type = "Ember"
+fields = { Requires = "has.flare", Unless = "alcove_lit", Value = 5 }
+[entities.z]
+type = "SetFlag"
+fields = { Flag = "alcove_lit", Unless = "alcove_lit" }
+[entities.r]
+type = "Brazier"
+fields = { Requires = "alcove_lit" }
