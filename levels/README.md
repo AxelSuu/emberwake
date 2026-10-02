@@ -52,6 +52,11 @@ See `src/defs.toml` for fields. Each entity spawns the prefab named after it in 
 `content/prefabs.toml`; `uv run python -m tools.levels validate` (part of `just check`) fails if
 one has no prefab or its fields do not fit.
 
+Every entity also takes `Requires` and `Unless`, conditions in the dialogue syntax over the save's
+flags, with `has.<thing>` for abilities and item counts (`Requires = "met_tinker"`, `Unless =
+"has.shard>=3"`). It is in the world only while `Requires` holds and `Unless` does not, and comes
+and goes live as they change ([spec](../docs/specs/world-flags.md)).
+
 | Entity | Meaning |
 |---|---|
 | PlayerStart | Spawn point; after a hazard death the one nearest the room's entrance (pivot: bottom centre) |
