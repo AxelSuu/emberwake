@@ -58,6 +58,7 @@ from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
 from emberwake.game.enemies import Brain
 from emberwake.game.feel import Feel, diff, load_feel
+from emberwake.game.flags import Facts, admits, flags_in
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
 from emberwake.game.interact import Collected, Interactable, Switch
@@ -234,7 +235,10 @@ class GameplayScene(Scene):
 
     def _build_world(self, start: str) -> None:
         self.world = World()
-        self.spawner = Spawner(self.world, self._read_prefabs() or {}, self.progress.data.world)
+        data = self.progress.data
+        self.facts = Facts(data.flags, data.abilities, data.inventory)
+        gate = functools.partial(admits, facts=self.facts)
+        self.spawner = Spawner(self.world, self._read_prefabs() or {}, data.world, gate=gate)
         self.grid = WorldGrid()
         levels = load_project(self.world_path).all_levels
         self.wiring = Wiring.from_levels(levels, self.spawner.prefabs)
@@ -254,6 +258,7 @@ class GameplayScene(Scene):
         self.spawn_point = self._continue_point(start, self.progress.data.beacon)
         self.camera.bounds = self.rooms.graph.rects[start]
         resources = (self.actions, self.ctx.bus, self.grid, self.wiring, self.rooms, self.spawner)
+        self.world.insert_resource(self.facts)
         feel = self.feel
         tunings = (feel.player, feel.rooms, feel.light, feel.lamps, feel.enemies, feel.swing)
         for resource in (*resources, *tunings):
@@ -262,7 +267,6 @@ class GameplayScene(Scene):
         flares = self.feel.light.flare_charges
         kit = FlareKit(PropWorld(self.grid, (0, 0, 1, 1)), charges=flares, max_charges=flares)
         self.world.insert_resource(kit)
-        data = self.progress.data
         self.loadout = Loadout(data.abilities, data.inventory, self._read_grants())
         self.world.insert_resource(self.loadout)
         kit.max_charges = kit.charges = self._flare_charges()
@@ -676,7 +680,7 @@ class GameplayScene(Scene):
         names = {SPENT, UP_HP, UP_OIL}
         for graph in self.dialogues.values():
             names |= flags_used(graph)
-        return names
+        return names | flags_in(self.rooms.graph.levels.values())
 
     def save_replay(self) -> str:
         key = f"replays/{time.strftime('%Y%m%d-%H%M%S')}.json"

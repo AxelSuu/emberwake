@@ -173,6 +173,32 @@ def test_a_lamps_beacon_must_be_a_beacon():
     assert problems[0].endswith("Beacon is Ember, not a Beacon")
 
 
+def conditioned(entity: str, fields: dict[str, str]) -> list[str]:
+    room_file = from_data(RoomFile, {"entities": {"e": {"type": entity, "fields": fields}}})
+    rows = [WALL, *[INSIDE] * 8, "#.P.e" + "." * 14 + "#", WALL]
+    room = make_room("Hall", (0, 0), "\n".join(rows), room_file)
+    world = from_data(Project, build_project(Source(DEFS, [room])))
+    return validate(world, {**GOOD, "flag_switch": Prefab()}, REGISTRY)
+
+
+@pytest.mark.parametrize(
+    ("entity", "fields", "message"),
+    [
+        ("Ember", {"Requires": "met >"}, "Requires 'met >' is not a condition"),
+        ("Ember", {"Unless": "two words"}, "Unless 'two words' is not a condition"),
+        ("FlagSwitch", {"Condition": "has.shard=>3"}, "Condition 'has.shard=>3' is not"),
+    ],
+)
+def test_malformed_conditions(entity: str, fields: dict[str, str], message: str):
+    problems = conditioned(entity, fields)
+    assert any(message in problem for problem in problems), problems
+
+
+def test_well_formed_conditions_pass():
+    fields = {"Requires": "has.shard>=3", "Unless": "!met"}
+    assert conditioned("Ember", fields) == []
+
+
 def test_cli(tmp_path: Path, capsys: pytest.CaptureFixture[str]):
     assert main(["validate"]) == 0
     bare = "\n".join([WALL, *[INSIDE] * 8, "#.P" + "." * 16 + "#", WALL])

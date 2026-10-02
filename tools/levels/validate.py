@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import emberwake.game.components  # noqa: F401  (registers every game component)
+from emberwake.engine.core.dialogue import DialogueError, flag_of
 from emberwake.engine.core.serde import SerdeError
 from emberwake.engine.ecs import COMPONENTS
 from emberwake.engine.ecs.prefabs import build, check
@@ -55,6 +56,7 @@ def validate(
                 continue
             where = f"{level.identifier} {entity.identifier} {entity.iid}"
             values = entity.values()
+            problems += _check_conditions(where, entity, values)
             unknown = sorted(prefab.fields.keys() - values.keys())
             if unknown:
                 problems.append(f"{where}: no LDtk fields {unknown} for prefab {name}")
@@ -72,6 +74,19 @@ def _check_shelter(entity: EntityInstance, where: str, kinds: Mapping[str, str])
     if target is None or kinds.get(target) == "Beacon":
         return []
     return [f"{where}: Beacon is {kinds.get(target, 'missing')}, not a Beacon"]
+
+
+def _check_conditions(where: str, entity: EntityInstance, values: Mapping[str, Any]) -> list[str]:
+    fields = ["Requires", "Unless", *(["Condition"] if entity.identifier == "FlagSwitch" else [])]
+    problems = []
+    for name in fields:
+        condition = values.get(name)
+        if condition:
+            try:
+                flag_of(condition)
+            except DialogueError:
+                problems.append(f"{where}: {name} {condition!r} is not a condition")
+    return problems
 
 
 def _check_level_area(level: Level, areas: Areas | None) -> list[str]:
