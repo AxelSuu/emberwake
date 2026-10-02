@@ -31,7 +31,7 @@ from typing import TYPE_CHECKING
 from emberwake.engine.core.serde import from_data
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Mapping
     from pathlib import Path
 
 START = "start"
@@ -53,7 +53,7 @@ class DialogueError(ValueError):
     """A script that cannot be loaded or run."""
 
 
-def holds(condition: str, flags: dict[str, int]) -> bool:
+def holds(condition: str, flags: Mapping[str, int]) -> bool:
     """Whether `condition` is true for `flags`."""
     match = _CONDITION.match(condition)
     if match is None:
