@@ -21,7 +21,7 @@ from emberwake.engine.ecs.prefabs import build
 from emberwake.engine.world.spawning import prefab_name
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping
+    from collections.abc import Callable, Iterable, Mapping
     from pathlib import Path
 
     from emberwake.engine.ecs import Registry
@@ -82,6 +82,12 @@ class AreaLight:
     def percent(self) -> int:
         """Rounded down, so 100 means everything."""
         return self.lit * 100 // self.total if self.total else 100
+
+
+def describe(area: str, light: AreaLight, t: Callable[..., str]) -> tuple[str, str]:
+    """The area's name and its light line; the line is empty with nothing to light."""
+    line = t("area.light", percent=light.percent) if light.total else ""
+    return t(f"area.{area}.name"), line
 
 
 @dataclass(frozen=True, slots=True)

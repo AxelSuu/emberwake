@@ -44,6 +44,7 @@ from emberwake.game.areas import (
     Areas,
     LightCensus,
     area_of,
+    describe,
     load_areas,
     music_of,
 )
@@ -911,6 +912,11 @@ class GameplayScene(Scene):
             return
         self.area = area
         self._count_light(instantly=instantly)
+        if self.trial is None:
+            self.hud.banner(*self._area_text())
+
+    def _area_text(self) -> tuple[str, str]:
+        return describe(self.area, self.light.get(self.area, AreaLight()), self.ctx.t)
 
     def _count_light(self, *, instantly: bool = False) -> None:
         """Recount every area's light, and aim the grade at the active area's."""

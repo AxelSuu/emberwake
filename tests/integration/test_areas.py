@@ -112,3 +112,27 @@ def test_the_scene_exposes_the_rooms_music_with_the_areas_as_fallback(
     assert scene.music == ""
     drive(scene, TO_EAST)
     assert (scene.room, scene.music) == ("East", "quarter")
+
+
+def test_a_session_starts_with_its_areas_banner(ctx: GameContext, world_path: Path):
+    scene = start(ctx, world_path)
+    assert scene.hud.banner_left > 0
+    assert (scene.hud.banner_text, scene.hud.banner_sub) == ("The Lab", "Light 0 %")
+
+
+def test_banners_show_when_the_area_changes_and_not_within_one(ctx: GameContext, world_path: Path):
+    scene = start(ctx, world_path)
+    drive(scene, [(200, [])])
+    assert scene.hud.banner_left == 0
+    drive(scene, [(5, []), (150, ["right"])])
+    assert (scene.room, scene.area) == ("Middle", "lab")
+    assert scene.hud.banner_left == 0
+    drive(scene, [(150, ["right"])])
+    assert (scene.room, scene.area) == ("East", "quarter")
+    assert scene.hud.banner_left > 0
+    assert (scene.hud.banner_text, scene.hud.banner_sub) == ("The Sunken Quarter", "Light 0 %")
+
+
+def test_a_trial_shows_no_banner(ctx: GameContext):
+    scene = GameplayScene(ctx, trial="sprint")
+    assert scene.hud.banner_left == 0

@@ -32,6 +32,7 @@ from emberwake.game.areas import (
     AreaSpec,
     LightCensus,
     area_of,
+    describe,
     load_areas,
     music_of,
     saturation,
@@ -152,3 +153,11 @@ def test_a_dark_area_keeps_dim_of_the_saturation_and_a_lit_one_all_of_it():
     area.update(1.0)
     assert area.apply(grade) == grade
     assert AreaGrade().apply(Grade()).neutral
+
+
+def test_the_area_line_is_its_percent_and_empty_with_nothing_to_light():
+    def t(key: str, **values: object) -> str:
+        return f"{key}:{values.get('percent', '')}"
+
+    assert describe("lab", AreaLight(1, 3), t) == ("area.lab.name:", "area.light:33")
+    assert describe("lab", AreaLight(), t) == ("area.lab.name:", "")
