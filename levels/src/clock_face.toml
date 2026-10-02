@@ -2,13 +2,13 @@
 # Clocktower_Stair, plugged by door d while the King's Encounter Z runs. The Clockrat King
 # (wave 2, spawned at K) calls rats to the r markers.
 # A is Quarter Lamp A: a Beacon behind door o, which the cleared Encounter opens. With Lamp B in
-# the Pump House it powers the Cistern Gate door (a later batch reads Clock_Face:A); it also holds
+# the Pump House it powers the Cistern Gate door (lighting it sets lamp_a); it also holds
 # the Belfry's lamps.
 # Shard 3 (S) sits on the ledge top left, past two spike bulbs to pogo off from the catwalk's west
 # end; the steps up are crumbling platforms.
 # The catwalk's east end faces a gap of 12 tiles to a ledge under the east wall: the lamp-hook
 # gap toward Brass Gardens, closed until the Wickline (M11). The way on is the wall at x 39,
-# rows 5..7.
+# rows 5..7. Quill Q waits by it once the Great Lamp burns (quill_stage 2).
 
 [entities.Z]
 type = "Encounter"
@@ -27,6 +27,7 @@ fields = { Encounter = "Z", Wave = 2, Kind = "clockrat_king" }
 type = "RatSpawn"
 [entities.A]
 type = "Beacon"
+fields = { Flag = "lamp_a" }
 [entities.e]
 type = "Ember"
 fields = { Value = 5 }
@@ -38,3 +39,6 @@ fields = { Thing = "shard" }
 [entities.s]
 type = "Signpost"
 fields = { Text = "hook_gap" }
+[entities.Q]
+type = "Quill"
+fields = { Requires = "quill_stage>=2" }

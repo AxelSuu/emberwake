@@ -287,12 +287,44 @@ nook_hatch = "The cellar is below. Hold {down} and press {jump} to drop through 
 belfry_hook = "A brass hook hangs over the gap.\nYou have nothing to throw yet."
 pogo = "Hold {down} and swing in the air:\nspikes bounce you up."
 hook_gap = "A rusted hook on the far ledge.\nThe gap is too wide for now."
+plate_crate = "Heavy things can be pushed.\nA crate on the plate holds the door."
+gallery_lightform = "Lightforms stand only where light reaches them.\nWalk up to the edge."
+gallery_flare = "A lens sleeps in the spikes. Press {flare} to throw a flare at it."
+gallery_dash = "Jump, then press {dash} to cross the spikes."
+square_hub = "Market Square. Rest at the beacon; the Keeper waits beside it."
+square_great_lamp = "The Great Lamp, cold. Two Quarter Lamps must burn before it can."
+trial_gate = "Trial doors. Stand at one and press {interact} to run a Trial; your times wait in the menu."
+sluice_valves = "Valves drain the channels for good. Press {interact} at one."
+pump_twist = "The pump door wants weight on the plate and light on the lens, both at once."
+warren_deep = "The water runs deep here. Something that holds air could go down."
+gate_lamps = "The gate wakes when both Quarter Lamps burn: the Clocktower's and the Pump House's."
 
 [echo]
 lore_hall = "I lit this lamp last. The oil ran out before the street did."
 wake = "My last round. Up the well, then fourteen lamps before dark. The tide came first."
 old_guild = "Lamplighters of the Guild, hear me. The oil will not last the winter. Carry the flame, not the fuel."
+cistern_gate = "The night the Lantern went out, the fuel line ran through here. We sealed the gate and lied."
+cistern = "It drank the oil for a hundred years. The Lantern burned on what it fed."
 
 [lore]
 echo_heard = "Echo heard"
 rescued = "Lost Light rescued"
+
+[story.intro]
+1 = "A spark in the cold. The last beacon of the Quarter still remembers fire."
+2 = "Something small and bright wakes at the bottom of the well."
+
+[story.lamprey]
+1 = "Ripples in black water. A light like a lamp drifts under the surface."
+2 = "It is not a lamp. It has been waiting for the oil to come back."
+
+[story.great_lamp]
+1 = "The Great Lamp takes the flame. Light runs down the streets, lamp by lamp."
+2 = "The Sunken Quarter remembers its colours. The road to the Brass Gardens is open."
+
+[credits]
+title = "Emberwake"
+made = "A game by Axel"
+palette = "Colours: Resurrect 64 by Kerrie Lake"
+thanks = "Thank you for playing the Sunken Quarter."
+back = "Back"

@@ -8,6 +8,7 @@ from tests.integration.test_greybox import STEP, Leg, Phase, at, in_room, run, w
 from tests.integration.test_tinker import at_the_tinker, pick, talk
 
 from emberwake.engine.input.replay import Replay
+from emberwake.engine.physics import Body
 from emberwake.engine.scene import SceneManager
 from emberwake.engine.world.rooms import RoomEntered
 from emberwake.game.scenes.gameplay import GameplayScene
@@ -73,7 +74,9 @@ def test_the_underways_are_walked_from_the_nook_to_the_shaft_exit(ctx: GameConte
     scene = run(ctx, "Tinkers_Nook", nook(), cellar(), hall(), shaft(), ticks=4000)
     assert entered == ["Gloom_Cellar", "Lever_Hall", "Cistern_Shaft"]
     assert scene.body.center_x > x(SHAFT, 18)
-    doors = [door for _, door in scene.world.query(Door)]
+    room = scene.rooms.graph.rects[scene.room]
+    rows = scene.world.query(Body, Door)
+    doors = [door for _, body, door in rows if room.collidepoint(body.center_x, body.y)]
     assert doors
     assert all(door.open for door in doors)
 

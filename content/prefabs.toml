@@ -30,11 +30,13 @@ Switch = { mode = "momentary" }
 PressurePlate = {}
 
 [beacon]
+fields = { Flag = "BeaconFlag.flag" }
 persist = ["Beacon"]
 [beacon.components]
 Sprite = { image = "beacon", active_image = "beacon_lit" }
 Interactable = { prompt = "relight" }
 Beacon = {}
+BeaconFlag = {}
 
 [lamp]
 fields = { Beacon = "Shelter.beacon" }
@@ -248,3 +250,14 @@ fields = { Trial = "TrialDoor.trial" }
 Sprite = { image = "trial_door" }
 Interactable = { prompt = "enter" }
 TrialDoor = {}
+
+[story_beat]
+fields = { Script = "StoryBeat.script" }
+[story_beat.components]
+Trigger = {}
+StoryBeat = {}
+
+[great_lamp]
+[great_lamp.components]
+Sprite = { image = "great_lamp", active_image = "great_lamp_lit" }
+GreatLamp = {}

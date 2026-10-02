@@ -20,6 +20,7 @@ from emberwake.game.lamprey import FLAGS as LAMPREY_FLAGS
 from emberwake.game.scenes.gameplay import COLLISIONS, DEFAULT_ROOM
 from emberwake.game.shop import load_shops
 from emberwake.game.signals import LOCKS, TARGETS
+from emberwake.game.story import STORY_FLAGS
 from emberwake.game.trials import load_trials
 
 if TYPE_CHECKING:
@@ -58,7 +59,7 @@ def load_rules(content: Path) -> Rules:
         grants=load_grants(content / "grants.toml"),
         dialogues=load_dialogues(content / "dialogue.toml"),
         shop_flags={item.flag for item in items if item.flag},
-        code_flags=LAMPREY_FLAGS,
+        code_flags=(*LAMPREY_FLAGS, *STORY_FLAGS),
         shop_grants={item.grant for item in items if item.grant},
         trials={trial.room for trial in load_trials(content / "trials.toml").values()},
     )

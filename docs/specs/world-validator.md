@@ -28,7 +28,9 @@ Part of `tools.levels validate`. Pure functions over the loaded levels and the c
     and the void block; a Lightform is a one-way.
   - *Doors* open once their sources are available: a Lever or PressurePlate the search reaches, a
     PressurePlate in a room where the search reaches a PushCrate (the crate is assumed to be
-    pushed onto it), a FlagSwitch whose condition holds. Mode `all` needs every source; an inverted door is open.
+    pushed onto it), a FlagSwitch whose condition holds. Mode `all` needs every source. An inverted
+    door is open; once its sources can be switched on it is also one-way floor, since it can be
+    shut and stood on (a drained channel).
   - *Platforms* ([lifts](lifts.md)) are gates like doors: once an unwired platform (it loops) or
     a wired one with a usable source is in play, every cell its body sweeps along its path counts
     as one-way floor (a box per leg, so a diagonal leg is generous).
@@ -64,6 +66,7 @@ Part of `tools.levels validate`. Pure functions over the loaded levels and the c
 - [x] A lab or absent start room skips reachability; trial rooms are exempt.
 - [x] A lift or loop is a way across a pit too wide to jump; one whose lever is out of reach is
   reported with the platform; a bad `Path` is reported.
+- [x] An inverted door is open from the start, and a floor over a pit once its lever is reachable.
 - [x] The committed world passes, and a missing PlayerStart at an entrance of a quarter room is
   fixed in the levels.
 

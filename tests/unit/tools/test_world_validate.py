@@ -255,6 +255,23 @@ fields = { Flag = "lit" }
         rooms["A"] = ((0, 0), partition("..P..s....d....z"), toml)
         assert len(reaching(problems(rooms))) == 1
 
+    def test_a_lit_beacon_flag_opens_a_flag_switch_door(self):
+        toml = """
+[entities.d]
+type = "Door"
+[entities.s]
+type = "FlagSwitch"
+fields = { Condition = "lit", Targets = ["d"] }
+[entities.k]
+type = "Beacon"
+fields = { Flag = "lit" }
+"""
+        rooms = pair()
+        rooms["A"] = ((0, 0), partition("..Pk.s....d"), toml)
+        assert problems(rooms) == []
+        rooms["A"] = ((0, 0), partition("..P..s....d....k"), toml)
+        assert len(reaching(problems(rooms))) == 1
+
     def test_an_all_door_needs_every_source(self):
         toml = LEVER_AND_DOOR.replace('type = "Door"', 'type = "Door"\nfields = { Mode = "all" }')
         toml += '[entities.m]\ntype = "Lever"\nfields = { Targets = ["d"] }\n'
@@ -357,6 +374,19 @@ class TestLifts:
         assert len(found) == 1
         assert "is behind Platform" in found[0]
 
+    def test_an_inverted_door_its_lever_shuts_is_a_floor_over_the_pit(self):
+        toml = """
+[entities.w]
+type = "Door"
+fields = { Invert = true }
+[entities.l]
+type = "Lever"
+fields = { Targets = ["w"] }
+"""
+        water = "...." + "w" * 14
+        assert reaching(problems(gap("lP" + water[2:], toml))) == []
+        assert len(reaching(problems(gap("..P." + "w" * 14 + "l", toml)))) == 1
+
     def test_a_platform_over_the_pit_without_a_path_is_reported(self):
         toml = '[entities.L]\ntype = "Platform"\nfields = { Path = [] }\n'
         found = problems(gap("..P.LLL", toml))
@@ -449,6 +479,9 @@ def arena(toml: str = ARENA, floor: str = "..Pzw") -> dict[str, Any]:
 class TestEncounters:
     def test_a_door_an_encounter_shuts_does_not_wall_off_the_rest(self):
         assert problems(arena()) == []
+
+    def test_its_door_is_open_before_the_zone_is_reached(self):
+        assert problems(arena(floor="..P.......d.zw")) == []
 
     def test_a_door_nothing_opens_still_does(self):
         toml = ARENA.replace('fields = { Doors = ["d"] }', "")

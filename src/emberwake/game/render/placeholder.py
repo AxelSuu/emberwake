@@ -280,6 +280,21 @@ class EntityArt:
         image.fill(LANTERN_FRAME, (rect.centerx - 3, rect.top + 1, 6, 2))
 
     @staticmethod
+    def _great_lamp(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 2, rect.top + 14, 4, rect.height - 14))
+        image.fill(ROCK_EDGE, (rect.centerx - 8, rect.bottom - 3, 16, 3))
+        image.fill(LANTERN_FRAME, (rect.centerx - 10, rect.top + 4, 20, 2))
+        image.fill(ROCK, (rect.centerx - 8, rect.top + 6, 16, 8))
+        image.fill(LANTERN_FRAME, (rect.centerx - 6, rect.top + 1, 12, 3))
+
+    @staticmethod
+    def _great_lamp_lit(image: pygame.Surface, rect: pygame.Rect) -> None:
+        EntityArt._great_lamp(image, rect)
+        image.fill(palette.EMBER_WARM, (rect.centerx - 8, rect.top + 6, 16, 8))
+        image.fill(palette.EMBER_HOT, (rect.centerx - 5, rect.top + 7, 10, 6))
+        image.fill(palette.EMBER_CORE, (rect.centerx - 2, rect.top + 8, 4, 4))
+
+    @staticmethod
     def _lightform(image: pygame.Surface, rect: pygame.Rect) -> None:
         for x in range(rect.left, rect.right, 4):
             image.fill(ROCK_EDGE, (x, rect.top, 2, 1))

@@ -286,12 +286,44 @@ nook_hatch = "Källaren är där nere. Håll {down} och tryck {jump} för att fa
 belfry_hook = "En mässingskrok hänger över gapet.\nDu har inget att kasta än."
 pogo = "Håll {down} och slå i luften:\nspetsarna studsar dig upp."
 hook_gap = "En rostig krok på den andra avsatsen.\nGapet är för brett än så länge."
+plate_crate = "Tunga saker går att skjuta.\nEn låda på plattan håller dörren öppen."
+gallery_lightform = "Ljusformer finns bara där ljus når dem.\nGå fram till kanten."
+gallery_flare = "En lins sover bland spetsarna. Tryck {flare} för att kasta en fackla mot den."
+gallery_dash = "Hoppa och tryck sedan {dash} för att ta dig över spetsarna."
+square_hub = "Torget. Vila vid fyrtornet; väktaren väntar bredvid."
+square_great_lamp = "Den Stora Lampan, kall. Två kvarterslampor måste brinna först."
+trial_gate = "Prövningsdörrar. Ställ dig vid en och tryck {interact} för att köra en prövning; dina tider väntar i menyn."
+sluice_valves = "Ventiler tömmer kanalerna för gott. Tryck {interact} vid en."
+pump_twist = "Pumpdörren vill ha tyngd på plattan och ljus på linsen, båda på en gång."
+warren_deep = "Vattnet är djupt här. Något som håller luft kunde ta sig ner."
+gate_lamps = "Porten vaknar när båda kvarterslamporna brinner: klocktornets och pumphusets."
 
 [echo]
 lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."
 wake = "Min sista runda. Upp ur brunnen, sedan fjorton lampor före mörkret. Tidvattnet kom först."
 old_guild = "Lampgnistare i Gillet, hör mig. Oljan räcker inte vintern. Bär lågan, inte bränslet."
+cistern_gate = "Natten då Lyktan slocknade gick bränsleledningen här. Vi förseglade porten och ljög."
+cistern = "Den drack oljan i hundra år. Lyktan brann på det den matade."
 
 [lore]
 echo_heard = "Eko hört"
 rescued = "Förlorat ljus räddat"
+
+[story.intro]
+1 = "En gnista i kylan. Kvarterets sista fyrtorn minns fortfarande eld."
+2 = "Något litet och ljust vaknar på botten av brunnen."
+
+[story.lamprey]
+1 = "Krusningar i svart vatten. Ett ljus som en lampa driver under ytan."
+2 = "Det är ingen lampa. Den har väntat på att oljan ska komma tillbaka."
+
+[story.great_lamp]
+1 = "Den Stora Lampan tar lågan. Ljuset rinner längs gatorna, lampa för lampa."
+2 = "Det sjunkna kvarteret minns sina färger. Vägen till Mässingsträdgårdarna är öppen."
+
+[credits]
+title = "Emberwake"
+made = "Ett spel av Axel"
+palette = "Färger: Resurrect 64 av Kerrie Lake"
+thanks = "Tack för att du spelade Det sjunkna kvarteret."
+back = "Tillbaka"

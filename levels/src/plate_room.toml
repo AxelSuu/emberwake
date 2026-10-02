@@ -1,0 +1,20 @@
+# Plate_Room, cell [5, 12] 2x1. West edge (col 0, rows 6 to 8) is the Cistern_Shaft's exit; the
+# east edge (col 39, rows 6 to 8) opens onto the Photocell_Gallery's bottom-left cell.
+# The plate sits in a two-tile dip at cols 22 and 23: the crate pushed over the lip falls onto it
+# and keeps door d (col 33) open. Stepping on it opens the door only while you stand there.
+fields = { Backdrop = "cavern" }
+
+[entities.p]
+type = "PressurePlate"
+fields = { Targets = ["d"] }
+[entities.d]
+type = "Door"
+[entities.c]
+type = "PushCrate"
+[entities.s]
+type = "Signpost"
+fields = { Text = "plate_crate" }
+[entities.a]
+type = "Lamp"
+[entities.e]
+type = "Ember"

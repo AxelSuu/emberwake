@@ -95,5 +95,32 @@ cell = [8, 2]
 [rooms.Clock_Face]
 cell = [8, 0]
 
+[rooms.Plate_Room]
+cell = [5, 12]
+
+[rooms.Photocell_Gallery]
+cell = [7, 10]
+
+[rooms.Market_Square]
+cell = [8, 8]
+
+[rooms.Trial_Gate]
+cell = [12, 8]
+
+[rooms.Cistern_Gate]
+cell = [10, 10]
+
+[rooms.Cistern]
+cell = [10, 11]
+
+[rooms.Sluice]
+cell = [12, 9]
+
+[rooms.Pump_House]
+cell = [16, 9]
+
+[rooms.Rat_Warren]
+cell = [14, 10]
+
 [rooms.Lift_Lab]
 cell = [76, 2]

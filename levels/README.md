@@ -72,7 +72,7 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | Door | Solid while closed; opens while its sources are on (Mode any/all, Invert) |
 | Lever | Interact to switch its targets (Mode toggle/momentary/once) |
 | PressurePlate | On while the player stands on it or a PushCrate rests on it |
-| Beacon | Interact to relight: saves, refills the dash and becomes the continue point |
+| Beacon | Interact to relight: saves, refills the dash and becomes the continue point; `Flag` is a save flag set once it is lit |
 | Brazier | Cold until a swing or a flare lights it (`Lit` places it lit); then a light and an on switch, saved by iid. Its `Targets` are receivers |
 | Photocell | On while the light at it reaches `Threshold` (default 0.4); `Targets` are receivers. `Sealed` keeps it dark until the Lamprey breaks its casing |
 | Bell | A swing rings it: stuns enemies nearby and pulses its `Targets` for a moment |
@@ -96,6 +96,8 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | Echo | Interact to replay `content/echoes/<Id>.json` as a ghost, with the string `echo.<Id>`; counts toward light % |
 | LostLight | Follows the player to a beacon and is rescued there: sets `lost_light_<Id>` and adds to `lost_lights` |
 | TrialDoor | Interact to unlock the Trial `Trial` in the menu and start it |
+| StoryBeat | Invisible zone: entering it plays the story script `Script` once per save ([spec](../docs/specs/story-beats.md)) |
+| GreatLamp | The Great Lamp: kindled after the Lamprey, it lights every lamp of its area and rolls the credits |
 
 ## Level fields
 

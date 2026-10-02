@@ -4,6 +4,7 @@ fields = { Backdrop = "ruins" }
 type = "Beacon"
 [entities.t]
 type = "Tinker"
+fields = { Unless = "great_lamp" }
 [entities.a]
 type = "Lamp"
 fields = { Beacon = "k" }
