@@ -224,3 +224,6 @@ name = "Oil flask"
 
 [grant.flare_pouch]
 name = "Flare pouch"
+
+[sign]
+lore_move = "Run with {left} and {right}.\nJump with {jump}."

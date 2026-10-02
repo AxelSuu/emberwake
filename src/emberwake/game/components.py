@@ -39,6 +39,7 @@ from emberwake.game import (  # noqa: E402, F401
     grants,
     interact,
     light,
+    lore,
     signals,
     trials,
 )

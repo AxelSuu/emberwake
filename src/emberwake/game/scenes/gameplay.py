@@ -53,6 +53,7 @@ from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
 from emberwake.game.interact import Collected, Interactable, Switch
 from emberwake.game.light import Ember, LightSource
+from emberwake.game.lore import speeches
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.kindle import Kindle, Kindled
 from emberwake.game.player.swing import Swing, SwingHit, SwingStarted
@@ -60,6 +61,7 @@ from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
 from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdrops
 from emberwake.game.render.bank import SpriteBank
+from emberwake.game.render.bubble import Bubbles
 from emberwake.game.render.fx import Flash
 from emberwake.game.render.glow import Glows
 from emberwake.game.render.hud import Hud, HudState
@@ -159,6 +161,7 @@ class GameplayScene(Scene):
         self.particles = ParticleSystem()
         self.cutscenes = CutscenePlayer()
         self.toasts = Toasts()
+        self.bubbles = Bubbles()
         self.hud = Hud()
         self.texts = FloatingTexts()
         self.texts.muted = ctx.settings.accessibility.reduce_flashes
@@ -989,6 +992,7 @@ class GameplayScene(Scene):
         self.backdrops.draw_near(canvas, (ox, oy), room_top)
         self.post.apply(canvas, self.frame.flags, self.backdrops.grade())
         self.flash.draw(canvas)
+        self._draw_speech(canvas, ox, oy)
         self._draw_hud(canvas)
         self._draw_trial_timer(canvas)
         self.toasts.draw(canvas)
@@ -1081,6 +1085,11 @@ class GameplayScene(Scene):
         lift = self.ctx.settings.video.brightness * BRIGHTNESS_LIFT
         r, g, b = (round(c + (255 - c) * lift) for c in self.backdrops.ambient())
         return r, g, b
+
+    def _draw_speech(self, canvas: pygame.Surface, ox: int, oy: int) -> None:
+        keys = self.ctx.settings.controls.keys
+        for speech in speeches(self.world, self.ctx.t, keys):
+            self.bubbles.draw(canvas, speech.text, (speech.x - ox, speech.y - oy))
 
     def _draw_trial_timer(self, canvas: pygame.Surface) -> None:
         if self.trial is None:

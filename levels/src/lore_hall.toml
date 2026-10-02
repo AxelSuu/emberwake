@@ -1,0 +1,5 @@
+fields = { Backdrop = "ruins", Area = "lab" }
+
+[entities.s]
+type = "Signpost"
+fields = { Text = "lore_move" }

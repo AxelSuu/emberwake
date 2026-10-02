@@ -315,6 +315,13 @@ class EntityArt:
         image.fill(palette.EMBER_HOT, (rect.centerx + 4, rect.bottom - 8, 2, 3))
 
     @staticmethod
+    def _signpost(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(PLANK_DARK, (rect.centerx - 1, rect.top + 6, 2, rect.height - 6))
+        image.fill(PLANK, (rect.left + 1, rect.top + 1, rect.width - 2, 7))
+        image.fill(PLANK_LIGHT, (rect.left + 1, rect.top + 1, rect.width - 2, 1))
+        image.fill(PLANK_DARK, (rect.left + 3, rect.top + 4, rect.width - 6, 1))
+
+    @staticmethod
     def _goal(image: pygame.Surface, rect: pygame.Rect) -> None:
         for y in range(rect.top, rect.bottom, 8):
             image.fill(palette.EMBER_CORE, (rect.left + 2, y, 3, 4))

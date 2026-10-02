@@ -94,3 +94,9 @@ fields = { Flag = "SetFlag.flag", Value = "SetFlag.value", Mode = "SetFlag.mode"
 [set_flag.components]
 Trigger = {}
 SetFlag = {}
+
+[signpost]
+fields = { Text = "Sign.text" }
+[signpost.components]
+Sprite = { image = "signpost" }
+Sign = {}

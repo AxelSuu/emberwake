@@ -106,6 +106,13 @@ fields.Value = { type = "Int", default = 1 }
 fields.Mode = { type = "String", default = "set" }
 doc = "Sets a flag when the player enters"
 
+[entities.Signpost]
+color = "#ab947a"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Shows a string with the player's keys while they stand near"
+fields.Text = { type = "String", default = "", doc = "Key suffix of the string sign.<Text>" }
+
 # Fields every entity type has. Conditions use the dialogue syntax; has.<thing> reads abilities
 # (1 or 0) and item counts. See docs/specs/world-flags.md.
 [entity_fields]

@@ -223,3 +223,6 @@ name = "Oljeflaska"
 
 [grant.flare_pouch]
 name = "Blosspung"
+
+[sign]
+lore_move = "Spring med {left} och {right}.\nHoppa med {jump}."
