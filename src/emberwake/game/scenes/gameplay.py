@@ -104,7 +104,7 @@ DIALOGUE = "dialogue.toml"
 TRIALS = "trials.toml"
 GRANTS = "grants.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
-DEFAULT_ROOM = "Test_Room"
+DEFAULT_ROOM = "Wake"
 BAKE_BUDGET = 0.002
 """Seconds per frame spent baking room art in the background."""
 GLOW_RADIUS = 72
