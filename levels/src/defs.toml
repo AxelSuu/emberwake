@@ -122,6 +122,12 @@ size = [16, 16]
 pivot = [0.5, 1.0]
 doc = "Where a Clockrat King's rats appear"
 
+[entities.Lamprey]
+color = "#8ff8e2"
+size = [32, 16]
+pivot = [0.5, 0.5]
+doc = "Boss: its head at the water line of its arena (the room); hunts the brightest light"
+
 [entities.Tinker]
 color = "#fbb954"
 size = [16, 16]

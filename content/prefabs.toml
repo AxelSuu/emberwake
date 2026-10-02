@@ -121,6 +121,11 @@ LightSource = { radius = 88.0, color = "#f9c22b" }
 [rat_spawn.components]
 RatSpawn = {}
 
+[lamprey]
+[lamprey.components]
+Lamprey = {}
+LightSource = { radius = 56.0, color = "#fbb954" }
+
 [tinker]
 [tinker.components]
 Sprite = { image = "tinker" }

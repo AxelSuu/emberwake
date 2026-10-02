@@ -280,6 +280,7 @@ class GameplayScene(Scene):
             feel.swing,
             feel.switches,
             feel.breakables,
+            feel.lamprey,
         )
         for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
@@ -626,6 +627,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.swing)
             self.world.insert_resource(feel.breakables)
             self.world.insert_resource(feel.switches)
+            self.world.insert_resource(feel.lamprey)
             self.camera.retune(feel.camera)
         prefabs = self._read_prefabs()
         if prefabs is not None:
