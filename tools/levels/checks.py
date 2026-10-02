@@ -63,7 +63,7 @@ def _written(world: Index, rules: Rules) -> set[str]:
 
 
 def _given(world: Index, rules: Rules) -> set[str]:
-    things = set(rules.abilities)
+    things = {*rules.abilities, *rules.shop_grants}
     for graph in rules.dialogues.values():
         things |= {n.action.removeprefix(GIVE) for n in graph.values() if n.action.startswith(GIVE)}
     for thing in world.things:

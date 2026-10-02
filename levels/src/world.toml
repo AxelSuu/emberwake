@@ -45,3 +45,6 @@ cell = [0, 10]
 
 [rooms.King_Lab]
 cell = [69, 0]
+
+[rooms.Npc_Lab]
+cell = [72, 0]

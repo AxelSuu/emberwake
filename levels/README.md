@@ -76,6 +76,7 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | Crate | Solid; breaks for good when struck and flings `Embers` loose embers |
 | Pot | Not solid; breaks like a crate |
 | CrumblingPlatform | One-way; clears 0.5 s after the player lands on it and returns 2 s later |
+| Hesper, Quill | NPCs ([spec](../docs/specs/npcs.md)); gate each spot with `Requires`/`Unless` on `hesper_stage` or `quill_stage`. `--room Npc_Lab` has every spot |
 | Grant | Touch to receive an ability or item (`Thing`, a key of `content/grants.toml`, and `Count`) |
 | FlagSwitch | Not drawn: powers its `Targets` while its `Condition` holds, also while its room is unloaded |
 | SetFlag | Invisible zone: stepping in sets `Flag` to `Value`, or adds it with `Mode = "add"` |

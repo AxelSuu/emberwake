@@ -128,6 +128,18 @@ size = [16, 16]
 pivot = [0.5, 1.0]
 doc = "NPC who talks and sells upgrades for embers"
 
+[entities.Hesper]
+color = "#fdcbb0"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Keeper Hesper: explains the Quarter and rewards rescued Lost Lights"
+
+[entities.Quill]
+color = "#ab947a"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Quill the cartographer: sells maps"
+
 [entities.Goal]
 color = "#30e1b9"
 size = [16, 48]

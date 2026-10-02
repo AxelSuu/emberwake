@@ -17,7 +17,7 @@ from emberwake.engine.world.ldtk import EntityInstance, Level, Project
 from emberwake.engine.world.spawning import prefab_name
 from emberwake.game.grants import START, GrantSpec, load_grants
 from emberwake.game.scenes.gameplay import COLLISIONS, DEFAULT_ROOM
-from emberwake.game.shop import load_shop
+from emberwake.game.shop import load_shops
 from emberwake.game.signals import TARGETS
 from emberwake.game.trials import load_trials
 
@@ -41,17 +41,21 @@ class Rules:
     grants: Mapping[str, GrantSpec] = field(default_factory=dict)
     dialogues: Mapping[str, Graph] = field(default_factory=dict)
     shop_flags: Collection[str] = ()
+    shop_grants: Collection[str] = ()
     trials: Collection[str] = ()
     """Rooms entered from the menu, outside the world."""
 
 
 def load_rules(content: Path) -> Rules:
     """The rules of the game's content directory."""
-    shop = load_shop(content / "shop.toml")
+    items = [
+        item for shop in load_shops(content / "shop.toml").values() for item in shop.items.values()
+    ]
     return Rules(
         grants=load_grants(content / "grants.toml"),
         dialogues=load_dialogues(content / "dialogue.toml"),
-        shop_flags={item.flag for item in shop.items.values()},
+        shop_flags={item.flag for item in items if item.flag},
+        shop_grants={item.grant for item in items if item.grant},
         trials={trial.room for trial in load_trials(content / "trials.toml").values()},
     )
 

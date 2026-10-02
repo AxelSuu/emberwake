@@ -174,17 +174,23 @@ rose = "Rose"
 violet = "Violet"
 
 [shop]
-title = "The Tinker's wares"
 back = "Back"
 wallet = "Embers: {embers}"
 item = "{name}: {price} embers"
 sold_out = "{name}: sold out"
+
+[shop.title]
+tinker = "The Tinker's wares"
+quill = "Quill's maps"
 
 [shop.hp]
 name = "Tougher cloak (+1 health)"
 
 [shop.oil]
 name = "Lantern oil (+25 flame)"
+
+[shop.map.quarter]
+name = "Map of the Sunken Quarter"
 
 [dialogue]
 continue = "..."
@@ -198,6 +204,36 @@ bye = "Goodbye."
 city = "The light went out all at once, and the water came up after. Beacons still burn in places. Find them, and the colors return."
 shop = "Embers are good coin. Look through my wares."
 thanks = "Come back when your lantern runs low."
+
+[dialogue.hesper]
+hello = "A light, at last. I am Hesper, keeper of this beacon. I kept it burning until the night everything went out. Now I keep it for you."
+welcome_back = "The beacon is warm. Rest when you must, lamplighter."
+lit = "The Great Lamp burns. I have not seen the streets this warm since before the dark. Whatever you ask, ask it."
+ask_lamps = "How do I get down to the Cistern?"
+ask_lights = "I found a lost light."
+ask_road = "What lies beyond the Great Lamp?"
+bye = "Goodbye."
+lamps = "The way down is shut until both Quarter Lamps are lit, one in the clocktower, one by the sluice. Light them and the grate will open."
+road = "A road up to the Brass Gardens. You will need a way across the gap, a line to hook the lamps. Come back when you have one."
+pay1 = "You brought one home. Little things do get lost in the dark. Take these embers, with my thanks."
+pay2 = "A second light, safe by my beacon. Here, a pouch for your flares. It was a lamplighter's, once."
+pay3 = "Three lights home! Take this flask of oil. It will keep your lantern burning longer."
+lights_wait = "There are more lost lights in the Quarter. Lead them to a beacon, and they will wait for me here."
+lights_done = "All three are safe. The Quarter owes you more than I can pay."
+
+[dialogue.quill]
+hello = "Hoo. A visitor, and with a lantern. I am Quill. I draw maps, and I draw them true."
+welcome_back = "Hoo. Back so soon? My maps are still true."
+square = "Hoo. The belfry grew too loud, so I moved to the Square. The maps came with me."
+road = "Hoo. I walk the road to the Brass Gardens now. Someone must chart it, and my gears are not what they were."
+ask_map = "Do you sell maps?"
+ask_who = "Who are you?"
+ask_road = "What is on this road?"
+bye = "Goodbye."
+about = "A clockwork owl, wound by a hand that is long gone. I ticked on, and so I chart what the tide has not erased."
+about_road = "Brass, mostly. Gardens of it, and a gate that wants more than a lantern. I will draw it when I know it."
+shop = "One map of the Sunken Quarter, every street and stair. Embers, if you please."
+thanks = "Hoo. Mind the margins."
 
 [medal]
 gold = "Gold"
@@ -233,3 +269,6 @@ name = "Oil flask"
 
 [grant.flare_pouch]
 name = "Flare pouch"
+
+[grant.map.quarter]
+name = "Map of the Sunken Quarter"

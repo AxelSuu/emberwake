@@ -26,8 +26,154 @@ next = "again"
 
 [tinker.shop]
 text = "dialogue.tinker.shop"
-action = "shop"
+action = "shop:tinker"
 next = "thanks"
 
 [tinker.thanks]
 text = "dialogue.tinker.thanks"
+
+# Keeper Hesper: stage 1 (hesper_stage) is once the Great Lamp burns. Each Lost Light threshold
+# (lost_lights, counted by the world) is paid once, in order: hesper_paid_1..3.
+
+[hesper.start]
+text = "dialogue.hesper.hello"
+branches = [
+    { if = "hesper_stage>=1", goto = "lit" },
+    { if = "met_hesper", goto = "again" },
+]
+set = { met_hesper = 1 }
+choices = [
+    { text = "dialogue.hesper.ask_lamps", goto = "lamps" },
+    { text = "dialogue.hesper.ask_lights", goto = "check1" },
+    { text = "dialogue.hesper.bye" },
+]
+
+[hesper.again]
+text = "dialogue.hesper.welcome_back"
+choices = [
+    { text = "dialogue.hesper.ask_lamps", goto = "lamps" },
+    { text = "dialogue.hesper.ask_lights", goto = "check1" },
+    { text = "dialogue.hesper.bye" },
+]
+
+[hesper.lit]
+text = "dialogue.hesper.lit"
+set = { met_hesper = 1 }
+choices = [
+    { text = "dialogue.hesper.ask_lights", goto = "check1" },
+    { text = "dialogue.hesper.ask_road", goto = "road" },
+    { text = "dialogue.hesper.bye" },
+]
+
+[hesper.lamps]
+text = "dialogue.hesper.lamps"
+next = "start"
+
+[hesper.road]
+text = "dialogue.hesper.road"
+next = "start"
+
+[hesper.check1]
+branches = [
+    { if = "hesper_paid_1", goto = "check2" },
+    { if = "lost_lights>=1", goto = "pay1" },
+    { goto = "lights_wait" },
+]
+
+[hesper.pay1]
+text = "dialogue.hesper.pay1"
+set = { hesper_paid_1 = 1 }
+action = "pay:50"
+next = "check2"
+
+[hesper.check2]
+branches = [
+    { if = "hesper_paid_2", goto = "check3" },
+    { if = "lost_lights>=2", goto = "pay2" },
+    { goto = "lights_wait" },
+]
+
+[hesper.pay2]
+text = "dialogue.hesper.pay2"
+set = { hesper_paid_2 = 1 }
+action = "give:flare_pouch"
+next = "check3"
+
+[hesper.check3]
+branches = [
+    { if = "hesper_paid_3", goto = "lights_done" },
+    { if = "lost_lights>=3", goto = "pay3" },
+    { goto = "lights_wait" },
+]
+
+[hesper.pay3]
+text = "dialogue.hesper.pay3"
+set = { hesper_paid_3 = 1 }
+action = "give:oil_flask"
+next = "lights_done"
+
+[hesper.lights_wait]
+text = "dialogue.hesper.lights_wait"
+next = "start"
+
+[hesper.lights_done]
+text = "dialogue.hesper.lights_done"
+next = "start"
+
+# Quill: stage 0 in the Belfry, 1 in Market Square, 2 on the road to Brass Gardens (quill_stage).
+
+[quill.start]
+text = "dialogue.quill.hello"
+branches = [
+    { if = "quill_stage>=2", goto = "road" },
+    { if = "quill_stage>=1", goto = "square" },
+    { if = "met_quill", goto = "again" },
+]
+set = { met_quill = 1 }
+choices = [
+    { text = "dialogue.quill.ask_map", goto = "shop" },
+    { text = "dialogue.quill.ask_who", goto = "about" },
+    { text = "dialogue.quill.bye" },
+]
+
+[quill.again]
+text = "dialogue.quill.welcome_back"
+choices = [
+    { text = "dialogue.quill.ask_map", goto = "shop" },
+    { text = "dialogue.quill.ask_who", goto = "about" },
+    { text = "dialogue.quill.bye" },
+]
+
+[quill.square]
+text = "dialogue.quill.square"
+set = { met_quill = 1 }
+choices = [
+    { text = "dialogue.quill.ask_map", goto = "shop" },
+    { text = "dialogue.quill.ask_who", goto = "about" },
+    { text = "dialogue.quill.bye" },
+]
+
+[quill.road]
+text = "dialogue.quill.road"
+set = { met_quill = 1 }
+choices = [
+    { text = "dialogue.quill.ask_map", goto = "shop" },
+    { text = "dialogue.quill.ask_road", goto = "about_road" },
+    { text = "dialogue.quill.bye" },
+]
+
+[quill.about]
+text = "dialogue.quill.about"
+next = "start"
+
+[quill.about_road]
+text = "dialogue.quill.about_road"
+next = "start"
+
+[quill.shop]
+text = "dialogue.quill.shop"
+action = "shop:quill"
+next = "thanks"
+
+[quill.thanks]
+text = "dialogue.quill.thanks"

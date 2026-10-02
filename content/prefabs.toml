@@ -127,6 +127,18 @@ Sprite = { image = "tinker" }
 Interactable = { prompt = "talk" }
 Npc = { dialogue = "tinker" }
 
+[hesper]
+[hesper.components]
+Sprite = { image = "hesper" }
+Interactable = { prompt = "talk" }
+Npc = { dialogue = "hesper" }
+
+[quill]
+[quill.components]
+Sprite = { image = "quill" }
+Interactable = { prompt = "talk" }
+Npc = { dialogue = "quill" }
+
 [goal]
 [goal.components]
 Sprite = { image = "goal" }
