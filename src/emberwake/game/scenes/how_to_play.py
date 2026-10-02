@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from emberwake.engine.ui import Button, Label, Panel, Row, ScrollList, Widget
 from emberwake.game.actions import Action
+from emberwake.game.rebind import key_name, labels
 from emberwake.game.scenes.controls import LABELS
 from emberwake.game.scenes.overlay import Overlay
 
@@ -30,11 +31,6 @@ TIPS = (
 """In the order a new player meets them. Placeholders are action names, filled with keys."""
 
 
-def key_name(name: str) -> str:
-    """A pygame key name as players read it: "left shift" -> "Left Shift", "e" -> "E"."""
-    return name.title()
-
-
 def keys_text(keys: dict[str, list[str]], action: Action) -> str:
     """Up to three of the keys bound to `action`, or a dash if none."""
     names = [key_name(name) for name in keys.get(action, [])[:KEYS_SHOWN]]
@@ -53,7 +49,7 @@ class HowToPlayScene(Overlay):
     @staticmethod
     def _rows(ctx: GameContext) -> list[Widget]:
         keys = ctx.settings.controls.keys
-        first = {action.value: key_name(next(iter(keys.get(action, [])), "-")) for action in Action}
+        first = labels(keys)
         rows: list[Widget] = [Label(ctx.t("help.controls"), dim=True)]
         rows.extend(Row(ctx.t(LABELS[action]), keys_text(keys, action)) for action in Action)
         rows.append(Label(ctx.t("help.tips"), dim=True))
