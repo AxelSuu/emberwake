@@ -1,6 +1,6 @@
 # Push crates
 
-**Milestone:** M9  **Status:** draft  **Issue:** #124
+**Milestone:** M9  **Status:** done  **Issue:** #124
 
 ## Goal
 Weight the world: the player shoves a crate along the floor, drops it off a ledge, stacks it and
@@ -30,7 +30,7 @@ stands on it, and a crate on a pressure plate holds the plate down so the player
   one-way platforms, the player's head and each other, and rest there. A crate is never inside
   a solid tile. Crates are stepped bottom first, so a stack stays whole.
 - **Weighs plates.** A `PressurePlate` is down while the player stands in it or a crate has at
-  least `weigh_share` of its width over the plate, resting in its rows. A crate on a plate keeps
+  least `share` (0.5) of its width over the plate, resting in its rows. A crate on a plate keeps
   its `Switch` on, so a door stays open without the player.
 - **Void.** A crate that falls out of the world is back at its home (where the level places it).
 - **Persistence.** Where a crate is, as an offset from its home, is saved by iid (`CrateRest`),
@@ -47,34 +47,33 @@ stands on it, and a crate on a pressure plate holds the plate down so the player
   crate can really be pushed there.
 
 ## Tuning parameters
-`content/feel.toml`, `[crates]`.
+`content/feel.toml`, `[crates]`. The share of a crate over a plate that presses it is `Weight.share`
+(0.5) in the `push_crate` prefab.
 
 | Name | Default | Notes |
 |---|---|---|
 | push_speed | 60 | px/s a pushed crate and the player move at |
 | gravity | 1200 | px/s² |
 | max_fall | 360 | px/s |
-| weigh_share | 0.5 | share of a crate's width over a plate that presses it |
 
 ## Acceptance criteria
-- [ ] The player cannot walk through a crate, stands on it, and is carried upward by nothing:
-  jumping from its top works.
-- [ ] Walking into a crate pushes it at `push_speed` and the player keeps pace; a crate against
+- [x] The player cannot walk through a crate, stands on it and can jump from its top.
+- [x] Walking into a crate pushes it at `push_speed` and the player keeps pace; a crate against
   a wall or another stuck crate stops the player.
-- [ ] A crate pushed off a ledge falls and lands on the floor, a one-way platform or another
+- [x] A crate pushed off a ledge falls and lands on the floor, a one-way platform or another
   crate, and a stack of two stays whole.
-- [ ] A crate on a PressurePlate holds it down with the player away, and releases it when
+- [x] A crate on a PressurePlate holds it down with the player away, and releases it when
   pushed off; a crate barely on the plate does not press it.
-- [ ] A crate's position survives its room unloading and reloading, and quitting and continuing.
-- [ ] Resting at a beacon sends crates home, in unloaded rooms too; a crate that falls out of the
+- [x] A crate's position survives its room unloading and reloading, and quitting and continuing.
+- [x] Resting at a beacon sends crates home, in unloaded rooms too; a crate that falls out of the
   world is home again.
-- [ ] A door whose only plate is out of the player's reach but shares a room with a reachable
+- [x] A door whose only plate is out of the player's reach but shares a room with a reachable
   PushCrate passes the world validator; without the crate, or with the crate in another room,
   it is reported.
-- [ ] Two runs of the same input leave crates in the same places.
+- [x] Two runs of the same input leave crates in the same places.
 
 ## Tests
-`tests/unit/engine/test_kinematic.py` covers `move` and `overlaps` against solids;
+`tests/unit/engine/test_physics.py` covers `move` and `overlaps` against solids;
 `tests/unit/game/test_crates.py` drives the systems on a small world;
 `tests/integration/test_crates.py` plays `Crate_Lab`: pushing a crate onto its plate, dropping
 one from a ledge, reloads, resting and a quit and continue;
