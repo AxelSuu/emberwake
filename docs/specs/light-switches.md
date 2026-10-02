@@ -1,6 +1,6 @@
 # Light switches
 
-**Milestone:** M9  **Status:** draft  **Issue:** #122
+**Milestone:** M9  **Status:** done  **Issue:** #122
 
 ## Goal
 Light and the lantern become signals. A photocell opens a door while something bright is near
@@ -46,17 +46,17 @@ A photocell's `Threshold` (0 to 1) is a level field, default 0.4: the player's l
 56, reaches it from 34 px, a lit brazier from 43 px.
 
 ## Acceptance criteria
-- [ ] A photocell is on while the light at it is at least its threshold and off otherwise: from
+- [x] A photocell is on while the light at it is at least its threshold and off otherwise: from
   the lantern, a flare, or a lit brazier; a door it targets follows.
-- [ ] A swing, from any direction, lights a cold brazier once; it then gives light and powers
+- [x] A swing, from any direction, lights a cold brazier once; it then gives light and powers
   its targets.
-- [ ] A flare touching a cold brazier lights it; a burnt-out flare does not.
-- [ ] A lit brazier stays lit when its room reloads and after quitting and continuing, and powers
+- [x] A flare touching a cold brazier lights it; a burnt-out flare does not.
+- [x] A lit brazier stays lit when its room reloads and after quitting and continuing, and powers
   its targets while its room is unloaded.
-- [ ] Ringing a bell stuns enemies within its radius, not those outside, for `bell_stun` seconds;
+- [x] Ringing a bell stuns enemies within its radius, not those outside, for `bell_stun` seconds;
   a stunned enemy cannot hurt by contact and resumes after.
-- [ ] A bell powers its targets for `bell_pulse` seconds after a ring.
-- [ ] `Signal_Lab` has one of each wired to a door.
+- [x] A bell powers its targets for `bell_pulse` seconds after a ring.
+- [x] `Signal_Lab` has one of each wired to a door.
 
 ## Tests
 `tests/unit/game/test_switches.py` drives the systems on a small world;
