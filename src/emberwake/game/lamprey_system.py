@@ -47,6 +47,7 @@ def lamprey_system(world: World, dt: float) -> None:
             _advance(ctx, health, bus)
             if lamprey.tree is not None:
                 lamprey.tree.tick(ctx, dt)
+        lamprey.since += dt
         _apply(world, eid, lamprey)
 
 
