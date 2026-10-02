@@ -1,3 +1,5 @@
+fields = { Area = "lab" }
+
 [entities.c]
 type = "Clockrat"
 [entities.g]

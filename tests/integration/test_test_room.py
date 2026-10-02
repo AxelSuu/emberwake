@@ -14,20 +14,17 @@ from emberwake.game import paths
 from emberwake.game.actions import Action
 from emberwake.game.feel import load_feel
 from emberwake.game.player.controller import new_player, step, wall_side
-from emberwake.game.scenes.gameplay import COLLISIONS, DEFAULT_ROOM, WORLD, GameplayScene
+from emberwake.game.scenes.gameplay import COLLISIONS, WORLD, GameplayScene
 
 if TYPE_CHECKING:
     from emberwake.game.context import GameContext
 
 TS = 16
+ROOM = "Test_Room"
+ROOM_X = 60 * 320
 DT = 1 / 60
 TUNING = load_feel(paths.content("feel.toml")).player
-GRID = (
-    load_project(paths.levels(WORLD))
-    .level(DEFAULT_ROOM)
-    .layer("Collisions")
-    .to_tile_grid(COLLISIONS)
-)
+GRID = load_project(paths.levels(WORLD)).level(ROOM).layer("Collisions").to_tile_grid(COLLISIONS)
 R, J, D = Action.RIGHT, Action.JUMP, Action.DASH
 
 
@@ -73,10 +70,10 @@ def test_dash_gap_needs_a_dash(dash_after: int | None, crosses: bool):
 
 def test_east_exit_leads_to_the_east_passage(ctx: GameContext):
     scenes = SceneManager()
-    scene = GameplayScene(ctx, replay=Replay(DEFAULT_ROOM, 0, [(90, ["right"])]))
+    scene = GameplayScene(ctx, replay=Replay(ROOM, 0, [(90, ["right"])]))
     scenes.push(scene)
     body = scene.body
-    body.x, body.y = 77 * TS, 30 * TS - body.height
+    body.x, body.y = ROOM_X + 77 * TS, 30 * TS - body.height
     for _ in range(90):
         scenes.update(DT)
     assert scene.room == "East_Passage"

@@ -11,7 +11,7 @@
 	"iid": "87b725ab-f0a4-5a9b-ba96-4e58e071114b",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703.0,
-	"nextUid": 65,
+	"nextUid": 66,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -2182,7 +2182,7 @@
 			"identifier": "Test_Room",
 			"iid": "eb326814-3402-5863-8e59-bf67cc32e082",
 			"uid": 16,
-			"worldX": 0,
+			"worldX": 19200,
 			"worldY": 0,
 			"worldDepth": 0,
 			"pxWid": 1280,
@@ -2297,7 +2297,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#F9C22B",
-							"__worldX": 72,
+							"__worldX": 19272,
 							"__worldY": 480,
 							"iid": "9f11bd29-faac-51a7-9965-e478c1e1b40d",
 							"width": 16,
@@ -2339,7 +2339,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#FBFF86",
-							"__worldX": 136,
+							"__worldX": 19336,
 							"__worldY": 480,
 							"iid": "1ced6211-3534-5a5d-a074-ea8ac198a315",
 							"width": 16,
@@ -5052,7 +5052,7 @@
 			"identifier": "East_Passage",
 			"iid": "2efbf4f0-0631-51b6-a876-99117d760120",
 			"uid": 17,
-			"worldX": 1280,
+			"worldX": 20480,
 			"worldY": 352,
 			"worldDepth": 0,
 			"pxWid": 320,
@@ -5167,7 +5167,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#F9C22B",
-							"__worldX": 1336,
+							"__worldX": 20536,
 							"__worldY": 480,
 							"iid": "7787791d-6350-5a76-9ab1-c26727df5aa0",
 							"width": 16,
@@ -5209,7 +5209,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#FBFF86",
-							"__worldX": 1448,
+							"__worldX": 20648,
 							"__worldY": 480,
 							"iid": "3b0a89a4-bbd4-5e7e-ac2c-800868dd4b10",
 							"width": 16,
@@ -5502,7 +5502,7 @@
 			"identifier": "Lever_Hall",
 			"iid": "b61dd4c9-a095-5020-81ac-cf4750a3d7eb",
 			"uid": 18,
-			"worldX": 1600,
+			"worldX": 20800,
 			"worldY": 352,
 			"worldDepth": 0,
 			"pxWid": 320,
@@ -5551,14 +5551,14 @@
 				{
 					"__identifier": "Area",
 					"__type": "String",
-					"__value": "quarter",
+					"__value": "lab",
 					"__tile": null,
 					"defUid": 37,
 					"realEditorValues": [
 						{
 							"id": "V_String",
 							"params": [
-								"quarter"
+								"lab"
 							]
 						}
 					]
@@ -5617,7 +5617,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#966C6C",
-							"__worldX": 1760,
+							"__worldX": 20960,
 							"__worldY": 432,
 							"iid": "596c1b7e-eee6-53dd-a281-028ef6634884",
 							"width": 16,
@@ -5689,7 +5689,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#F9C22B",
-							"__worldX": 1656,
+							"__worldX": 20856,
 							"__worldY": 480,
 							"iid": "a59c9cde-1f3e-5e5a-8a15-5ef379ba3dec",
 							"width": 16,
@@ -5731,7 +5731,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#FB6B1D",
-							"__worldX": 1688,
+							"__worldX": 20888,
 							"__worldY": 480,
 							"iid": "8c1b95b8-bc59-5ef7-b8e3-be41217e8632",
 							"width": 16,
@@ -5810,7 +5810,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#EA4F36",
-							"__worldX": 1864,
+							"__worldX": 21064,
 							"__worldY": 472,
 							"iid": "f8a4fb2d-61ae-58a5-93dc-0b87114df9f5",
 							"width": 16,
@@ -6118,7 +6118,7 @@
 			"identifier": "Shaft",
 			"iid": "87625e2e-d777-5e43-be22-683a34fd7a7b",
 			"uid": 20,
-			"worldX": 1920,
+			"worldX": 21120,
 			"worldY": 176,
 			"worldDepth": 0,
 			"pxWid": 320,
@@ -6167,14 +6167,14 @@
 				{
 					"__identifier": "Area",
 					"__type": "String",
-					"__value": "quarter",
+					"__value": "lab",
 					"__tile": null,
 					"defUid": 37,
 					"realEditorValues": [
 						{
 							"id": "V_String",
 							"params": [
-								"quarter"
+								"lab"
 							]
 						}
 					]
@@ -6233,7 +6233,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#F9C22B",
-							"__worldX": 1960,
+							"__worldX": 21160,
 							"__worldY": 480,
 							"iid": "d16604be-4166-5ba7-a4f2-a151c66cab87",
 							"width": 16,
@@ -6750,7 +6750,7 @@
 			"identifier": "Plate_Room",
 			"iid": "f75739c3-7034-5fc0-beed-47597700ccde",
 			"uid": 21,
-			"worldX": 2240,
+			"worldX": 21440,
 			"worldY": 176,
 			"worldDepth": 0,
 			"pxWid": 320,
@@ -6799,14 +6799,14 @@
 				{
 					"__identifier": "Area",
 					"__type": "String",
-					"__value": "quarter",
+					"__value": "lab",
 					"__tile": null,
 					"defUid": 37,
 					"realEditorValues": [
 						{
 							"id": "V_String",
 							"params": [
-								"quarter"
+								"lab"
 							]
 						}
 					]
@@ -6865,7 +6865,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#966C6C",
-							"__worldX": 2496,
+							"__worldX": 21696,
 							"__worldY": 272,
 							"iid": "7de21a2a-ff4f-5ba6-bd51-c9078dafc4c7",
 							"width": 16,
@@ -6937,7 +6937,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#F9C22B",
-							"__worldX": 2280,
+							"__worldX": 21480,
 							"__worldY": 320,
 							"iid": "0050e10e-4a5b-5411-ad52-629785aeb877",
 							"width": 16,
@@ -6979,7 +6979,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#AB947A",
-							"__worldX": 2488,
+							"__worldX": 21688,
 							"__worldY": 320,
 							"iid": "2f8b6809-6f16-5377-9314-34b2c1cd0ea8",
 							"width": 16,
@@ -7298,7 +7298,7 @@
 			"identifier": "Upper_Room",
 			"iid": "856d3084-7959-52fb-a364-62179b0b375e",
 			"uid": 22,
-			"worldX": 2560,
+			"worldX": 21760,
 			"worldY": 0,
 			"worldDepth": 0,
 			"pxWid": 320,
@@ -7413,7 +7413,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#EA4F36",
-							"__worldX": 2760,
+							"__worldX": 21960,
 							"__worldY": 168,
 							"iid": "2c4fe35a-2f23-582d-a8c2-03d8846069dd",
 							"width": 16,
@@ -7470,7 +7470,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#EA4F36",
-							"__worldX": 2664,
+							"__worldX": 21864,
 							"__worldY": 216,
 							"iid": "3ac728a9-a590-56c7-9763-d73bf427614c",
 							"width": 16,
@@ -7527,7 +7527,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#EA4F36",
-							"__worldX": 2760,
+							"__worldX": 21960,
 							"__worldY": 264,
 							"iid": "6da54983-71df-51b6-9382-89b0b812eec5",
 							"width": 16,
@@ -7584,7 +7584,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#F9C22B",
-							"__worldX": 2600,
+							"__worldX": 21800,
 							"__worldY": 320,
 							"iid": "f89b79fe-68d9-57a6-9ab1-1e06b18b9146",
 							"width": 16,
@@ -7626,7 +7626,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#FBFF86",
-							"__worldX": 2632,
+							"__worldX": 21832,
 							"__worldY": 320,
 							"iid": "5ef6a773-0bae-5ef8-9e98-28bbe222621f",
 							"width": 16,
@@ -8139,7 +8139,7 @@
 			"identifier": "Return_Hall",
 			"iid": "1a4e6c86-02c7-5cc3-879f-b944ae1f76ec",
 			"uid": 23,
-			"worldX": 1280,
+			"worldX": 20480,
 			"worldY": 0,
 			"worldDepth": 0,
 			"pxWid": 1280,
@@ -8254,7 +8254,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#F9C22B",
-							"__worldX": 2520,
+							"__worldX": 21720,
 							"__worldY": 144,
 							"iid": "f2a09c84-6794-52bb-9bd9-9f5e72f70dcd",
 							"width": 16,
@@ -9215,7 +9215,7 @@
 			"identifier": "Enemy_Yard",
 			"iid": "e2e1f6d5-0fdc-5f3f-be7c-29edf64f23c5",
 			"uid": 29,
-			"worldX": 0,
+			"worldX": 19200,
 			"worldY": 704,
 			"worldDepth": 0,
 			"pxWid": 640,
@@ -9264,14 +9264,14 @@
 				{
 					"__identifier": "Area",
 					"__type": "String",
-					"__value": "quarter",
+					"__value": "lab",
 					"__tile": null,
 					"defUid": 37,
 					"realEditorValues": [
 						{
 							"id": "V_String",
 							"params": [
-								"quarter"
+								"lab"
 							]
 						}
 					]
@@ -9330,7 +9330,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#8FF8E2",
-							"__worldX": 424,
+							"__worldX": 19624,
 							"__worldY": 760,
 							"iid": "fd20aca8-6c3e-5685-a60d-fca209813809",
 							"width": 16,
@@ -9372,7 +9372,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#8FF8E2",
-							"__worldX": 224,
+							"__worldX": 19424,
 							"__worldY": 800,
 							"iid": "fdf33b0b-4165-5603-b3a1-7863e8934dbb",
 							"width": 80,
@@ -9414,7 +9414,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#F9C22B",
-							"__worldX": 40,
+							"__worldX": 19240,
 							"__worldY": 864,
 							"iid": "4993e307-5ebc-537f-8bac-d190db41448a",
 							"width": 16,
@@ -9456,7 +9456,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#B33831",
-							"__worldX": 168,
+							"__worldX": 19368,
 							"__worldY": 864,
 							"iid": "386fcee9-216b-5e86-a05f-410f742075a1",
 							"width": 16,
@@ -9498,7 +9498,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#45293F",
-							"__worldX": 360,
+							"__worldX": 19560,
 							"__worldY": 864,
 							"iid": "13ca1355-4581-5bb7-afc8-6e76008634a3",
 							"width": 16,
@@ -9540,7 +9540,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#F9C22B",
-							"__worldX": 488,
+							"__worldX": 19688,
 							"__worldY": 864,
 							"iid": "870f042f-4bb6-5312-9560-0105b075e9ae",
 							"width": 16,
@@ -9582,7 +9582,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#FBB954",
-							"__worldX": 552,
+							"__worldX": 19752,
 							"__worldY": 864,
 							"iid": "4659902b-6b12-55cd-a984-c91211c677e5",
 							"width": 16,
@@ -9624,7 +9624,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#FBFF86",
-							"__worldX": 584,
+							"__worldX": 19784,
 							"__worldY": 864,
 							"iid": "056ebd9e-ff09-5058-9581-afb0de9b626e",
 							"width": 16,
@@ -10128,7 +10128,7 @@
 			"identifier": "Trial_Sprint",
 			"iid": "8a573a3b-e52b-5ea7-a603-d25f1a0ef1bf",
 			"uid": 32,
-			"worldX": 0,
+			"worldX": 19200,
 			"worldY": 1056,
 			"worldDepth": 0,
 			"pxWid": 640,
@@ -10177,14 +10177,14 @@
 				{
 					"__identifier": "Area",
 					"__type": "String",
-					"__value": "quarter",
+					"__value": "lab",
 					"__tile": null,
 					"defUid": 37,
 					"realEditorValues": [
 						{
 							"id": "V_String",
 							"params": [
-								"quarter"
+								"lab"
 							]
 						}
 					]
@@ -10243,7 +10243,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#30E1B9",
-							"__worldX": 592,
+							"__worldX": 19792,
 							"__worldY": 1168,
 							"iid": "075dc117-2a9c-5d36-b962-e65e96897c14",
 							"width": 16,
@@ -10285,7 +10285,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#F9C22B",
-							"__worldX": 40,
+							"__worldX": 19240,
 							"__worldY": 1216,
 							"iid": "d570aaaf-7790-574a-b9e1-666725034c07",
 							"width": 16,
@@ -10789,7 +10789,7 @@
 			"identifier": "Trial_Pits",
 			"iid": "ac144cd9-4283-5436-a4b1-0d4790df7bc5",
 			"uid": 33,
-			"worldX": 0,
+			"worldX": 19200,
 			"worldY": 1408,
 			"worldDepth": 0,
 			"pxWid": 640,
@@ -10838,14 +10838,14 @@
 				{
 					"__identifier": "Area",
 					"__type": "String",
-					"__value": "quarter",
+					"__value": "lab",
 					"__tile": null,
 					"defUid": 37,
 					"realEditorValues": [
 						{
 							"id": "V_String",
 							"params": [
-								"quarter"
+								"lab"
 							]
 						}
 					]
@@ -10904,7 +10904,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#30E1B9",
-							"__worldX": 592,
+							"__worldX": 19792,
 							"__worldY": 1520,
 							"iid": "3a568df9-2f12-51e3-bcac-ed3098b5c4c8",
 							"width": 16,
@@ -10946,7 +10946,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#F9C22B",
-							"__worldX": 40,
+							"__worldX": 19240,
 							"__worldY": 1568,
 							"iid": "c9297cb6-cd7c-58e3-827c-564405bc8fff",
 							"width": 16,
