@@ -64,3 +64,6 @@ cell = [8, 6]
 
 [rooms.Clocktower_Stair]
 cell = [8, 2]
+
+[rooms.Clock_Face]
+cell = [8, 0]

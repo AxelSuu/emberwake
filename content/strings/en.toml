@@ -277,6 +277,7 @@ name = "Map of the Sunken Quarter"
 lore_move = "Run with {left} and {right}.\nJump with {jump}."
 belfry_hook = "A brass hook hangs over the gap.\nYou have nothing to throw yet."
 pogo = "Hold {down} and swing in the air:\nspikes bounce you up."
+hook_gap = "A rusted hook on the far ledge.\nThe gap is too wide for now."
 
 [echo]
 lore_hall = "I lit this lamp last. The oil ran out before the street did."
