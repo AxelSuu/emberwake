@@ -283,6 +283,7 @@ nook_hatch = "The cellar is below. Hold {down} and press {jump} to drop through 
 belfry_hook = "A brass hook hangs over the gap.\nYou have nothing to throw yet."
 pogo = "Hold {down} and swing in the air:\nspikes bounce you up."
 hook_gap = "A rusted hook on the far ledge.\nThe gap is too wide for now."
+plate_crate = "Heavy things can be pushed.\nA crate on the plate holds the door."
 
 [echo]
 lore_hall = "I lit this lamp last. The oil ran out before the street did."
