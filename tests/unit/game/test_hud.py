@@ -4,7 +4,7 @@ import pygame
 import pytest
 
 from emberwake.game import palette
-from emberwake.game.render.hud import BANNER_SHOWN, EMBERS_SHOWN, ORIGIN, Hud, HudState
+from emberwake.game.render.hud import BANNER_SHOWN, EMBERS_SHOWN, FADE, ORIGIN, Hud, HudState
 
 
 @pytest.fixture(autouse=True)
@@ -64,3 +64,17 @@ def test_banners_fade_out_and_hidden_draws_nothing() -> None:
 
 def test_an_empty_flame_and_no_flares_still_draw() -> None:
     Hud().draw(canvas(), state(flame=0.0, flares=0, max_flares=0))
+
+
+def test_a_banner_shows_its_second_line_under_the_rule() -> None:
+    def lit_below(sub: str) -> bool:
+        hud = Hud()
+        hud.banner("The Sunken Quarter", sub)
+        hud.update(FADE)
+        target = canvas()
+        hud.draw(target, state())
+        plum = pygame.Color(palette.PLUM)
+        return any(target.get_at((x, y)) != plum for x in range(60, 260) for y in range(44, 60))
+
+    assert lit_below("Light 40 %")
+    assert not lit_below("")

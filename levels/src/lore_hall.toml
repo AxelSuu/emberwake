@@ -1,0 +1,19 @@
+fields = { Backdrop = "ruins", Area = "lab" }
+
+[entities.s]
+type = "Signpost"
+fields = { Text = "lore_move" }
+
+[entities.e]
+type = "Echo"
+fields = { Id = "lore_hall" }
+
+[entities.l]
+type = "LostLight"
+fields = { Id = "lore_hall" }
+[entities.k]
+type = "Beacon"
+
+[entities.t]
+type = "TrialDoor"
+fields = { Trial = "sprint" }

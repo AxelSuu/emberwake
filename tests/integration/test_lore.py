@@ -1,0 +1,252 @@
+"""Lore_Hall: a signpost, an Echo, a Lost Light and a Trial door."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import pygame
+
+from emberwake.engine.physics import Body
+from emberwake.engine.scene import SceneManager
+from emberwake.engine.world.ldtk import load_project
+from emberwake.game import paths
+from emberwake.game.actions import Action
+from emberwake.game.areas import LightCensus, load_areas
+from emberwake.game.combat import Killed
+from emberwake.game.components import Sprite
+from emberwake.game.data.records import load_records
+from emberwake.game.lore import Echo, EchoPlay, Sign, speeches
+from emberwake.game.lost_lights import Spirit
+from emberwake.game.scenes.gameplay import GameplayScene
+from emberwake.game.scenes.trials import TrialsScene
+from emberwake.game.trials import TrialDoor, load_trials
+
+if TYPE_CHECKING:
+    import pytest
+
+    from emberwake.game.context import GameContext
+
+STEP = 1 / 60
+ROOM = "Lore_Hall"
+
+
+def start(ctx: GameContext) -> tuple[SceneManager, GameplayScene]:
+    scenes = SceneManager()
+    game = GameplayScene(ctx, room=ROOM)
+    scenes.push(game)
+    scenes.update(STEP)
+    return scenes, game
+
+
+def settle(scenes: SceneManager, ticks: int = 3) -> None:
+    for _ in range(ticks):
+        scenes.update(STEP)
+
+
+def stand_at(game: GameplayScene, component: type) -> None:
+    for _, body, _ in game.world.query(Body, component):
+        game.body.x, game.body.y = body.x, body.y + body.height - game.body.height
+        return
+    raise AssertionError(component)
+
+
+def census_of(game: GameplayScene) -> LightCensus:
+    levels = load_project(game.world_path).all_levels
+    return LightCensus(levels, game.spawner.prefabs, load_areas(paths.content("areas.toml")).light)
+
+
+def said(game: GameplayScene) -> list[str]:
+    return [s.text for s in speeches(game.world, game.ctx.t, game.ctx.settings.controls.keys)]
+
+
+def test_the_signpost_reads_out_the_current_keys_when_near(ctx: GameContext) -> None:
+    scenes, game = start(ctx)
+    assert said(game) == []
+    stand_at(game, Sign)
+    settle(scenes)
+    (text,) = said(game)
+    assert "[Space]" in text
+    game.ctx.settings.controls.keys["jump"] = ["j"]
+    assert "[J]" in said(game)[0]
+
+
+def test_the_speech_bubble_is_drawn_over_the_world(ctx: GameContext) -> None:
+    scenes, game = start(ctx)
+    stand_at(game, Sign)
+    settle(scenes)
+    canvas = pygame.Surface(ctx.canvas_size)
+    game.draw(canvas, 1.0)
+    before = pygame.image.tobytes(canvas, "RGB")
+    game.bubbles.draw(canvas, "hello", (100, 100))
+    assert pygame.image.tobytes(canvas, "RGB") != before
+
+
+def use(scenes: SceneManager, key: int = pygame.K_e) -> None:
+    scenes.handle(pygame.event.Event(pygame.KEYDOWN, key=key))
+    settle(scenes, 2)
+    scenes.handle(pygame.event.Event(pygame.KEYUP, key=key))
+    settle(scenes, 2)
+
+
+def plays(game: GameplayScene) -> list[EchoPlay]:
+    return [play for _, play in game.world.query(EchoPlay)]
+
+
+def hear_the_echo(ctx: GameContext) -> tuple[SceneManager, GameplayScene]:
+    scenes, game = start(ctx)
+    stand_at(game, Echo)
+    settle(scenes)
+    use(scenes)
+    return scenes, game
+
+
+def test_using_an_echo_plays_its_ghost_and_shows_its_line(ctx: GameContext) -> None:
+    scenes, game = hear_the_echo(ctx)
+    (play,) = plays(game)
+    assert play.ghost is not None
+    start_x = play.ghost.body.x
+    assert said(game) == [ctx.t("echo.lore_hall")]
+    settle(scenes, 60)
+    assert play.ghost.body.x > start_x + 20
+    game.draw(pygame.Surface(ctx.canvas_size), 1.0)
+
+
+def test_the_ghost_ends_and_the_line_fades_after_the_hold(ctx: GameContext) -> None:
+    scenes, game = hear_the_echo(ctx)
+    settle(scenes, 200)
+    (play,) = plays(game)
+    assert play.ghost is not None
+    assert play.ghost.finished
+    assert said(game) == [ctx.t("echo.lore_hall")]
+    settle(scenes, 200)
+    assert plays(game) == []
+    assert said(game) == []
+
+
+def test_an_echo_counts_once_however_often_it_is_heard(ctx: GameContext) -> None:
+    scenes, game = hear_the_echo(ctx)
+    flags = game.progress.data.flags
+    assert flags["echo_lore_hall"] == flags["echoes"] == 1
+    assert len(game.toasts) == 1
+    settle(scenes, 400)
+    use(scenes)
+    assert plays(game)
+    assert flags["echoes"] == 1
+    assert len(game.toasts) <= 1
+
+
+def test_a_heard_echo_is_saved_and_counts_toward_the_light(ctx: GameContext) -> None:
+    _, game = start(ctx)
+    census = census_of(game)
+    before = census.count(game.progress.data.world)["lab"]
+    _, game = hear_the_echo(ctx)
+    game.spawner.snapshot_all()
+    after = census.count(game.progress.data.world)["lab"]
+    assert (after.lit, after.total) == (before.lit + 1, before.total)
+
+
+def drive(game: GameplayScene, actions: frozenset[Action]) -> None:
+    game.__dict__["_sample"] = lambda: actions
+
+
+def light_of(game: GameplayScene) -> tuple[Body, Spirit]:
+    ((_, body, spirit),) = game.world.query(Body, Spirit)
+    return body, spirit
+
+
+def lead_the_light(scenes: SceneManager, game: GameplayScene, limit: int = 900) -> None:
+    """Walk to the light, then right until it is rescued or time is up."""
+    stand_at(game, Spirit)
+    drive(game, frozenset({Action.RIGHT}))
+    for _ in range(limit):
+        scenes.update(STEP)
+        if game.progress.data.flags.get("lost_lights"):
+            break
+
+
+def test_a_lost_light_follows_the_player_to_the_beacon_and_is_rescued(ctx: GameContext) -> None:
+    scenes, game = start(ctx)
+    body, spirit = light_of(game)
+    home = body.x
+    lead_the_light(scenes, game)
+    flags = game.progress.data.flags
+    assert flags["lost_light_lore_hall"] == flags["lost_lights"] == 1
+    assert body.x > home + 100
+    assert not spirit.following
+    assert len(game.toasts) == 1
+    settle(scenes)
+    ((eid, _),) = game.world.query(Spirit)
+    assert not game.world.has(eid, Sprite)
+
+
+def test_a_rescued_light_is_saved_and_counts_toward_the_light(ctx: GameContext) -> None:
+    scenes, game = start(ctx)
+    census = census_of(game)
+    before = census.count(game.progress.data.world)["lab"]
+    lead_the_light(scenes, game)
+    game.spawner.snapshot_all()
+    after = census.count(game.progress.data.world)["lab"]
+    assert (after.lit, after.total) == (before.lit + 1, before.total)
+
+
+def test_dying_sends_the_light_home_and_it_can_be_led_again(ctx: GameContext) -> None:
+    scenes, game = start(ctx)
+    body, spirit = light_of(game)
+    home = (body.x, body.y)
+    stand_at(game, Spirit)
+    drive(game, frozenset({Action.RIGHT}))
+    settle(scenes, 90)
+    assert spirit.following
+    assert body.x > home[0] + 40
+    game.ctx.bus.publish(Killed(game.player, game.player))
+    drive(game, frozenset())
+    settle(scenes, 120)
+    assert (body.x, body.y) == home
+    assert not spirit.following
+    assert game.progress.data.flags.get("lost_lights", 0) == 0
+    lead_the_light(scenes, game)
+    assert game.progress.data.flags["lost_lights"] == 1
+
+
+class Menu:
+    """The Trials menu with the shipped Pits locked."""
+
+    def __init__(self, ctx: GameContext, monkeypatch: pytest.MonkeyPatch) -> None:
+        trials = load_trials(paths.content("trials.toml"))
+        trials["pits"].locked = True
+        monkeypatch.setattr("emberwake.game.scenes.trials.load_trials", lambda _: trials)
+        self.ctx = ctx
+
+    def rows(self) -> list[str]:
+        return [button.text for button in TrialsScene(self.ctx).buttons]
+
+
+def test_a_trial_door_unlocks_its_trial_and_starts_it(
+    ctx: GameContext, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    menu = Menu(ctx, monkeypatch)
+    assert len(menu.rows()) == 1
+    scenes, game = start(ctx)
+    ((_, door),) = game.world.query(TrialDoor)
+    door.trial = "pits"
+    stand_at(game, TrialDoor)
+    settle(scenes)
+    use(scenes)
+    settle(scenes)
+    assert isinstance(scenes.top, GameplayScene)
+    assert scenes.top is not game
+    assert scenes.top.trial_id == "pits"
+    assert load_records(ctx.storage).unlocked == ["pits"]
+    assert len(menu.rows()) == 2
+
+
+def test_a_trial_door_to_a_missing_trial_does_nothing(ctx: GameContext) -> None:
+    scenes, game = start(ctx)
+    ((_, door),) = game.world.query(TrialDoor)
+    door.trial = "nowhere"
+    stand_at(game, TrialDoor)
+    settle(scenes)
+    use(scenes)
+    settle(scenes)
+    assert scenes.top is game
+    assert load_records(ctx.storage).unlocked == []

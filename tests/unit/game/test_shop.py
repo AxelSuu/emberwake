@@ -5,9 +5,11 @@ from tests.unit.game.test_strings import TABLES
 from emberwake.engine.core.dialogue import load_dialogues
 from emberwake.game import paths
 from emberwake.game.data.save import SaveSlot
-from emberwake.game.shop import SPENT, buy, can_buy, load_shop, owned, price, wallet
+from emberwake.game.grants import load_grants
+from emberwake.game.shop import SPENT, buy, can_buy, load_shops, owned, price, wallet
 
-SHOP = load_shop(paths.content("shop.toml"))
+SHOPS = load_shops(paths.content("shop.toml"))
+SHOP = SHOPS["tinker"]
 HP = SHOP.items["hp"]
 
 
@@ -65,3 +67,25 @@ def test_dialogue_scripts_only_use_strings_that_exist() -> None:
             for language, table in TABLES.items():
                 for key in filter(None, keys):
                     assert key in table, (language, key)
+
+
+def test_quill_sells_the_map_into_the_inventory() -> None:
+    item = SHOPS["quill"].items["map.quarter"]
+    slot = save(100)
+    assert buy(slot, item)
+    assert slot.inventory["map.quarter"] == 1
+    assert wallet(slot) == 100 - item.price
+    assert not can_buy(slot, item)
+    assert not buy(slot, item)
+    assert slot.inventory["map.quarter"] == 1
+
+
+def test_every_shop_has_a_title_and_every_grant_item_exists() -> None:
+    grants = load_grants(paths.content("grants.toml"))
+    for language, table in TABLES.items():
+        for name in SHOPS:
+            assert table[f"shop.title.{name}"], (language, name)
+    for shop in SHOPS.values():
+        for item in shop.items.values():
+            assert bool(item.flag) != bool(item.grant)
+            assert not item.grant or item.grant in grants

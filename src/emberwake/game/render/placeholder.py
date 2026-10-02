@@ -263,6 +263,23 @@ class EntityArt:
         image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.top + 1, 2, 3))
 
     @staticmethod
+    def _lamp(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 1, rect.top + 7, 2, rect.height - 7))
+        image.fill(ROCK_EDGE, (rect.centerx - 4, rect.bottom - 2, 8, 2))
+        image.fill(LANTERN_FRAME, (rect.centerx - 4, rect.top + 3, 8, 1))
+        image.fill(ROCK, (rect.centerx - 3, rect.top + 4, 6, 4))
+        image.fill(LANTERN_FRAME, (rect.centerx - 3, rect.top + 1, 6, 2))
+
+    @staticmethod
+    def _lamp_lit(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 1, rect.top + 7, 2, rect.height - 7))
+        image.fill(ROCK_EDGE, (rect.centerx - 4, rect.bottom - 2, 8, 2))
+        image.fill(LANTERN_FRAME, (rect.centerx - 4, rect.top + 3, 8, 1))
+        image.fill(palette.EMBER_WARM, (rect.centerx - 3, rect.top + 4, 6, 4))
+        image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.top + 5, 2, 2))
+        image.fill(LANTERN_FRAME, (rect.centerx - 3, rect.top + 1, 6, 2))
+
+    @staticmethod
     def _lightform(image: pygame.Surface, rect: pygame.Rect) -> None:
         for x in range(rect.left, rect.right, 4):
             image.fill(ROCK_EDGE, (x, rect.top, 2, 1))
@@ -274,11 +291,83 @@ class EntityArt:
         image.fill(palette.EMBER_CORE, (rect.left, rect.top, rect.width, 1))
 
     @staticmethod
+    def _cracked_wall(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, rect)
+        image.fill(ROCK, rect.inflate(-2, -2))
+        for y in range(rect.top, rect.bottom, 16):
+            x = rect.centerx
+            for step in range(0, min(16, rect.bottom - y), 4):
+                x += (-2, 2)[step // 4 % 2]
+                image.fill(ROCK_DARK, (x, y + step, 2, 4))
+
+    @staticmethod
+    def _crate(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(PLANK_DARK, rect)
+        image.fill(PLANK, rect.inflate(-2, -2))
+        right, bottom = rect.right - 1, rect.bottom - 1
+        pygame.draw.line(image, PLANK_DARK, rect.topleft, (right, bottom))
+        pygame.draw.line(image, PLANK_DARK, (right, rect.top), (rect.left, bottom))
+        image.fill(PLANK_LIGHT, (rect.left + 1, rect.top + 1, rect.width - 2, 1))
+
+    @staticmethod
+    def _pot(image: pygame.Surface, rect: pygame.Rect) -> None:
+        w, h = rect.size
+        pygame.draw.ellipse(image, PLANK_DARK, (1, 3, w - 2, h - 3))
+        pygame.draw.ellipse(image, PLANK, (2, 4, w - 5, h - 6))
+        image.fill(PLANK_DARK, (w // 2 - 3, 1, 6, 3))
+        image.fill(PLANK_LIGHT, (4, 6, 2, 3))
+
+    @staticmethod
+    def _crumbling_platform(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(PLANK_DARK, (rect.left, rect.top, rect.width, 5))
+        image.fill(PLANK, (rect.left, rect.top, rect.width, 4))
+        image.fill(PLANK_LIGHT, (rect.left, rect.top, rect.width, 1))
+        for x in range(rect.left + 5, rect.right - 2, 9):
+            image.fill(PLANK_DARK, (x, rect.top + 1, 1, 3))
+
+    @staticmethod
+    def _crumbling_platform_gone(image: pygame.Surface, rect: pygame.Rect) -> None:
+        for x in range(rect.left, rect.right, 4):
+            image.fill(PLANK_DARK, (x, rect.top, 2, 1))
+
+    @staticmethod
     def _brazier(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(LANTERN_FRAME, (rect.centerx - 5, rect.bottom - 6, 10, 2))
+        image.fill(ROCK_EDGE, (rect.centerx - 3, rect.bottom - 4, 6, 4))
+        image.fill(ROCK_DARK, (rect.centerx - 3, rect.bottom - 8, 6, 2))
+
+    @staticmethod
+    def _brazier_lit(image: pygame.Surface, rect: pygame.Rect) -> None:
         image.fill(LANTERN_FRAME, (rect.centerx - 5, rect.bottom - 6, 10, 2))
         image.fill(ROCK_EDGE, (rect.centerx - 3, rect.bottom - 4, 6, 4))
         image.fill(palette.EMBER_WARM, (rect.centerx - 3, rect.bottom - 10, 6, 4))
         image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.bottom - 9, 2, 3))
+
+    @staticmethod
+    def _photocell(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 4, rect.bottom - 8, 8, 8))
+        image.fill(ROCK_DARK, (rect.centerx - 3, rect.bottom - 7, 6, 6))
+        image.fill(ROCK_LIGHT, (rect.centerx - 1, rect.bottom - 5, 2, 2))
+
+    @staticmethod
+    def _photocell_on(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 4, rect.bottom - 8, 8, 8))
+        image.fill(palette.EMBER_WARM, (rect.centerx - 3, rect.bottom - 7, 6, 6))
+        image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.bottom - 5, 2, 2))
+
+    @staticmethod
+    def _bell(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(POST, (rect.centerx - 1, rect.top, 2, 3))
+        pygame.draw.ellipse(image, PLANK_LIGHT, (rect.centerx - 5, rect.top + 2, 10, 10))
+        image.fill(PLANK_LIGHT, (rect.centerx - 5, rect.top + 7, 10, 5))
+        image.fill(PLANK_DARK, (rect.centerx - 5, rect.top + 12, 10, 1))
+        image.fill(ROCK_EDGE, (rect.centerx - 1, rect.top + 13, 2, 2))
+
+    @staticmethod
+    def _bell_ring(image: pygame.Surface, rect: pygame.Rect) -> None:
+        EntityArt._bell(image, rect)
+        image.fill(palette.EMBER_CORE, (rect.centerx - 7, rect.top + 6, 1, 4))
+        image.fill(palette.EMBER_CORE, (rect.centerx + 6, rect.top + 6, 1, 4))
 
     @staticmethod
     def _clockrat(image: pygame.Surface, rect: pygame.Rect) -> None:
@@ -287,6 +376,34 @@ class EntityArt:
         image.fill(SPIKE_TIP, (rect.right - 4, rect.bottom - 6, 2, 2))
         image.fill(ROCK_EDGE, (rect.left + 2, rect.bottom - 1, 2, 1))
         image.fill(ROCK_EDGE, (rect.right - 5, rect.bottom - 1, 2, 1))
+
+    @staticmethod
+    def _clockrat_king(image: pygame.Surface, rect: pygame.Rect) -> None:
+        EntityArt._king_body(image, rect)
+        image.fill(LANTERN_FRAME, (rect.right - 13, rect.top + 3, 8, 3))
+        image.fill(palette.EMBER_WARM, (rect.right - 12, rect.top, 6, 3))
+        image.fill(palette.EMBER_CORE, (rect.right - 10, rect.top + 1, 2, 2))
+        image.fill(EYES, (rect.right - 6, rect.top + 11, 2, 2))
+
+    @staticmethod
+    def _clockrat_king_down(image: pygame.Surface, rect: pygame.Rect) -> None:
+        low = pygame.Rect(rect.left, rect.top + 14, rect.width, rect.height - 14)
+        EntityArt._king_body(image, low)
+        image.fill(LANTERN_FRAME, (rect.right - 9, rect.bottom - 18, 8, 3))
+        image.fill(ROCK_EDGE, (rect.right - 8, rect.bottom - 20, 6, 2))
+        image.fill(SPIKE, (rect.right - 6, rect.bottom - 11, 2, 1))
+
+    @staticmethod
+    def _king_body(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(PLANK_DARK, (rect.left + 2, rect.top + 12, rect.width - 4, rect.height - 14))
+        image.fill(PLANK, (rect.left + 4, rect.top + 10, rect.width - 12, 4))
+        image.fill(PLANK_LIGHT, (rect.left + 6, rect.top + 10, rect.width - 16, 1))
+        image.fill(ROCK_EDGE, (rect.right - 12, rect.top + 6, 10, rect.height - 8))
+        image.fill(SPIKE_TIP, (rect.right - 4, rect.top + 16, 2, 2))
+        for x in range(rect.left + 5, rect.right - 14, 6):
+            pygame.draw.circle(image, ROCK_EDGE, (x, rect.bottom - 8), 3, 1)
+        image.fill(ROCK_EDGE, (rect.left + 4, rect.bottom - 1, 4, 1))
+        image.fill(ROCK_EDGE, (rect.right - 9, rect.bottom - 1, 4, 1))
 
     @staticmethod
     def _gloomcrawler(image: pygame.Surface, rect: pygame.Rect) -> None:
@@ -302,6 +419,37 @@ class EntityArt:
         image.fill(EYES, (rect.centerx - 2, rect.centery - 1, 4, 2))
 
     @staticmethod
+    def _drip_lurker(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(palette.HORIZON, (rect.left + 1, rect.top, rect.width - 2, 5))
+        image.fill(CLOAK_DARK, (rect.left + 3, rect.top + 5, rect.width - 6, 6))
+        image.fill(CLOAK_SHADE, (rect.centerx - 2, rect.top + 11, 4, 4))
+        image.fill(EYES, (rect.centerx - 4, rect.top + 7, 2, 2))
+        image.fill(EYES, (rect.centerx + 2, rect.top + 7, 2, 2))
+
+    @staticmethod
+    def _drip_lurker_hidden(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(palette.HORIZON, (rect.left + 3, rect.top, rect.width - 6, 3))
+        image.fill(CLOAK_DARK, (rect.left + 5, rect.top + 3, rect.width - 10, 2))
+
+    @staticmethod
+    def _gearbug(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_LIGHT, (rect.left + 1, rect.bottom - 9, rect.width - 5, 8))
+        image.fill(ROCK_EDGE, (rect.left + 2, rect.bottom - 11, rect.width - 8, 2))
+        image.fill(ROCK_DARK, (rect.right - 5, rect.bottom - 10, 4, 9))
+        image.fill(ROCK_EDGE, (rect.right - 4, rect.bottom - 9, 2, 7))
+        image.fill(PLANK_DARK, (rect.left + 3, rect.bottom - 7, 2, 2))
+        image.fill(ROCK_DARK, (rect.left + 2, rect.bottom - 1, 3, 1))
+        image.fill(ROCK_DARK, (rect.right - 7, rect.bottom - 1, 3, 1))
+
+    @staticmethod
+    def _gearbug_open(image: pygame.Surface, rect: pygame.Rect) -> None:
+        EntityArt._gearbug(image, rect)
+        image.fill(ROCK_DARK, (rect.right - 5, rect.bottom - 10, 4, 9))
+        image.fill(SPIKE, (rect.right - 4, rect.bottom - 8, 2, 5))
+        image.fill(palette.MIST, (rect.left + 3, rect.bottom - 14, 3, 2))
+        image.fill(palette.MIST, (rect.left + 7, rect.bottom - 15, 3, 2))
+
+    @staticmethod
     def _flare(image: pygame.Surface, rect: pygame.Rect) -> None:
         image.fill(palette.EMBER_WARM, rect)
         image.fill(palette.EMBER_CORE, rect.inflate(-2, -2))
@@ -313,6 +461,59 @@ class EntityArt:
         pygame.draw.circle(image, PLANK_LIGHT, (rect.centerx, rect.bottom - 13), 3)
         image.fill(LANTERN_FRAME, (rect.centerx - 5, rect.bottom - 16, 10, 2))
         image.fill(palette.EMBER_HOT, (rect.centerx + 4, rect.bottom - 8, 2, 3))
+
+    @staticmethod
+    def _signpost(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(PLANK_DARK, (rect.centerx - 1, rect.top + 6, 2, rect.height - 6))
+        image.fill(PLANK, (rect.left + 1, rect.top + 1, rect.width - 2, 7))
+        image.fill(PLANK_LIGHT, (rect.left + 1, rect.top + 1, rect.width - 2, 1))
+        image.fill(PLANK_DARK, (rect.left + 3, rect.top + 4, rect.width - 6, 1))
+
+    @staticmethod
+    def _echo(image: pygame.Surface, rect: pygame.Rect) -> None:
+        """A small mint flame hanging above a worn stone."""
+        w, h = rect.size
+        image.fill(ROCK_EDGE, (w // 2 - 4, h - 3, 8, 3))
+        pygame.draw.circle(image, EYES, (w // 2, h - 8), 4)
+        pygame.draw.circle(image, palette.MIST, (w // 2, h - 8), 2)
+
+    @staticmethod
+    def _lost_light(image: pygame.Surface, rect: pygame.Rect) -> None:
+        pygame.draw.circle(image, palette.EMBER_WARM, rect.center, 6)
+        pygame.draw.circle(image, palette.EMBER_HOT, rect.center, 4)
+        pygame.draw.circle(image, palette.EMBER_CORE, rect.center, 2)
+
+    @staticmethod
+    def _trial_door(image: pygame.Surface, rect: pygame.Rect) -> None:
+        """An arch of stone around a mint glow."""
+        image.fill(ROCK_EDGE, rect)
+        inner = rect.inflate(-6, -4)
+        inner.bottom = rect.bottom
+        image.fill(ROCK_DARK, inner)
+        image.fill(EYES, inner.inflate(-4, -4))
+        image.fill(palette.MIST, (inner.centerx - 1, inner.top + 4, 2, inner.height - 8))
+
+    @staticmethod
+    def _hesper(image: pygame.Surface, rect: pygame.Rect) -> None:
+        """A pale lamplighter's ghost in a long cloak, holding a pole with a small flame."""
+        x, bottom = rect.centerx, rect.bottom
+        image.fill(CLOAK_SHADE, (x - 4, bottom - 12, 8, 12))
+        image.fill(CLOAK, (x - 3, bottom - 11, 6, 9))
+        pygame.draw.circle(image, palette.MIST, (x, bottom - 14), 3)
+        image.fill(LANTERN_FRAME, (x + 5, bottom - 15, 1, 15))
+        image.fill(palette.EMBER_HOT, (x + 4, bottom - 18, 3, 3))
+
+    @staticmethod
+    def _quill(image: pygame.Surface, rect: pygame.Rect) -> None:
+        """A clockwork owl: round body, big eyes, a gear on its chest."""
+        x, bottom = rect.centerx, rect.bottom
+        pygame.draw.ellipse(image, PLANK_DARK, (x - 6, bottom - 13, 12, 13))
+        pygame.draw.ellipse(image, PLANK, (x - 5, bottom - 12, 10, 11))
+        for dx in (-3, 1):
+            image.fill(palette.MIST, (x + dx - 1, bottom - 11, 4, 4))
+            image.fill(palette.INK, (x + dx, bottom - 10, 2, 2))
+        image.fill(PLANK_LIGHT, (x - 1, bottom - 7, 2, 2))
+        pygame.draw.circle(image, LANTERN_FRAME, (x, bottom - 3), 2, 1)
 
     @staticmethod
     def _goal(image: pygame.Surface, rect: pygame.Rect) -> None:

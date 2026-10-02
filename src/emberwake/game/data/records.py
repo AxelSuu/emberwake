@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from emberwake.engine.core.serde import VersionedCodec
 from emberwake.engine.platform.documents import load_document, save_document
@@ -38,10 +38,23 @@ class Record:
 @dataclass(slots=True)
 class Records:
     runs: dict[str, Record] = field(default_factory=dict)
+    unlocked: list[str] = field(default_factory=list)
+    """Ids of locked trials that a trial door has opened."""
 
 
-RECORDS_CODEC = VersionedCodec(Records, version=1)
+def _add_unlocked(data: dict[str, Any]) -> dict[str, Any]:
+    """v1 -> v2: unlocked trials; none in older records."""
+    return data
+
+
+RECORDS_CODEC = VersionedCodec(Records, version=2, migrations={1: _add_unlocked})
 """Bump the version and add a migration whenever `Records` changes shape."""
+
+
+def unlock(records: Records, trial_id: str) -> None:
+    """Open a locked trial in the Trials menu."""
+    if trial_id not in records.unlocked:
+        records.unlocked.append(trial_id)
 
 
 def submit(records: Records, result: RunResult) -> bool:

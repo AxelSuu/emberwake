@@ -1,5 +1,6 @@
 # Room placement on the GridVania grid. One cell is 20x11 tiles (320x176 px); `cell` is the
-# room's top-left corner. Dev rooms sit from x = 60 so they never touch the real map. Each room is <name in lower case>.txt plus an optional .toml.
+# room's top-left corner. Dev rooms sit from x = 60 so they never touch the real map. Each room
+# is <name in lower case>.txt plus an optional .toml.
 
 [rooms.Wake]
 cell = [0, 0]
@@ -33,3 +34,24 @@ cell = [60, 6]
 
 [rooms.Trial_Pits]
 cell = [60, 8]
+
+[rooms.Signal_Lab]
+cell = [70, 0]
+
+[rooms.Break_Lab]
+cell = [73, 0]
+
+[rooms.Enemy_Gallery]
+cell = [76, 0]
+
+[rooms.King_Lab]
+cell = [79, 0]
+
+[rooms.Npc_Lab]
+cell = [82, 0]
+
+[rooms.Lore_Hall]
+cell = [85, 0]
+
+[rooms.Lamp_Lab]
+cell = [89, 0]

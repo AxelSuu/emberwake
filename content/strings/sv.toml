@@ -47,6 +47,15 @@ help = "Så spelar du"
 settings = "Inställningar"
 quit = "Avsluta till titel"
 
+[area]
+light = "Ljus {percent} %"
+
+[area.quarter]
+name = "Det sjunkna kvarteret"
+
+[area.lab]
+name = "Labbet"
+
 [menu]
 continue = "Fortsätt"
 new = "Nytt spel"
@@ -164,17 +173,23 @@ rose = "Ros"
 violet = "Violett"
 
 [shop]
-title = "Fixarens varor"
 back = "Tillbaka"
 wallet = "Glöd: {embers}"
 item = "{name}: {price} glöd"
 sold_out = "{name}: slutsåld"
+
+[shop.title]
+tinker = "Fixarens varor"
+quill = "Quills kartor"
 
 [shop.hp]
 name = "Segare mantel (+1 liv)"
 
 [shop.oil]
 name = "Lampolja (+25 låga)"
+
+[shop.map.quarter]
+name = "Karta över Sjunkna kvarteret"
 
 [dialogue]
 continue = "..."
@@ -188,6 +203,36 @@ bye = "Hejdå."
 city = "Ljuset slocknade på en gång, och vattnet steg efteråt. Fyrar brinner fortfarande på sina håll. Hitta dem, så återvänder färgerna."
 shop = "Glöd är bra valuta. Titta bland mina varor."
 thanks = "Kom tillbaka när din lykta börjar ta slut."
+
+[dialogue.hesper]
+hello = "Ett ljus, äntligen. Jag är Hesper, väktare av den här fyren. Jag höll den brinnande tills natten då allt slocknade. Nu håller jag den åt dig."
+welcome_back = "Fyren är varm. Vila när du måste, lyktgubbe."
+lit = "Stora lampan brinner. Jag har inte sett gatorna så varma sedan före mörkret. Fråga vad du vill."
+ask_lamps = "Hur kommer jag ner till cisternen?"
+ask_lights = "Jag hittade ett förlorat ljus."
+ask_road = "Vad finns bortom Stora lampan?"
+bye = "Adjö."
+lamps = "Vägen ner är stängd tills båda kvarterslamporna är tända, en i klocktornet och en vid sluss. Tänd dem så öppnas gallret."
+road = "En väg upp till Mässingsträdgårdarna. Du behöver ett sätt över gapet, en lina att haka i lamporna. Kom tillbaka när du har en."
+pay1 = "Du tog ett hem. Små ting går förlorade i mörkret. Ta den här glöden, med mitt tack."
+pay2 = "Ett andra ljus, tryggt vid min fyr. Här, en pung till dina blossar. Den var en lyktgubbes en gång."
+pay3 = "Tre ljus hemma! Ta den här oljeflaskan. Den håller din lykta brinnande längre."
+lights_wait = "Det finns fler förlorade ljus i kvarteret. Led dem till en fyr så väntar de här hos mig."
+lights_done = "Alla tre är i säkerhet. Kvarteret är skyldigt dig mer än jag kan betala."
+
+[dialogue.quill]
+hello = "Hoo. En besökare, och med lykta. Jag är Quill. Jag ritar kartor, och jag ritar dem sanna."
+welcome_back = "Hoo. Redan tillbaka? Mina kartor är fortfarande sanna."
+square = "Hoo. Klocktornet blev för högljutt, så jag flyttade till torget. Kartorna följde med."
+road = "Hoo. Jag vandrar vägen till Mässingsträdgårdarna nu. Någon måste kartlägga den, och mina kugghjul är inte vad de var."
+ask_map = "Säljer du kartor?"
+ask_who = "Vem är du?"
+ask_road = "Vad finns på den här vägen?"
+bye = "Adjö."
+about = "En urverksuggla, uppdragen av en hand som länge är borta. Jag tickade vidare, så jag kartlägger det tidvattnet inte har sopat bort."
+about_road = "Mässing, mest. Trädgårdar av det, och en port som vill ha mer än en lykta. Jag ritar den när jag känner den."
+shop = "En karta över Sjunkna kvarteret, varje gata och trappa. Glöd, om du vill."
+thanks = "Hoo. Akta marginalerna."
 
 [medal]
 gold = "Guld"
@@ -223,3 +268,16 @@ name = "Oljeflaska"
 
 [grant.flare_pouch]
 name = "Blosspung"
+
+[grant.map.quarter]
+name = "Karta över Sjunkna kvarteret"
+
+[sign]
+lore_move = "Spring med {left} och {right}.\nHoppa med {jump}."
+
+[echo]
+lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."
+
+[lore]
+echo_heard = "Eko hört"
+rescued = "Förlorat ljus räddat"

@@ -8,9 +8,9 @@ from typing import TYPE_CHECKING
 from emberwake.engine.core.dialogue import DialogueRunner
 from emberwake.engine.ui import Button, Label, Panel, UiRoot, Widget
 from emberwake.game import paths
-from emberwake.game.grants import GIVE, Give
+from emberwake.game.grants import GIVE, Give, Granted
 from emberwake.game.scenes.overlay import Overlay
-from emberwake.game.shop import buy, can_buy, load_shop, owned, price, wallet
+from emberwake.game.shop import buy, can_buy, load_shops, owned, price, wallet
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from emberwake.game.progress import Progress
 
 WRAP = 46
+SHOP = "shop:"
+PAY = "pay:"
 
 
 def lines(text: str) -> list[Widget]:
@@ -28,17 +30,20 @@ def lines(text: str) -> list[Widget]:
 
 
 class ShopScene(Overlay):
-    """Buy upgrades with embers. Each press buys one; back leaves."""
+    """Buy from one shop with embers. Each press buys one; back leaves."""
 
-    def __init__(self, ctx: GameContext, progress: Progress, save: Callable[[], None]) -> None:
+    def __init__(
+        self, ctx: GameContext, progress: Progress, save: Callable[[], None], shop: str = "tinker"
+    ) -> None:
         self.progress, self.save = progress, save
-        self.shop = load_shop(paths.content("shop.toml"))
+        self.shop = load_shops(paths.content("shop.toml"))[shop]
         self.wallet = Label("")
         self.buttons = {
             ident: Button("", lambda ident=ident: self._buy(ident)) for ident in self.shop.items
         }
         back = Button(ctx.t("shop.back"), self._back)
-        panel = Panel([Label(ctx.t("shop.title")), self.wallet, *self.buttons.values(), back])
+        title = Label(ctx.t(f"shop.title.{shop}"))
+        panel = Panel([title, self.wallet, *self.buttons.values(), back])
         super().__init__(ctx, panel, self._back)
         self._refresh()
 
@@ -56,7 +61,10 @@ class ShopScene(Overlay):
         self.ui.center(ctx.canvas_size)
 
     def _buy(self, ident: str) -> None:
-        if buy(self.progress.data, self.shop.items[ident]):
+        item = self.shop.items[ident]
+        if buy(self.progress.data, item):
+            if item.grant:
+                self.ctx.bus.publish(Granted(item.grant))
             self.save()
             self._refresh()
 
@@ -105,8 +113,12 @@ class DialogueScene(Overlay):
 
     def _actions(self) -> None:
         for action in self.runner.take_actions():
-            if action == "shop":
-                self.manager.push(ShopScene(self.ctx, self.progress, self.save))
+            if action.startswith(SHOP):
+                shop = action.removeprefix(SHOP)
+                self.manager.push(ShopScene(self.ctx, self.progress, self.save, shop))
+            elif action.startswith(PAY):
+                self.progress.data.stats.embers += int(action.removeprefix(PAY))
+                self.save()
             elif action.startswith(GIVE):
                 self.ctx.bus.publish(Give(action.removeprefix(GIVE)))
 

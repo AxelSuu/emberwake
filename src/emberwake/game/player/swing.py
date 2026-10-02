@@ -70,6 +70,8 @@ class Swing:
     facing: int = 1
     hits: int = 0
     """Enemies the current swing has hit so far."""
+    blocks: int = 0
+    """Armored enemies the current swing has clanged off so far."""
     struck: list[EntityId] = field(default_factory=list)
     """Strikeable entities the current swing has already struck."""
     bounced: bool = False
@@ -162,7 +164,7 @@ def _start(  # noqa: PLR0917
     else:
         direction = Direction.FORWARD
     swing.tick, swing.direction, swing.facing = 1, direction, motor.facing
-    swing.hits, swing.bounced, swing.recoiled = 0, False, False
+    swing.hits, swing.blocks, swing.bounced, swing.recoiled = 0, 0, False, False
     swing.struck.clear()
     hitbox.offset, hitbox.size = hitbox_geometry(direction, body, tuning.reach)
     hitbox.flip = motor.facing < 0
@@ -193,6 +195,10 @@ def strike_system(world: World, dt: float) -> None:
             swing.hits = len(hitbox.hit)
             bus.publish(SwingHit(cx, cy, enemy=True))
             _react(swing, motor, tuning, player, bounce=True, solid=True)
+        if len(hitbox.blocked) > swing.blocks:
+            swing.blocks = len(hitbox.blocked)
+            bus.publish(SwingHit(cx, cy, enemy=False))
+            _react(swing, motor, tuning, player, bounce=False, solid=True)
         for target, target_body, strikeable in world.query(Body, Strikeable):
             if target in swing.struck or not overlap(area, target_body):
                 continue
