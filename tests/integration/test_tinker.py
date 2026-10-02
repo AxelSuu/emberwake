@@ -33,7 +33,9 @@ def at_the_tinker(ctx: GameContext, room: str = "Enemy_Yard") -> tuple[SceneMana
     game = GameplayScene(ctx, room=room)
     scenes.push(game)
     scenes.update(STEP)
-    for _, body, _npc in game.world.query(Body, Npc):
+    for _, body, npc in game.world.query(Body, Npc):
+        if npc.dialogue != "tinker":
+            continue
         game.body.x, game.body.y = body.x + 2, body.y - 4
     for _ in range(5):
         scenes.update(STEP)

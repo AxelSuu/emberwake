@@ -1,0 +1,31 @@
+# Photocell_Gallery, cell [7, 10] 3x3, in three stages that climb from the bottom-left to the
+# Square. West opening: col 0, rows 28 to 30 (Plate_Room's east edge). Top: tiles x 28..35 of row 0
+# are open onto Market_Square's floor (its columns 8..15), with a one-way landing at row 1 below.
+# Stage 1: eight lightforms' worth of spikes at cols 14..23, crossed on lightforms that the
+# lantern solidifies, then a ladder of one-ways on the right.
+# Stage 2: the photocell lens p sits in the spike strip at cols 31..35, too far from the rim for the
+# lantern; a thrown flare lights it and door d (col 20) opens while the flare burns. A ladder
+# on the left climbs on.
+# Stage 3: a dash-only gap of spikes at cols 14..21, then one-ways up to the hole.
+fields = { Backdrop = "cavern" }
+
+[entities.p]
+type = "Photocell"
+fields = { Targets = ["d"] }
+[entities.d]
+type = "Door"
+[entities.L]
+type = "Lightform"
+[entities.s]
+type = "Signpost"
+fields = { Text = "gallery_lightform" }
+[entities.f]
+type = "Signpost"
+fields = { Text = "gallery_flare" }
+[entities.h]
+type = "Signpost"
+fields = { Text = "gallery_dash" }
+[entities.a]
+type = "Lamp"
+[entities.e]
+type = "Ember"

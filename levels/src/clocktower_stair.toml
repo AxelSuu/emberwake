@@ -18,3 +18,6 @@ type = "Signpost"
 fields = { Text = "pogo" }
 [entities.e]
 type = "Ember"
+[entities.Q]
+type = "SetFlag"
+fields = { Flag = "quill_stage", Unless = "quill_stage>=1" }

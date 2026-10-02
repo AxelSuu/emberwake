@@ -105,6 +105,21 @@ one-way plank at its foot that the player drops through with Down and Jump, and 
 | Lever Hall to Cistern Shaft | Lever Hall pit, cols 1 to 3, rows 8 to 10 (plank on row 10), over Cistern Shaft cols 1 to 3 of row 0 |
 | Cistern Shaft to Plate Room | Shaft east wall (col 19), rows 17 to 19, floor rows 20 to 21; Plate Room west wall (col 0) must be open at rows 6 to 8, floor rows 9 to 10, with a PlayerStart within 6 tiles. A Door (col 17, rows 17 to 19) inside the Shaft shuts that exit until the Shaft's lever (once) is pulled |
 
+Built passages of the Square batch:
+
+| Seam | Tiles |
+|---|---|
+| Plate Room to Photocell Gallery | Plate Room east wall (col 39), rows 6 to 8; Gallery west wall (col 0), rows 28 to 30 |
+| Photocell Gallery to Market Square | Gallery top, cols 28 to 35 of row 0 (a one-way landing on row 1), under the Square's one-way floor at cols 8 to 15 of row 21 |
+| Market Square to Tinker's Nook | Square west wall (col 0), rows 6 to 8, floor row 9; the lever `w` (once) opens `Tinkers_Nook:d` |
+| Market Square to Belfry | Square ceiling, cols 28 to 31 of row 0, over a one-way at row 2; the Belfry's floor is open on the same columns |
+| Market Square to Trial Gate | Square east wall (col 79), rows 6 to 8, floor row 9; Trial Gate west wall (col 0) |
+| Market Square to Sluice (#136) | Not built: carve the Square's east terrace (cols 72 to 79, rows 11 to 20) |
+| Market Square to Cistern Gate (#136) | Not built: the grate goes in the Square's floor (row 21) over cols 40 to 79 |
+
+A SetFlag at the bottom of the Clocktower Stair sets `quill_stage` to 1, so Quill leaves the
+Belfry for the Square once the player has climbed past it.
+
 The lab keeps its own copies of the greybox rooms as `Lab_Lever_Hall` and `Lab_Plate_Room` (and
 `Shaft`), so the Quarter's `Lever_Hall` and `Plate_Room` do not clash with them.
 
@@ -122,8 +137,8 @@ Sizes in GridVania cells (one cell is 20x11 tiles, half the screen each way).
 | 6 | Gloom Cellar | 2x2 | Teach darkness | Gloomcrawlers, a brazier the swing ignites, Lost Light 1 to lead through the dark, one telegraphed Drip Lurker |
 | 7 | Lever Hall | 1x1 | Teach levers and doors | Reworked from the greybox room; Clockrats behind the door |
 | 8 | Cistern Shaft | 1x2 | Vertical link | Reworked `Shaft`; one-ways, Drip Lurkers under dark ledges |
-| 9 | Plate Room | 1x1 | Teach plates and crates | Reworked; a crate to push onto the plate |
-| 10 | Photocell Gallery | 3x1 | Teach flares on photocells, lightforms | Flare a photocell to open a door; lightforms over spikes; exit up into the Square |
+| 9 | Plate Room | 2x1 | Teach plates and crates | Reworked; a crate to push onto the plate |
+| 10 | Photocell Gallery | 3x3 | Teach flares on photocells, lightforms | Flare a photocell to open a door; lightforms over spikes; exit up into the Square |
 | 11 | Market Square | 4x2 | Hub | Beacon, Keeper Hesper, the cold Great Lamp, grate down to the Cistern Gate, shortcut door west, Quill (after the Belfry) |
 | 12 | Trial Gate | 2x1 | Optional | Trial doors for Sprint and Pits |
 | 13 | Belfry | 2x2 | Test lamps under threat | Wisp-eaters snuff the lamps you light; a bell stuns them; Quill sells the map; Lantern Shard 4 behind a lamp hook (Wickline) |

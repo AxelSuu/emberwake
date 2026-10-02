@@ -1,0 +1,33 @@
+# Market_Square, cell [8, 8] 4x2, the hub. West (col 0, rows 6 to 8, floor row 9) is the
+# Tinkers_Nook's barred door, which the lever w opens for good. Floor tiles x 8..15 are a one-way
+# over the Photocell_Gallery's top. Ceiling tiles x 28..31 open into the Belfry; the ladder of
+# one-ways climbs there. East (col 79, rows 6 to 8, floor row 9) is the Trial_Gate.
+# For #136: the Sluice's way in goes through the east terrace's bottom half (rows 11..20), the
+# grate down to Cistern_Gate through the floor at x 40..79.
+fields = { Backdrop = "ruins" }
+
+[entities.w]
+type = "Lever"
+fields = { Targets = ["Tinkers_Nook:d"], Mode = "once" }
+[entities.k]
+type = "Beacon"
+[entities.a]
+type = "Lamp"
+fields = { Beacon = "k" }
+[entities.h]
+type = "Hesper"
+fields = { Unless = "hesper_stage>=1" }
+[entities.H]
+type = "Hesper"
+fields = { Requires = "hesper_stage>=1" }
+[entities.q]
+type = "Quill"
+fields = { Requires = "quill_stage>=1", Unless = "quill_stage>=2" }
+[entities.s]
+type = "Signpost"
+fields = { Text = "square_hub" }
+[entities.g]
+type = "Signpost"
+fields = { Text = "square_great_lamp" }
+[entities.e]
+type = "Ember"

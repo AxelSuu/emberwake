@@ -95,5 +95,17 @@ cell = [8, 2]
 [rooms.Clock_Face]
 cell = [8, 0]
 
+[rooms.Plate_Room]
+cell = [5, 12]
+
+[rooms.Photocell_Gallery]
+cell = [7, 10]
+
+[rooms.Market_Square]
+cell = [8, 8]
+
+[rooms.Trial_Gate]
+cell = [12, 8]
+
 [rooms.Lift_Lab]
 cell = [76, 2]
