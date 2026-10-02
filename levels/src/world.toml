@@ -101,5 +101,8 @@ cell = [5, 12]
 [rooms.Photocell_Gallery]
 cell = [7, 10]
 
+[rooms.Market_Square]
+cell = [8, 8]
+
 [rooms.Lift_Lab]
 cell = [76, 2]

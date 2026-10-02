@@ -287,6 +287,8 @@ plate_crate = "Heavy things can be pushed.\nA crate on the plate holds the door.
 gallery_lightform = "Lightforms stand only where light reaches them.\nWalk up to the edge."
 gallery_flare = "A lens sleeps in the spikes. Press {flare} to throw a flare at it."
 gallery_dash = "Jump, then press {dash} to cross the spikes."
+square_hub = "Market Square. Rest at the beacon; the Keeper waits beside it."
+square_great_lamp = "The Great Lamp, cold. Two Quarter Lamps must burn before it can."
 
 [echo]
 lore_hall = "I lit this lamp last. The oil ran out before the street did."

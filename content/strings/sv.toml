@@ -286,6 +286,8 @@ plate_crate = "Tunga saker går att skjuta.\nEn låda på plattan håller dörre
 gallery_lightform = "Ljusformer finns bara där ljus når dem.\nGå fram till kanten."
 gallery_flare = "En lins sover bland spetsarna. Tryck {flare} för att kasta en fackla mot den."
 gallery_dash = "Hoppa och tryck sedan {dash} för att ta dig över spetsarna."
+square_hub = "Torget. Vila vid fyrtornet; väktaren väntar bredvid."
+square_great_lamp = "Den Stora Lampan, kall. Två kvarterslampor måste brinna först."
 
 [echo]
 lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."
