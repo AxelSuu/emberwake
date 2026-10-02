@@ -1,6 +1,6 @@
 # World validator
 
-**Milestone:** M9  **Status:** draft  **Issue:** #128
+**Milestone:** M9  **Status:** done  **Issue:** #128
 
 ## Goal
 A level that cannot be finished, an entrance without a respawn point or a gate that waits for a
@@ -44,19 +44,19 @@ Part of `tools.levels validate`. Pure functions over the loaded levels and the c
 | dash up, across | +2, +4 tiles | A dash covers about 4.5 tiles |
 
 ## Acceptance criteria
-- [ ] A Targets ref to a missing entity is reported.
-- [ ] A Requires, Unless or Condition on a flag nothing sets is reported; so are an unknown or
+- [x] A Targets ref to a missing entity is reported.
+- [x] A Requires, Unless or Condition on a flag nothing sets is reported; so are an unknown or
   never given `has.<thing>` and a Grant of an unknown thing.
-- [ ] An open room edge without a PlayerStart near it is reported on each side; lab rooms are not.
-- [ ] A room with no open passage to the rest of the world is reported unreachable.
-- [ ] A room behind a door whose lever is unreachable, or whose FlagSwitch flag is never set, is
+- [x] An open room edge without a PlayerStart near it is reported on each side; lab rooms are not.
+- [x] A room with no open passage to the rest of the world is reported unreachable.
+- [x] A room behind a door whose lever is unreachable, or whose FlagSwitch flag is never set, is
   reported with the door; one whose lever is reachable passes.
-- [ ] A room beyond a gap too wide for the abilities available by then is reported with the
+- [x] A room beyond a gap too wide for the abilities available by then is reported with the
   ability that crosses it and where it is granted; it passes once a Grant for it is reachable.
-- [ ] A flag set by a reachable SetFlag or dialogue opens what it gates, and an ability granted
+- [x] A flag set by a reachable SetFlag or dialogue opens what it gates, and an ability granted
   by reachable NPC dialogue counts.
-- [ ] A lab or absent start room skips reachability; trial rooms are exempt.
-- [ ] The committed world passes, and a missing PlayerStart at an entrance of a quarter room is
+- [x] A lab or absent start room skips reachability; trial rooms are exempt.
+- [x] The committed world passes, and a missing PlayerStart at an entrance of a quarter room is
   fixed in the levels.
 
 ## Tests
