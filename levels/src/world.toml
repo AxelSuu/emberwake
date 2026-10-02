@@ -20,6 +20,9 @@ cell = [66, 1]
 [rooms.Lab_Plate_Room]
 cell = [67, 1]
 
+[rooms.Tinkers_Nook]
+cell = [6, 8]
+
 [rooms.Upper_Room]
 cell = [68, 0]
 

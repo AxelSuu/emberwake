@@ -274,6 +274,7 @@ name = "Karta över Sjunkna kvarteret"
 
 [sign]
 lore_move = "Spring med {left} och {right}.\nHoppa med {jump}."
+nook_hatch = "Källaren är där nere. Håll {down} och tryck {jump} för att falla genom en planka."
 
 [echo]
 lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."
