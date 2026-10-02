@@ -5,6 +5,8 @@ from __future__ import annotations
 import dataclasses
 from typing import TYPE_CHECKING, Any
 
+from tools.levels.checks import check_world
+
 import emberwake.game.components  # noqa: F401  (registers every game component)
 from emberwake.engine.core.dialogue import DialogueError, flag_of
 from emberwake.engine.core.serde import SerdeError
@@ -16,6 +18,8 @@ from emberwake.game.areas import NAME
 if TYPE_CHECKING:
     from collections.abc import Collection, Mapping
 
+    from tools.levels.world import Rules
+
     from emberwake.engine.ecs import Registry
     from emberwake.engine.ecs.prefabs import Prefab
     from emberwake.engine.world.ldtk import EntityInstance, Level, Project
@@ -26,8 +30,10 @@ def validate(
     project: Project,
     prefabs: Mapping[str, Prefab],
     registry: Registry = COMPONENTS,
+    *,
     backdrops: Collection[str] | None = None,
     areas: Areas | None = None,
+    rules: Rules | None = None,
 ) -> list[str]:
     """Problems found, one line each; empty when every entity would spawn."""
     problems = [
@@ -61,6 +67,8 @@ def validate(
                 build(prefab, values, registry)
             except (KeyError, SerdeError) as error:
                 problems.append(f"{where}: {error}")
+    if rules is not None:
+        problems += check_world(project, prefabs, rules)
     return problems
 
 
