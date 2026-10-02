@@ -8,7 +8,7 @@
 # end; the steps up are crumbling platforms.
 # The catwalk's east end faces a gap of 12 tiles to a ledge under the east wall: the lamp-hook
 # gap toward Brass Gardens, closed until the Wickline (M11). The way on is the wall at x 39,
-# rows 5..7.
+# rows 5..7. Quill Q waits by it once the Great Lamp burns (quill_stage 2).
 
 [entities.Z]
 type = "Encounter"
@@ -39,3 +39,6 @@ fields = { Thing = "shard" }
 [entities.s]
 type = "Signpost"
 fields = { Text = "hook_gap" }
+[entities.Q]
+type = "Quill"
+fields = { Requires = "quill_stage>=2" }

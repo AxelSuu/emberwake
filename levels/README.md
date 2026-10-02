@@ -96,6 +96,8 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | Echo | Interact to replay `content/echoes/<Id>.json` as a ghost, with the string `echo.<Id>`; counts toward light % |
 | LostLight | Follows the player to a beacon and is rescued there: sets `lost_light_<Id>` and adds to `lost_lights` |
 | TrialDoor | Interact to unlock the Trial `Trial` in the menu and start it |
+| StoryBeat | Invisible zone: entering it plays the story script `Script` once per save ([spec](../docs/specs/story-beats.md)) |
+| GreatLamp | The Great Lamp: kindled after the Lamprey, it lights every lamp of its area and rolls the credits |
 
 ## Level fields
 

@@ -13633,10 +13633,17 @@
 								{
 									"__identifier": "Unless",
 									"__type": "String",
-									"__value": null,
+									"__value": "great_lamp",
 									"__tile": null,
 									"defUid": 62,
-									"realEditorValues": []
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"great_lamp"
+											]
+										}
+									]
 								}
 							]
 						},
@@ -41448,6 +41455,55 @@
 							]
 						},
 						{
+							"__identifier": "Quill",
+							"__grid": [
+								22,
+								8
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#AB947A",
+							"__worldX": 2920,
+							"__worldY": 128,
+							"iid": "bdc9890f-6f91-5029-be7b-2afe885a3bcb",
+							"width": 16,
+							"height": 16,
+							"defUid": 125,
+							"px": [
+								360,
+								128
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": "quill_stage>=2",
+									"__tile": null,
+									"defUid": 123,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"quill_stage>=2"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 124,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
 							"__identifier": "Signpost",
 							"__grid": [
 								24,
@@ -48264,6 +48320,48 @@
 							]
 						},
 						{
+							"__identifier": "GreatLamp",
+							"__grid": [
+								51,
+								21
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FBB954",
+							"__worldX": 3376,
+							"__worldY": 1744,
+							"iid": "a7a88b9d-b6ed-5ece-bef8-d53bba42d8b2",
+							"width": 32,
+							"height": 48,
+							"defUid": 206,
+							"px": [
+								816,
+								336
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 204,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 205,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
 							"__identifier": "PlayerStart",
 							"__grid": [
 								75,
@@ -48791,63 +48889,6 @@
 							]
 						},
 						{
-							"__identifier": "Signpost",
-							"__grid": [
-								50,
-								21
-							],
-							"__pivot": [
-								0.5,
-								1.0
-							],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#AB947A",
-							"__worldX": 3368,
-							"__worldY": 1744,
-							"iid": "9cfed107-e5ba-52e7-a1c2-cacb736efd5d",
-							"width": 16,
-							"height": 16,
-							"defUid": 79,
-							"px": [
-								808,
-								336
-							],
-							"fieldInstances": [
-								{
-									"__identifier": "Text",
-									"__type": "String",
-									"__value": "square_great_lamp",
-									"__tile": null,
-									"defUid": 76,
-									"realEditorValues": [
-										{
-											"id": "V_String",
-											"params": [
-												"square_great_lamp"
-											]
-										}
-									]
-								},
-								{
-									"__identifier": "Requires",
-									"__type": "String",
-									"__value": null,
-									"__tile": null,
-									"defUid": 77,
-									"realEditorValues": []
-								},
-								{
-									"__identifier": "Unless",
-									"__type": "String",
-									"__value": null,
-									"__tile": null,
-									"defUid": 78,
-									"realEditorValues": []
-								}
-							]
-						},
-						{
 							"__identifier": "Hesper",
 							"__grid": [
 								53,
@@ -48892,6 +48933,63 @@
 									"__value": null,
 									"__tile": null,
 									"defUid": 121,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "Signpost",
+							"__grid": [
+								55,
+								21
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#AB947A",
+							"__worldX": 3448,
+							"__worldY": 1744,
+							"iid": "9cfed107-e5ba-52e7-a1c2-cacb736efd5d",
+							"width": 16,
+							"height": 16,
+							"defUid": 79,
+							"px": [
+								888,
+								336
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Text",
+									"__type": "String",
+									"__value": "square_great_lamp",
+									"__tile": null,
+									"defUid": 76,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"square_great_lamp"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 77,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 78,
 									"realEditorValues": []
 								}
 							]
@@ -48949,6 +49047,55 @@
 											]
 										}
 									]
+								}
+							]
+						},
+						{
+							"__identifier": "Tinker",
+							"__grid": [
+								59,
+								21
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FBB954",
+							"__worldX": 3512,
+							"__worldY": 1744,
+							"iid": "4aba58fa-91e0-539a-8dc7-77bff72edbad",
+							"width": 16,
+							"height": 16,
+							"defUid": 30,
+							"px": [
+								952,
+								336
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": "great_lamp",
+									"__tile": null,
+									"defUid": 61,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"great_lamp"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 62,
+									"realEditorValues": []
 								}
 							]
 						}
@@ -53022,6 +53169,70 @@
 									"__tile": null,
 									"defUid": 176,
 									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "StoryBeat",
+							"__grid": [
+								30,
+								4
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#A884F3",
+							"__worldX": 3688,
+							"__worldY": 2000,
+							"iid": "1b4f5eaf-ef6f-58e2-b84c-03fca221eb63",
+							"width": 176,
+							"height": 32,
+							"defUid": 203,
+							"px": [
+								488,
+								64
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Script",
+									"__type": "String",
+									"__value": "lamprey_reveal",
+									"__tile": null,
+									"defUid": 200,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"lamprey_reveal"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 201,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": "lamprey_defeated",
+									"__tile": null,
+									"defUid": 202,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"lamprey_defeated"
+											]
+										}
+									]
 								}
 							]
 						},
