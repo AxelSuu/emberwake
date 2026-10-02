@@ -47,6 +47,10 @@ resume = "Resume"
 help = "How to play"
 settings = "Settings"
 quit = "Quit to title"
+map = "Map"
+
+[map]
+back = "Back"
 
 [area]
 light = "Light {percent} %"

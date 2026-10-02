@@ -1,4 +1,4 @@
-"""Pause overlay: resume, settings or quit to the title screen."""
+"""Pause overlay: resume, the map, settings or quit to the title screen."""
 
 from __future__ import annotations
 
@@ -11,6 +11,8 @@ from emberwake.engine.ui import Button, Label, Panel, UiRoot
 from emberwake.game.scenes.settings import SHADE, SettingsScene, load_ui_theme
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from emberwake.game.context import GameContext
 
 
@@ -19,14 +21,22 @@ class PauseScene(Scene):
 
     blocks_draw: ClassVar[bool] = False
 
-    def __init__(self, ctx: GameContext, area: str = "", light: str = "") -> None:
+    def __init__(
+        self,
+        ctx: GameContext,
+        area: str = "",
+        light: str = "",
+        on_map: Callable[[], None] | None = None,
+    ) -> None:
         self.ctx = ctx
         where = [Label(text, dim=True) for text in (area, light) if text]
+        map_ = [Button(ctx.t("pause.map"), on_map)] if on_map else []
         panel = Panel(
             [
                 Label(ctx.t("pause.title")),
                 *where,
                 Button(ctx.t("pause.resume"), self._resume),
+                *map_,
                 Button(ctx.t("pause.help"), self._help),
                 Button(ctx.t("pause.settings"), self._settings),
                 Button(ctx.t("pause.quit"), self._quit),

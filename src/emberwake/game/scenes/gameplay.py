@@ -78,6 +78,7 @@ from emberwake.game.lamps import LampLit, LampSnuffed
 from emberwake.game.light import Ember, LightSource
 from emberwake.game.lore import EchoHeard, EchoPlay, speeches
 from emberwake.game.lost_lights import LostLightRescued, Spirit
+from emberwake.game.map import Known, map_view
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.kindle import Kindle, Kindled
 from emberwake.game.player.swing import Swing, SwingHit, SwingStarted
@@ -96,6 +97,7 @@ from emberwake.game.render.toast import Toasts
 from emberwake.game.scenes.dev import FlagsScene, WarpScene
 from emberwake.game.scenes.dialogue import DialogueScene
 from emberwake.game.scenes.director import SceneDirector
+from emberwake.game.scenes.map import MapScene, map_box
 from emberwake.game.scenes.pause import PauseScene
 from emberwake.game.scenes.results import ResultsScene, RunFinished
 from emberwake.game.scenes.settings import load_ui_theme
@@ -701,7 +703,10 @@ class GameplayScene(Scene):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self._count_light()
-                self.manager.push(PauseScene(self.ctx, *self._area_text()))
+                on_map = self._open_map if self.trial is None else None
+                self.manager.push(PauseScene(self.ctx, *self._area_text(), on_map=on_map))
+            elif event.key == pygame.K_m and self.trial is None:
+                self._open_map()
             elif event.key == pygame.K_RETURN and self.cutscenes.active:
                 self.cutscenes.skip()
             elif self.ctx.dev:
@@ -1055,6 +1060,23 @@ class GameplayScene(Scene):
 
     def _on_light_changed(self, _: object) -> None:
         self._count_light()
+
+    def _open_map(self) -> None:
+        self._count_light()
+        data, body = self.progress.data, self.body
+        cinder = data.cinder
+        known = Known(
+            discovered=data.discovered,
+            inventory=data.inventory,
+            facts=self.world.resource(Facts),
+            world=self.spawner.state,
+            cinder=(cinder.room, cinder.x, cinder.y) if cinder is not None else None,
+        )
+        player = body.center_x, body.y + body.height / 2
+        levels, prefabs = self.rooms.graph.levels, self.spawner.prefabs
+        box = map_box(self.ctx.canvas_size)
+        view = map_view(levels, self.area, known, prefabs=prefabs, player=player, box=box)
+        self.manager.push(MapScene(self.ctx, view, self._area_text()))
 
     @property
     def music(self) -> str:

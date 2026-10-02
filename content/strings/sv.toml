@@ -46,6 +46,10 @@ resume = "Fortsätt"
 help = "Så spelar du"
 settings = "Inställningar"
 quit = "Avsluta till titel"
+map = "Karta"
+
+[map]
+back = "Tillbaka"
 
 [area]
 light = "Ljus {percent} %"

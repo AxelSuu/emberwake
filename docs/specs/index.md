@@ -16,4 +16,5 @@ One file per mechanic, written before implementation. Copy `_template.md`.
 - [NPCs](npcs.md): Keeper Hesper, Quill and their stages
 - [Encounters](encounters.md): arena locks, waves and rewards
 - [The Lamprey](lamprey.md): the Cistern boss, three phases of light, lamps and a drained floor
+- [Map screen](map-screen.md): the rooms of an area you have entered, or bought the map of
 - [Story beats](story-beats.md): the intro, the Lamprey's reveal, the Great Lamp and the credits stub
