@@ -48,6 +48,7 @@ from emberwake.game import (  # noqa: E402, F401
     lost_lights,
     platforms,
     signals,
+    story,
     switches,
     trials,
 )

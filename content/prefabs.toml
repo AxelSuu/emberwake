@@ -250,3 +250,14 @@ fields = { Trial = "TrialDoor.trial" }
 Sprite = { image = "trial_door" }
 Interactable = { prompt = "enter" }
 TrialDoor = {}
+
+[story_beat]
+fields = { Script = "StoryBeat.script" }
+[story_beat.components]
+Trigger = {}
+StoryBeat = {}
+
+[great_lamp]
+[great_lamp.components]
+Sprite = { image = "great_lamp", active_image = "great_lamp_lit" }
+GreatLamp = {}
