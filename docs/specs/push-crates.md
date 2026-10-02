@@ -43,7 +43,8 @@ stands on it, and a crate on a pressure plate holds the plate down so the player
 - **Art.** A placeholder: a darker, banded crate (`push_crate`) that cannot be mistaken for the
   breakable one.
 - **World validator.** A door powered by a PressurePlate counts as openable when the plate is
-  reachable, or a PushCrate in the plate's room is.
+  reachable, or the search reaches a PushCrate in the plate's room. It does not check that the
+  crate can really be pushed there.
 
 ## Tuning parameters
 `content/feel.toml`, `[crates]`.
@@ -67,8 +68,9 @@ stands on it, and a crate on a pressure plate holds the plate down so the player
 - [ ] A crate's position survives its room unloading and reloading, and quitting and continuing.
 - [ ] Resting at a beacon sends crates home, in unloaded rooms too; a crate that falls out of the
   world is home again.
-- [ ] A door whose only plate is out of the player's reach but shares a room with a PushCrate
-  passes the world validator; without the crate it is reported.
+- [ ] A door whose only plate is out of the player's reach but shares a room with a reachable
+  PushCrate passes the world validator; without the crate, or with the crate in another room,
+  it is reported.
 - [ ] Two runs of the same input leave crates in the same places.
 
 ## Tests
