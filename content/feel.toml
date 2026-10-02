@@ -125,3 +125,10 @@ wisp_sight = 110.0
 wisp_attract = 140.0
 wisp_swoop_time = 0.55
 wisp_retreat_time = 1.2
+
+[switches]
+brazier_radius = 72.0
+bell_radius = 80.0
+bell_stun = 2.0
+bell_pulse = 1.5
+bell_trauma = 0.15

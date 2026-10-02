@@ -161,9 +161,9 @@ and drains its arena, the **Hollow Lamplighter** uses your own abilities against
 | Lever, door, pressure plate | done | Signals with any/all/invert (ADR 0016) |
 | Beacon, ember, lightform, brazier, goal | done | |
 | Lamp post | planned | Light source lit by a swing; persistent under a lit beacon; counts toward light % |
-| Photocell | planned | Signal source, on while lit (flares, lamps, beams) |
-| Ignitable brazier | planned | Swing or flare lights it; a signal source while lit |
-| Bell | planned | Swing to ring: stuns nearby enemies, sends a signal pulse |
+| Photocell | done | Signal source, on while lit (flares, lamps, beams) |
+| Ignitable brazier | done | Swing or flare lights it; a signal source while lit |
+| Bell | done | Swing to ring: stuns nearby enemies, sends a signal pulse |
 | Cracked wall, crate, pot | planned | Breakable; secrets and embers; walls stay broken |
 | Crumbling platform | planned | Falls a moment after you land, comes back |
 | Pushable crate | planned | Physics prop that weighs plates down |

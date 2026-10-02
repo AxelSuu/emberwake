@@ -63,9 +63,28 @@ Sprite = { image = "lightform", active_image = "lightform_lit" }
 Lightform = {}
 
 [brazier]
+fields = { Targets = "Switch.targets", Lit = "Brazier.lit" }
+persist = ["Brazier", "Switch"]
 [brazier.components]
-Sprite = { image = "brazier" }
-LightSource = { radius = 72.0, color = "#fb6b1d" }
+Sprite = { image = "brazier", active_image = "brazier_lit" }
+Strikeable = {}
+Brazier = {}
+Switch = {}
+
+[photocell]
+fields = { Targets = "Switch.targets", Threshold = "Photocell.threshold" }
+[photocell.components]
+Sprite = { image = "photocell", active_image = "photocell_on" }
+Photocell = {}
+Switch = {}
+
+[bell]
+fields = { Targets = "Switch.targets" }
+[bell.components]
+Sprite = { image = "bell", active_image = "bell_ring" }
+Strikeable = {}
+Bell = {}
+Switch = {}
 
 [clockrat]
 [clockrat.components]

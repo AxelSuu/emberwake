@@ -65,7 +65,20 @@ doc = "A one-way platform that exists only while light reaches it"
 
 [entities.Brazier]
 color = "#f9c22b"
-doc = "A fixed light source"
+doc = "Lit by a swing or a flare; then a light and an on switch for good"
+fields.Targets = { type = "EntityRef", array = true }
+fields.Lit = { type = "Bool", default = false, doc = "Placed already lit" }
+
+[entities.Photocell]
+color = "#8ff8e2"
+doc = "On while the light at it reaches the threshold"
+fields.Targets = { type = "EntityRef", array = true }
+fields.Threshold = { type = "Float", default = 0.4, doc = "Light level, 0 to 1" }
+
+[entities.Bell]
+color = "#fbb954"
+doc = "Swing to ring: stuns nearby enemies and pulses its targets"
+fields.Targets = { type = "EntityRef", array = true }
 
 [entities.Clockrat]
 color = "#b33831"
