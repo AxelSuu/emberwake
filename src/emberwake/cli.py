@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from emberwake.game.data.save import SLOTS
@@ -24,6 +24,19 @@ class Options:
     replay: str | None = None
     slot: int = 1
     new: bool = False
+    flags: dict[str, int] = field(default_factory=dict)
+
+
+def parse_flags(text: str) -> dict[str, int]:
+    """``"a=2,b"`` -> ``{"a": 2, "b": 1}``; a flag without a value is 1."""
+    flags: dict[str, int] = {}
+    for item in filter(None, (part.strip() for part in text.split(","))):
+        name, _, value = item.partition("=")
+        try:
+            flags[name.strip()] = int(value) if value else 1
+        except ValueError:
+            raise argparse.ArgumentTypeError(f"bad flag value in {item!r}") from None
+    return flags
 
 
 def parse_args(argv: Sequence[str] | None = None) -> Options:
@@ -43,6 +56,9 @@ def parse_args(argv: Sequence[str] | None = None) -> Options:
         "--slot", type=int, choices=SLOTS, default=1, help="save slot to continue and save to"
     )
     parser.add_argument("--new", action="store_true", help="start a new game in the slot")
+    parser.add_argument(
+        "--flags", type=parse_flags, default={}, metavar="A=1,B", help="set flags in every game"
+    )
     args = parser.parse_args([] if argv is None else argv)
     return Options(
         dev=args.dev,
@@ -53,4 +69,5 @@ def parse_args(argv: Sequence[str] | None = None) -> Options:
         replay=args.replay,
         slot=args.slot,
         new=args.new,
+        flags=args.flags,
     )

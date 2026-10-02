@@ -25,6 +25,7 @@ class PauseScene(Scene):
             [
                 Label(ctx.t("pause.title")),
                 Button(ctx.t("pause.resume"), self._resume),
+                Button(ctx.t("pause.help"), self._help),
                 Button(ctx.t("pause.settings"), self._settings),
                 Button(ctx.t("pause.quit"), self._quit),
             ]
@@ -46,6 +47,11 @@ class PauseScene(Scene):
 
     def _resume(self) -> None:
         self.manager.pop()
+
+    def _help(self) -> None:
+        from emberwake.game.scenes.how_to_play import HowToPlayScene  # noqa: PLC0415
+
+        self.manager.push(HowToPlayScene(self.ctx))
 
     def _settings(self) -> None:
         self.manager.push(SettingsScene(self.ctx))

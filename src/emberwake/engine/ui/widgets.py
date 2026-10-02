@@ -122,6 +122,33 @@ class Button(Widget):
         self._text(surface, theme, self.text, "accent" if self.glow > 0.5 else "text")
 
 
+class Row(Widget):
+    """Read-only text with an optional value on the right.
+
+    It takes focus only so the arrow keys can scroll a `ScrollList` of rows.
+    """
+
+    focusable = True
+
+    def __init__(self, text: str, value: str = "") -> None:
+        super().__init__()
+        self.text, self.value = text, value
+
+    @override
+    def preferred(self, theme: Theme) -> tuple[int, int]:
+        width = theme.render(self.text).get_width() + 12
+        if self.value:
+            width += theme.render(self.value).get_width() + 16
+        return width, theme.row
+
+    @override
+    def draw(self, surface: pygame.Surface, theme: Theme) -> None:
+        self._row(surface, theme)
+        self._text(surface, theme, self.text, "text")
+        if self.value:
+            self._text(surface, theme, self.value, "accent", right=True)
+
+
 class Toggle(Widget):
     """A boolean; accept, left or right flips it."""
 

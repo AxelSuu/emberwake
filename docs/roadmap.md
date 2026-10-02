@@ -8,12 +8,18 @@
 | M3 | Rendering | RenderFrame, GL backend (normal-mapped lighting, shadows, bloom, LUT, HD-2D DOF), particles, software parity |
 | M4 | UI & meta | Widget toolkit with focus navigation, main menu, full settings, rebinding UI, pause, i18n, results, records |
 | M5 | Combat & AI | Health and damage, frame hitboxes, 3 enemies, floating text, pymunk props, flares |
-| M6 | Pipelines + slice art | Pixel DSL, atlas packer, normals, autotiles, palette lint, sfx generator, biome 1 art and audio |
-| M7 | Boss | Skeletal rig + IK, behavior tree, cutscene coroutines |
-| M8 | Depth | More abilities, NPC dialogue and shop, map screen, Trials + ghosts, achievements, skins |
-| M9 | Ship | PyInstaller builds, itch.io desktop + web demo, polish, performance pass |
+| M6 | Pipelines | Pixel DSL, atlas packer, normals, autotiles, palette lint, sfx generator (slice art moves to M10) |
+| M7 | Boss tech | Skeletal rig + IK, cutscene coroutines (the boss itself moves to M9) |
+| M8 | Depth | NPC dialogue and shop, Trials + ghosts, achievements, skins (map moves to M9, abilities to M11) |
+| M9 | The Sunken Quarter | The first area playable start to boss in greybox: lantern swing, HUD, light rules v2, death and Cinder, abilities and flags, lamps and light switches, breakables, lifts, encounters, two enemies and an elite, three NPCs, map screen, 20 rooms, the Lamprey, story beats, art proof |
+| M10 | The Quarter, finished | Art and audio for the slice: tilesets, back walls, decor, bitmap font, every sprite, GL backend with shaders (#23), music stems, sound effects, ambience |
+| M11 | Brass Gardens | Area 2: Wickline and Shutter, shadeforms, vines and pollen, three enemies, Moth Queen, Bloomhusk, the Gardener, lenses, journal, fast travel |
+| M12 | Tidal Works | Area 3: water level as world state, swimming with the Bell Jar, Ember glide and steam, four enemies, the Tidekeeper, Brine |
+| M13 | Lantern Spire | Area 4 and the ending: mirrors and beams, light-bridge, shadow-step, three enemies, the Hollow Lamplighter, three endings, the Gloam (optional area) |
+| M14 | Ship | PyInstaller builds, itch.io desktop + web demo, polish, performance pass, credits |
 
-Detailed plans: [M2 World](plans/m2-world.md).
+Detailed plans: [M2 World](plans/m2-world.md), [M9 The Sunken Quarter](plans/m9-sunken-quarter.md),
+[art and audio](plans/art-audio.md). Areas: [the Sunken Quarter](world/sunken-quarter.md).
 
 ## M0 status
 
@@ -54,4 +60,54 @@ Detailed plans: [M2 World](plans/m2-world.md).
 - [x] Interactables and signal wiring: levers, doors, plates, embers (#20)
 - [x] Parallax backdrops: presets, blurred far layers, darkened near layers, cross-fades (#18)
 - [x] Beacons and save slots: relight to save, continue, `--slot`, `--new` (#21)
-- [ ] Greybox world: five rooms around the test room (#65)
+- [x] Greybox world: five rooms around the test room (#65)
+
+## M3 to M8 status
+
+- [x] M3: RenderFrame, particles, post effects, soft shadows, light shafts (#22, #24 to #27).
+  Open: GL backend (#23), moved to M10 for shaders on desktop; the browser keeps the software path.
+- [x] M4: widgets, main menu, settings, rebinding, pause, strings in English and Swedish,
+  results and records (#28 to #34). No pixel font yet (M10).
+- [x] M5: combat basics, animation, three enemies, floating text, props and flares, light rules
+  (#35 to #40). The player has no attack yet (M9).
+- [x] M6: pixel DSL, atlas, normals, autotiles, palette lint, sfx, audio system (#41 to #46,
+  #48). No art made with them yet; biome art (#47) moves to M10.
+- [x] M7: rig and RotSprite, IK legs, cutscenes (#49, #50, #52). The Lamprey (#51) moves to M9.
+- [x] M8: dialogue and shop, Trials and ghosts, achievements, cosmetics and assist (#54, #56 to
+  #58). Map (#55) moves to M9; grapple and glide (#53) to M11 and M12.
+
+## Beyond M9
+
+Each area milestone follows the M9 shape: specs, systems, rooms in batches with bots, boss,
+story beats, then its art and audio. The GDD has the design; each gets a plan in `plans/`.
+
+**M10 The Quarter, finished.** Done when the Quarter has no placeholder art left, has music
+stems that follow light and danger, a sound for every action, and ambience; text uses the bitmap
+font. See the [art and audio plan](plans/art-audio.md).
+
+**M11 Brass Gardens.** About 18 rooms. Wickline (rope physics on lamp hooks) and Shutter
+(lantern off: stealth, shadeforms). Phototropic vines that grow toward the nearest light, pollen
+pods that glow when struck. Mothling swarm, Thornspring, Shade; Moth Queen; Bloomhusk; the
+Gardener's quest to light three sun lamps. Lenses (equipped at beacons), the journal (bestiary,
+Echoes, notes), fast travel between lit beacons. Backtracking rewards open in the Quarter. Two
+Trials.
+
+**M12 Tidal Works.** About 18 rooms. Water level as world state: valves raise and lower water
+across connected rooms, saved and drawn per room. Swimming with the Bell Jar (the lantern burns
+underwater; flares do not). Ember glide over steam vents and braziers. Anglerlamp, Barnacle,
+Tidecrab, Eelings; the Tidekeeper floods its arena in phases; Brine the diver. Two Trials.
+
+**M13 Lantern Spire.** About 15 rooms plus the Gloam (8, optional). Mirrors and beams (ray casts
+like the shadow code) routing beacon light to receivers, light-bridge, shadow-step. Mirror
+Knight, Sentinel, Hollow Acolyte; the Hollow Lamplighter mirrors your abilities. The three
+endings and credits. Two Trials, and Trials that span areas.
+
+**M14 Ship.** Desktop builds (#59), itch.io (#60), performance (#61), polish and credits (#62),
+the pymunk in pygbag spike (#2), a hands-on pass on every area.
+
+Alongside every milestone:
+
+- **A living world.** Critters that scatter from light (moths, rats, fish), NPC barks as speech
+  bubbles, rain on the streets, swinging chains and signs, splashes, pots and bottles to break.
+- **Accessibility.** Colorblind filters, text scale, and assist options for each new mechanic.
+- **Meta.** Achievements, Trials and journal entries for each area.

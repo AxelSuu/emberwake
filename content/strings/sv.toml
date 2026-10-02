@@ -42,6 +42,7 @@ reduce_flashes = "Minska blinkningar"
 [pause]
 title = "Pausad"
 resume = "Fortsätt"
+help = "Så spelar du"
 settings = "Inställningar"
 quit = "Avsluta till titel"
 
@@ -51,6 +52,7 @@ new = "Nytt spel"
 load = "Ladda spel"
 trials = "Prövningar"
 achievements = "Prestationer"
+help = "Så spelar du"
 settings = "Inställningar"
 quit = "Avsluta"
 back = "Tillbaka"
@@ -64,6 +66,23 @@ keyboard = "Tangentbord"
 reset = "Återställ standard"
 back = "Tillbaka"
 moved = "{input} flyttades hit från {action}"
+
+[help]
+title = "Så spelar du"
+controls = "Kontroller"
+tips = "Tips"
+back = "Tillbaka"
+
+[help.tip]
+move = "Spring med {left} och {right}. Håll {jump} för att hoppa högre."
+wall = "Glid nedför en vägg och tryck {jump} för att hoppa från den."
+drop = "Håll {down} och tryck {jump} för att falla genom tunna plattformar."
+dash = "Tryck {dash} för att dasha åt åtta håll. Den laddas när du landar."
+interact = "Tryck {interact} vid spakar, fyrtorn och människor."
+flare = "Tryck {flare} för att kasta ett bloss som lyser upp mörkret en stund."
+ember = "Din glöd falnar i mörkret och fylls på i ljus."
+beacon = "Tänd fyrtornen igen för att spara. Du fortsätter från det senaste."
+hazard = "Taggar och avgrunden skickar dig tillbaka till rummets ingång."
 
 [action]
 left = "Vänster"

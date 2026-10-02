@@ -43,6 +43,7 @@ reduce_flashes = "Reduce flashes"
 [pause]
 title = "Paused"
 resume = "Resume"
+help = "How to play"
 settings = "Settings"
 quit = "Quit to title"
 
@@ -52,6 +53,7 @@ new = "New game"
 load = "Load game"
 trials = "Trials"
 achievements = "Achievements"
+help = "How to play"
 settings = "Settings"
 quit = "Quit"
 back = "Back"
@@ -65,6 +67,23 @@ keyboard = "Keyboard"
 reset = "Reset to defaults"
 back = "Back"
 moved = "{input} moved here from {action}"
+
+[help]
+title = "How to play"
+controls = "Controls"
+tips = "Tips"
+back = "Back"
+
+[help.tip]
+move = "Run with {left} and {right}. Hold {jump} to jump higher."
+wall = "Slide down a wall and press {jump} to jump off it."
+drop = "Hold {down} and press {jump} to drop through thin platforms."
+dash = "Press {dash} to dash in eight directions. Landing refills it."
+interact = "Press {interact} at levers, beacons and people."
+flare = "Press {flare} to throw a flare that lights the dark for a while."
+ember = "Your ember drains in the dark and refills in light."
+beacon = "Relight beacons to save. You continue from the last one."
+hazard = "Spikes and the void send you back to the room's entrance."
 
 [action]
 left = "Left"
