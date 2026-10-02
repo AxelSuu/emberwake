@@ -23,6 +23,7 @@ from emberwake.game.lamprey import (
     phase_for,
     place,
 )
+from emberwake.game.lamprey_tree import build_tree
 from emberwake.game.light import LightSource
 
 if TYPE_CHECKING:
@@ -73,6 +74,7 @@ def _equip(
         ),
         Guard(active=True),
     )
+    lamprey.tree = build_tree()
 
 
 def _arena(world: World, eid: EntityId) -> tuple[float, float, float, float] | None:

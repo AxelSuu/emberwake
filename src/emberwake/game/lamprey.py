@@ -107,6 +107,8 @@ class Lamprey:
     """Degrees the head tilts from level toward where it moves, up negative."""
     target: tuple[float, float] | None = None
     start: tuple[float, float] = (0.0, 0.0)
+    aim: tuple[float, float] = (0.0, -1.0)
+    """Unit vector of the lunge."""
     """Where the last lunge or breach began."""
     travelled: float = 0.0
     bit: bool = False
