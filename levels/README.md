@@ -19,6 +19,11 @@ rebuilt. Do not edit generated levels in LDtk; the next build overwrites them.
 | `src/<room>.txt` | The room's tiles, one character per 16 px tile; size in whole grid cells |
 | `src/<room>.toml` | Optional: what each marker is, its fields and wiring, plus level fields such as `Backdrop` (a preset in `content/backdrops.toml`, default `cavern`) |
 
+Real rooms start at cell x 0 with `Wake` at [0, 0]. The dev rooms (area `lab`) live at x 60 and
+up so they never touch the real map: the greybox cluster takes x 60 to 69, y 0 to 9; put new lab
+rooms at x 70 and up (or further down at x 60), each clear of every other room, and set
+`Area = "lab"`.
+
 Rooms connect where their edges touch and the tiles there are open. Put a PlayerStart near each
 entrance: it is where the player respawns after a hazard death.
 

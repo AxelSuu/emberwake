@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from emberwake.game.context import GameContext
 
 STEP = 1 / 60
-HALL_X = 5 * 320
+HALL_X = 65 * 320
 """Lever_Hall's left edge in world px; its door is at tile 10."""
 
 

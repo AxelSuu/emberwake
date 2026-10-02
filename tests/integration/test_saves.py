@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 STEP = 1 / 60
 TO_BEACON = [(5, []), (20, ["right"]), (2, ["interact"]), (5, [])]
-"""From Test_Room's start to its beacon, then relight it."""
+"""From the start of Wake to its beacon, then relight it."""
 
 
 @pytest.fixture
@@ -108,7 +108,7 @@ def test_quitting_keeps_progress_but_not_position(ctx: GameContext, storage: Mem
     assert door is not None
     assert door.open
     assert "ember" not in {i.prefab for _, i in again.world.query(Identity)}
-    assert again.body.center_x == pytest.approx(5 * 320 + 3 * 16 + 8)
+    assert again.body.center_x == pytest.approx(65 * 320 + 3 * 16 + 8)
     assert again.progress.data.stats.embers == 1
 
 

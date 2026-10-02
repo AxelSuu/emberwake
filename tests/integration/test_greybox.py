@@ -162,11 +162,13 @@ def run(ctx: GameContext, room: str, *phases: Phase, ticks: int = 1500) -> Gamep
     raise AssertionError(msg)
 
 
-SHAFT = (6, 1)
-PLATE = (7, 1)
-UPPER = (8, 0)
-HALL = (4, 0)
-TEST = (0, 0)
+LAB = 60
+EAST = (LAB + 4, 2)
+SHAFT = (LAB + 6, 1)
+PLATE = (LAB + 7, 1)
+UPPER = (LAB + 8, 0)
+HALL = (LAB + 4, 0)
+TEST = (LAB, 0)
 SHAFT_TOP = at(SHAFT, 0, 9)[1]
 
 
@@ -236,13 +238,13 @@ def test_the_loop_can_be_walked_using_every_mechanism(ctx: GameContext):
     ctx.bus.subscribe(RoomEntered, lambda event: entered.append(event.room))
     ctx.bus.subscribe(BeaconLit, lit.append)
     ctx.bus.subscribe(Collected, collected.append)
-    hall = (5, 2)
+    hall = (LAB + 5, 2)
     run(
         ctx,
         "East_Passage",
         walk(
-            Leg(at((4, 2), 10.5)[0]),
-            Leg(at((4, 2), 10.5)[0], interact=True),
+            Leg(at(EAST, 10.5)[0]),
+            Leg(at(EAST, 10.5)[0], interact=True),
             Leg(at(hall, 0.5)[0]),
             until=in_room("Lever_Hall"),
         ),
@@ -257,7 +259,7 @@ def test_the_loop_can_be_walked_using_every_mechanism(ctx: GameContext):
         plate_room(),
         upper_room(),
         return_hall(),
-        walk(Leg(at(TEST, 77.5)[0]), Leg(at((4, 2), 0.5)[0]), until=in_room("East_Passage")),
+        walk(Leg(at(TEST, 77.5)[0]), Leg(at(EAST, 0.5)[0]), until=in_room("East_Passage")),
         ticks=4000,
     )
     assert entered == [

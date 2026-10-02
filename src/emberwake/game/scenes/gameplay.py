@@ -123,7 +123,7 @@ TRIALS = "trials.toml"
 GRANTS = "grants.toml"
 AREAS = "areas.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
-DEFAULT_ROOM = "Test_Room"
+DEFAULT_ROOM = "Wake"
 BAKE_BUDGET = 0.002
 """Seconds per frame spent baking room art in the background."""
 GLOW_RADIUS = 72
@@ -238,7 +238,7 @@ class GameplayScene(Scene):
         from_slot = room is None and replay is None
         save = load_slot(ctx.storage, ctx.slot) if from_slot and not ctx.new_game else None
         ctx.new_game = False
-        start = room or (save.room if save else DEFAULT_ROOM)
+        start = room or (replay.start if replay else "") or (save.room if save else DEFAULT_ROOM)
         data = save or SaveSlot(room=start)
         data.flags.update(ctx.flags)
         self.progress = Progress(data, ctx.storage, ctx.slot if from_slot else None)

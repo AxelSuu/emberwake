@@ -1,3 +1,5 @@
+fields = { Area = "lab" }
+
 [entities.p]
 type = "PressurePlate"
 fields = { Targets = ["b"] }
