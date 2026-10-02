@@ -4,15 +4,28 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tests.integration.test_greybox import STEP, Leg, Phase, Route, at, climb, in_room, walk
+from tests.integration.test_greybox import (
+    STEP,
+    Climber,
+    Leg,
+    Phase,
+    Route,
+    at,
+    climb,
+    in_room,
+    walk,
+)
 
 from emberwake.engine.input.replay import Replay, ReplayPlayer
-from emberwake.engine.physics import Body
+from emberwake.engine.physics import Body, Tile
 from emberwake.engine.scene import SceneManager
 from emberwake.engine.world.spawning import Identity
 from emberwake.game.actions import Action
+from emberwake.game.beacons import BeaconLit
 from emberwake.game.combat import Health
-from emberwake.game.enemies import Brain
+from emberwake.game.encounters import Encounter, EncounterCleared, EncounterStarted
+from emberwake.game.enemies import Brain, Minion
+from emberwake.game.grants import Granted
 from emberwake.game.lamps import Lamp
 from emberwake.game.scenes.gameplay import GameplayScene
 from emberwake.game.switches import Bell
@@ -23,6 +36,7 @@ if TYPE_CHECKING:
 
 BELFRY = (8, 6)
 STAIR = (8, 2)
+FACE = (8, 0)
 NEVER = -1e9
 """A climber with no top keeps bouncing until the phase's own condition holds."""
 
@@ -70,6 +84,23 @@ def above(row: float, cell: tuple[int, int] = BELFRY):
 
 def stair_climb() -> Phase:
     return climb(NEVER, 1, above(2.5, STAIR))
+
+
+class ShaftTop(Climber):
+    """Climbs until a hop ends high above the floor on the exit side, then walks out."""
+
+    def sample(self) -> frozenset[Action]:
+        body = self.scene.body
+        if body.bottom <= at(FACE, 0, 18.5)[1] and body.center_x > x(FACE, 11.5):
+            self.out = True
+        return super().sample()
+
+
+def to_the_face() -> Phase:
+    """Out of the stair's top and onto the Face's floor, heading for the arena."""
+    return Phase(
+        lambda scene: ShaftTop(scene, NEVER, 1), lambda scene: scene.body.center_x > x(FACE, 15)
+    )
 
 
 def belfry_climb() -> list[Phase]:
@@ -182,3 +213,90 @@ def test_the_stair_has_two_gearbugs(ctx: GameContext) -> None:
     scene = start(ctx, "Clocktower_Stair")
     bugs = [b for _, b in scene.world.query(Brain) if b.kind == "gearbug"]
     assert len(bugs) == 2
+
+
+def solid(scene: GameplayScene, col: int, row: int) -> bool:
+    rect = scene.rooms.graph.rects[scene.room]
+    return scene.grid.get(rect.x // 16 + col, rect.y // 16 + row) == Tile.SOLID
+
+
+def wave(scene: GameplayScene) -> list[EntityId]:
+    owners = {eid for eid, _ in scene.world.query(Encounter)}
+    return [eid for eid, _, m in scene.world.query(Brain, Minion) if m.owner in owners]
+
+
+def kill_wave(scene: GameplayScene) -> None:
+    for eid in wave(scene):
+        scene.world.get(eid, Health).dead = True
+    drive(scene, [(6, [])])
+
+
+def test_the_tower_is_climbed_to_the_face_and_the_king_clears_the_way_to_lamp_a(
+    ctx: GameContext,
+) -> None:
+    started: list[EncounterStarted] = []
+    cleared: list[EncounterCleared] = []
+    lit: list[BeaconLit] = []
+    ctx.bus.subscribe(EncounterStarted, started.append)
+    ctx.bus.subscribe(EncounterCleared, cleared.append)
+    ctx.bus.subscribe(BeaconLit, lit.append)
+    scene = play(
+        ctx,
+        "Belfry",
+        *belfry_climb(),
+        stair_climb(),
+        to_the_face(),
+        tile=(BELFRY, 27, 20),
+        ticks=5000,
+    )
+    assert scene.room == "Clock_Face"
+    assert not started
+    assert solid(scene, 34, 18)
+    assert not solid(scene, 10, 20)
+
+    drive(scene, [(40, ["right"])])
+    assert started
+    assert solid(scene, 10, 20)
+    assert solid(scene, 34, 18)
+    kill_wave(scene)
+    drive(scene, [(90, [])])
+    assert any(b.kind == "clockrat_king" for _, b in scene.world.query(Brain))
+    kill_wave(scene)
+    drive(scene, [(20, [])])
+    assert cleared
+    assert not solid(scene, 10, 20)
+    assert not solid(scene, 34, 18)
+
+    scene.body.x = x(FACE, 37.5) - scene.body.width / 2
+    scene.body.y = at(FACE, 0, 20)[1] - scene.body.height
+    drive(scene, [(3, []), (2, ["interact"]), (5, [])])
+    assert len(lit) == 1
+
+
+SHARD_ROUTE = [
+    (2, []),
+    (14, ["left", "jump"]),
+    (10, ["left"]),
+    (6, ["left", "down", "swing"]),
+    (8, ["left"]),
+    (6, ["left", "down", "swing"]),
+    (40, ["left"]),
+]
+
+
+def test_two_pogos_off_the_spike_bulbs_reach_lantern_shard_3(ctx: GameContext) -> None:
+    granted: list[Granted] = []
+    ctx.bus.subscribe(Granted, granted.append)
+    scene = start(ctx, "Clock_Face")
+    stand(scene, FACE, 15, 7)
+    drive(scene, SHARD_ROUTE)
+    assert not scene.motor.dead
+    assert [(g.thing, g.count) for g in granted] == [("shard", 1)]
+
+
+def test_a_jump_and_a_dash_do_not_cross_the_lamp_hook_gap(ctx: GameContext) -> None:
+    scene = start(ctx, "Clock_Face")
+    stand(scene, FACE, 15, 7)
+    run_up = [(50, ["right"]), (14, ["right", "jump"]), (8, ["right"]), (3, ["right", "dash"])]
+    drive(scene, [*run_up, (90, ["right"])])
+    assert scene.body.bottom != at(FACE, 0, 8)[1]
