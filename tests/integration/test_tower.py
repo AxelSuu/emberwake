@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tests.integration.test_greybox import STEP, Leg, Phase, Route, at, climb, walk
+from tests.integration.test_greybox import STEP, Leg, Phase, Route, at, climb, in_room, walk
 
 from emberwake.engine.input.replay import Replay, ReplayPlayer
 from emberwake.engine.physics import Body
@@ -22,6 +22,9 @@ if TYPE_CHECKING:
     from emberwake.game.context import GameContext
 
 BELFRY = (8, 6)
+STAIR = (8, 2)
+NEVER = -1e9
+"""A climber with no top keeps bouncing until the phase's own condition holds."""
 
 type Spot = tuple[tuple[int, int], int, int]
 
@@ -65,6 +68,10 @@ def above(row: float, cell: tuple[int, int] = BELFRY):
     return lambda scene: scene.body.bottom <= at(cell, 0, row)[1]
 
 
+def stair_climb() -> Phase:
+    return climb(NEVER, 1, above(2.5, STAIR))
+
+
 def belfry_climb() -> list[Phase]:
     c = lambda col: x(BELFRY, col + 0.5)  # noqa: E731
     return [
@@ -79,7 +86,7 @@ def belfry_climb() -> list[Phase]:
             Leg(c(9)),
             Leg(c(9), jump=True),
         ),
-        climb(at(BELFRY, 0, 2)[1], 1, above(2.5)),
+        climb(NEVER, 1, in_room("Clocktower_Stair")),
     ]
 
 
@@ -151,3 +158,27 @@ def test_quill_stands_in_the_belfry_at_stage_zero(ctx: GameContext) -> None:
     scene = start(ctx, "Belfry")
     quills = [i for _, i in scene.world.query(Identity) if i.prefab == "quill"]
     assert len(quills) == 1
+
+
+def test_the_stair_is_climbed_by_wall_jumps_past_its_gearbugs(ctx: GameContext) -> None:
+    play(ctx, "Belfry", *belfry_climb(), stair_climb(), tile=(BELFRY, 27, 20), ticks=4000)
+
+
+POGO = [(2, []), (14, ["jump"]), (6, ["left"]), (8, ["left", "down", "swing"]), (30, ["left"])]
+
+
+def test_a_down_swing_on_the_spike_bulb_reaches_the_lost_light(ctx: GameContext) -> None:
+    scene = start(ctx, "Clocktower_Stair")
+    stand(scene, STAIR, 6, 30)
+    drive(scene, POGO)
+    assert not scene.motor.dead
+    assert scene.motor.grounded
+    assert scene.body.bottom == at(STAIR, 0, 27)[1]
+    lights = [i for _, i in scene.world.query(Identity) if i.prefab == "lost_light"]
+    assert len(lights) == 1
+
+
+def test_the_stair_has_two_gearbugs(ctx: GameContext) -> None:
+    scene = start(ctx, "Clocktower_Stair")
+    bugs = [b for _, b in scene.world.query(Brain) if b.kind == "gearbug"]
+    assert len(bugs) == 2
