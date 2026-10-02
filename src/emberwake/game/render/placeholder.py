@@ -315,6 +315,28 @@ class EntityArt:
         image.fill(palette.EMBER_HOT, (rect.centerx + 4, rect.bottom - 8, 2, 3))
 
     @staticmethod
+    def _hesper(image: pygame.Surface, rect: pygame.Rect) -> None:
+        """A pale lamplighter's ghost in a long cloak, holding a pole with a small flame."""
+        x, bottom = rect.centerx, rect.bottom
+        image.fill(CLOAK_SHADE, (x - 4, bottom - 12, 8, 12))
+        image.fill(CLOAK, (x - 3, bottom - 11, 6, 9))
+        pygame.draw.circle(image, palette.MIST, (x, bottom - 14), 3)
+        image.fill(LANTERN_FRAME, (x + 5, bottom - 15, 1, 15))
+        image.fill(palette.EMBER_HOT, (x + 4, bottom - 18, 3, 3))
+
+    @staticmethod
+    def _quill(image: pygame.Surface, rect: pygame.Rect) -> None:
+        """A clockwork owl: round body, big eyes, a gear on its chest."""
+        x, bottom = rect.centerx, rect.bottom
+        pygame.draw.ellipse(image, PLANK_DARK, (x - 6, bottom - 13, 12, 13))
+        pygame.draw.ellipse(image, PLANK, (x - 5, bottom - 12, 10, 11))
+        for dx in (-3, 1):
+            image.fill(palette.MIST, (x + dx - 1, bottom - 11, 4, 4))
+            image.fill(palette.INK, (x + dx, bottom - 10, 2, 2))
+        image.fill(PLANK_LIGHT, (x - 1, bottom - 7, 2, 2))
+        pygame.draw.circle(image, LANTERN_FRAME, (x, bottom - 3), 2, 1)
+
+    @staticmethod
     def _goal(image: pygame.Surface, rect: pygame.Rect) -> None:
         for y in range(rect.top, rect.bottom, 8):
             image.fill(palette.EMBER_CORE, (rect.left + 2, y, 3, 4))
