@@ -1,2 +1,4 @@
+fields = { Area = "lab" }
+
 [entities.k]
 type = "Beacon"

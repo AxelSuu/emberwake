@@ -4,6 +4,8 @@
 [level_fields]
 Generated = { type = "Bool", default = false, doc = "Compiled from levels/src; rebuilt by --merge" }
 Backdrop = { type = "String", default = "cavern", doc = "Preset in content/backdrops.toml" }
+Area = { type = "String", default = "quarter", doc = "Area in content/areas.toml" }
+Music = { type = "String", default = "", doc = "Stem set; empty plays the area's" }
 
 [entities.PlayerStart]
 color = "#f9c22b"
