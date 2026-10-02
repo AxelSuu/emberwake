@@ -1,6 +1,6 @@
 # The Lamprey
 
-**Milestone:** M9  **Status:** ready  **Issue:** #51
+**Milestone:** M9  **Status:** done  **Issue:** #51
 
 ## Goal
 The Quarter's boss: a skeletal eel in the flooded Cistern that hunts the brightest light. The
@@ -52,7 +52,8 @@ lit it hunts the lantern, which is the player.
 - **Defeat.** At zero health it is retired by iid (`WorldState.removed`: it does not return on a
   reload, a rest or quit and continue), sets `lamprey_defeated` to 1 and keeps the arena
   drained, and publishes `LampreyDefeated`. The scene gives hitstop, a flash and shake, and
-  saves. The save format does not change: the flags are the save's own.
+  saves. The save format does not change: the flags are the save's own. The world validator knows
+  both flags are set by the game (`Rules.code_flags`), so levels may read them.
 - **The player dies.** The fight starts over: full health, phase 1, the tree reset, casings
   sealed, `lamprey_drained` cleared (the water comes back). Lamps keep what they were.
 - **Fresh spawn.** A Lamprey that spawns (the room loads) clears `lamprey_drained` unless it
@@ -105,22 +106,22 @@ Cistern_Lab`.
 | gasp_time | 1.2 | seconds open |
 
 ## Acceptance criteria
-- [ ] The Lamprey gets health, a hurt box, a contact hit box and armor on its first tick, and
+- [x] The Lamprey gets health, a hurt box, a contact hit box and armor on its first tick, and
   the three phases follow its health.
-- [ ] It lunges at the brightest light (flare over lamp over lantern); a lunge into stone stuns
+- [x] It lunges at the brightest light (flare over lamp over lantern); a lunge into stone stuns
   it and opens its armor, a lunge into air does not.
-- [ ] Submerged it cannot be hit or hurt; breaching in phase 2 it takes a hit from above and
+- [x] Submerged it cannot be hit or hurt; breaching in phase 2 it takes a hit from above and
   none from the side, and snuffs the lamps it passes.
-- [ ] In phase 3 a lunge through a sealed photocell unseals it, lit photocells all at once drain
+- [x] In phase 3 a lunge through a sealed photocell unseals it, lit photocells all at once drain
   the arena (`lamprey_drained`), and only then can it be hurt, in its gasps.
-- [ ] A phase change aborts the running step; the same sequence of light and position gives the
+- [x] A phase change aborts the running step; the same sequence of light and position gives the
   same fight every time.
-- [ ] Killing it retires it, sets `lamprey_defeated`, and survives a reload and quit and
+- [x] Killing it retires it, sets `lamprey_defeated`, and survives a reload and quit and
   continue; the arena stays drained.
-- [ ] The player dying resets the Lamprey, the casings and `lamprey_drained`.
-- [ ] `Cistern_Lab` holds the arena and can be reached with `--room Cistern_Lab`; it passes the
+- [x] The player dying resets the Lamprey, the casings and `lamprey_drained`.
+- [x] `Cistern_Lab` holds the arena and can be reached with `--room Cistern_Lab`; it passes the
   world validator.
-- [ ] It draws as a rig with a verlet body, in every mode, without errors.
+- [x] It draws as a rig with a verlet body, in every mode, without errors.
 
 ## Tests
 `tests/unit/game/test_lamprey.py` drives `lamprey_system` on a small arena: bait choice, each
