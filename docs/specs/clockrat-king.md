@@ -1,6 +1,6 @@
 # Clockrat King
 
-**Milestone:** M9  **Status:** draft  **Issue:** #130
+**Milestone:** M9  **Status:** done  **Issue:** #130
 
 ## Goal
 The Clocktower's elite: a big Clockrat that charges, calls rats and cannot be swung at from the
@@ -22,9 +22,9 @@ and topples the King at once, from any upright state. Hits take no knockback; it
 
 ### States
 - **patrol**: walks at `king_speed`, turns at walls and ledges. When the player is within
-  `king_sight` px ahead and roughly level it goes to rear. When `king_summon_every` seconds have
-  passed since the last call, the player is within `king_alert` px and fewer than `king_rats_max`
-  of its rats are alive, it calls instead.
+  `king_sight` px ahead and roughly level it goes to rear. When `king_summon_every` seconds of
+  patrol have passed since the last call, the player is within `king_alert` px and fewer than
+  `king_rats_max` of its rats are alive, it calls instead.
 - **rear**: stops and trembles for `king_rear` seconds, facing the player. A warning.
 - **charge**: runs the way it faces at `king_charge_speed` for at most `king_charge_time` seconds,
   until a wall or a ledge. Then rest, turning around if it hit something.
@@ -72,21 +72,22 @@ lamp, and lying down with the lamp dark while toppled.
 | king_topple_time | 2.5 | seconds on its back |
 
 ## Acceptance criteria
-- [ ] Swings from the side or below clang off an upright King: no damage, the player recoils.
-- [ ] A hit from above (down swing or pogo) hurts the King and topples it; it takes no knockback.
-- [ ] A toppled King takes every kind of swing, does not hurt on contact, has its lamp out, and
+- [x] Swings from the side or below clang off an upright King: no damage, the player recoils.
+- [x] A hit from above (down swing or pogo) hurts the King and topples it; it takes no knockback.
+- [x] A toppled King takes every kind of swing, does not hurt on contact, has its lamp out, and
   gets up after `king_topple_time`, whatever hits it meanwhile.
-- [ ] The King patrols, rears at the player and charges, resting after a wall, a ledge or the
+- [x] The King patrols, rears at the player and charges, resting after a wall, a ledge or the
   time limit.
-- [ ] Calling spawns rats at `RatSpawn` markers in its room, never more than `king_rats_max` alive,
+- [x] Calling spawns rats at `RatSpawn` markers in its room, never more than `king_rats_max` alive,
   the same way every time for the same iid.
-- [ ] Its rats disappear when the King dies or its room unloads.
-- [ ] Killing the King retires it: it stays dead after a room reload and after quit and continue.
-- [ ] The crown lamp lights its surroundings while it stands and not while it is toppled.
-- [ ] `King_Lab` (a lab room) holds a King and rat markers and can be reached with
-  `--room King_Lab`.
+- [x] Its rats disappear when the King dies or its room unloads.
+- [x] Killing the King retires it: it stays dead after a room reload and after quit and continue.
+- [x] The crown lamp lights its surroundings while it stands and not while it is toppled.
+- [x] `King_Lab` (a lab room) holds a King, a beacon, two platforms to jump from and rat
+  markers, and can be reached with `--room King_Lab`.
 
 ## Tests
+`tests/unit/game/test_combat.py` covers the open-top Guard.
 `tests/unit/game/test_enemies.py` drives `enemy_system` on a small `Yard`: the state cycle, the
 crown rule with `combat_system`, rat counts, cleanup and determinism, retiring by iid with a
 `Spawner`. `tests/integration/test_clockrat_king.py` loads `King_Lab`, topples and defeats the
