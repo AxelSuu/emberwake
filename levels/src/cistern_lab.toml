@@ -1,0 +1,26 @@
+fields = { Area = "lab" }
+
+[entities.L]
+type = "Lamprey"
+[entities.a]
+type = "Lamp"
+[entities.b]
+type = "Lamp"
+[entities.c]
+type = "Lamp"
+[entities.d]
+type = "Lamp"
+[entities.p]
+type = "Photocell"
+fields = { Sealed = true }
+[entities.q]
+type = "Photocell"
+fields = { Sealed = true }
+[entities.D]
+type = "Door"
+fields = { Invert = true }
+[entities.f]
+type = "FlagSwitch"
+fields = { Condition = "lamprey_drained", Targets = ["D"] }
+[entities.k]
+type = "Beacon"

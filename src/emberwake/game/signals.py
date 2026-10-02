@@ -22,6 +22,8 @@ if TYPE_CHECKING:
     from emberwake.engine.world.ldtk import Level
 
 TARGETS = ("Switch.targets", "FlagSwitch.targets")
+LOCKS = ("Encounter.doors",)
+"""Fields naming doors an encounter shuts; they power nothing."""
 CONDITION = "FlagSwitch.condition"
 
 
@@ -46,11 +48,14 @@ class Wiring:
     sources: dict[str, list[str]] = field(default_factory=dict)
     conditions: dict[str, str] = field(default_factory=dict)
     """FlagSwitch iid -> its condition; they are read from the level, never from saved state."""
+    locks: dict[str, list[str]] = field(default_factory=dict)
+    """Door iid -> the encounters that shut it."""
 
     @classmethod
     def from_levels(cls, levels: Iterable[Level], prefabs: Mapping[str, Prefab]) -> Wiring:
         sources: defaultdict[str, list[str]] = defaultdict(list)
         conditions: dict[str, str] = {}
+        locks: defaultdict[str, list[str]] = defaultdict(list)
         for level in levels:
             for entity in level.entities():
                 prefab = prefabs.get(prefab_name(entity.identifier))
@@ -61,14 +66,20 @@ class Wiring:
                     if target in TARGETS:
                         for receiver in values.get(name) or []:
                             sources[receiver].append(entity.iid)
+                    elif target in LOCKS:
+                        for door in values.get(name) or []:
+                            locks[door].append(entity.iid)
                     elif target == CONDITION:
                         conditions[entity.iid] = values.get(name) or ""
         wired = {target: sorted(iids) for target, iids in sources.items()}
-        return cls(wired, conditions)
+        return cls(wired, conditions, {door: sorted(iids) for door, iids in locks.items()})
 
 
 def signal_system(world: World, dt: float) -> None:
-    """Power receivers from their sources, one pass in iid order."""
+    """Power receivers from their sources, one pass in iid order.
+
+    Doors an encounter shuts are left to `lock_system`.
+    """
     wiring, spawner, facts = world.resource(Wiring), world.resource(Spawner), world.resource(Facts)
 
     def on(iid: str) -> bool:
@@ -83,6 +94,8 @@ def signal_system(world: World, dt: float) -> None:
 
     receivers = sorted(world.query(Identity, Receiver), key=lambda row: row[1].iid)
     for _, identity, receiver in receivers:
+        if identity.iid in wiring.locks:
+            continue
         states = [on(iid) for iid in wiring.sources.get(identity.iid, [])]
         powered = any(states) if receiver.mode == "any" else bool(states) and all(states)
         receiver.powered = powered != receiver.invert

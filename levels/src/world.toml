@@ -64,3 +64,12 @@ cell = [2, 9]
 
 [rooms.Lamp_Row]
 cell = [2, 8]
+
+[rooms.Arena_Lab]
+cell = [70, 2]
+
+[rooms.Crate_Lab]
+cell = [73, 2]
+
+[rooms.Cistern_Lab]
+cell = [70, 4]

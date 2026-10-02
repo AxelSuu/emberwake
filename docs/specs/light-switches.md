@@ -15,6 +15,8 @@ the [signal system](../../src/emberwake/game/signals.py) like levers and plates.
 - **Photocell** (`Targets`, `Threshold`): on while the light at its centre, from any source
   including the player's lantern, is at least `Threshold` and above zero. Off again when the
   light goes (a flare burns out, the player walks off). Not saved: an unloaded photocell is off.
+  `Sealed` places it behind a casing: it reads off whatever the light, until the Lamprey's lunge
+  breaks the casing ([the Lamprey](lamprey.md)).
 - **Brazier** (`Targets`, `Lit`): cold until lit; then a `LightSource` of `brazier_radius` and
   an on switch, for good. `Lit = true` places it already lit.
   - **Lit by** a `Struck` (a swing from any direction) or by a live flare touching its body.

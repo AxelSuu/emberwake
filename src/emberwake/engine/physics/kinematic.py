@@ -2,7 +2,8 @@
 
 Movement is resolved one axis at a time (x, then y) and split into sub-steps of at most half a
 tile, so only the leading row or column needs testing and nothing tunnels through thin walls.
-Bodies are assumed not to overlap solid tiles when a move starts.
+Bodies are assumed not to overlap solid tiles when a move starts. Boxes passed as `solids` (crates,
+say) block like solid tiles, though they have no cells.
 """
 
 from __future__ import annotations
@@ -15,7 +16,7 @@ from emberwake.engine.ecs import component
 from emberwake.engine.physics.tiles import Tile
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
+    from collections.abc import Collection, Sequence
 
     from emberwake.engine.physics.tiles import TileSource
 
@@ -56,6 +57,15 @@ class Contacts:
     """Landed on one-way platforms only (no solid tile underneath)."""
 
 
+def _meets(body: Body, x: float, y: float, width: float, height: float) -> bool:
+    return (
+        x < body.x + body.width - EPSILON
+        and body.x < x + width - EPSILON
+        and y < body.bottom - EPSILON
+        and body.y < y + height - EPSILON
+    )
+
+
 def overlaps(
     grid: TileSource,
     x: float,
@@ -64,8 +74,11 @@ def overlaps(
     height: float,
     *,
     kinds: Collection[Tile] = SOLID_ONLY,
+    solids: Sequence[Body] = (),
 ) -> bool:
-    """Whether the box touches any tile whose kind is in `kinds`."""
+    """Whether the box touches any tile whose kind is in `kinds`, or any of the `solids`."""
+    if any(_meets(solid, x, y, width, height) for solid in solids):
+        return True
     size = grid.tile_size
     for row in range(math.floor(y / size), math.floor((y + height - EPSILON) / size) + 1):
         for column in range(math.floor(x / size), math.floor((x + width - EPSILON) / size) + 1):
@@ -75,7 +88,13 @@ def overlaps(
 
 
 def move(
-    grid: TileSource, body: Body, dx: float, dy: float, *, drop_through: bool = False
+    grid: TileSource,
+    body: Body,
+    dx: float,
+    dy: float,
+    *,
+    drop_through: bool = False,
+    solids: Sequence[Body] = (),
 ) -> Contacts:
     """Move `body` by (`dx`, `dy`) pixels, stopping at tiles. Mutates `body`.
 
@@ -85,6 +104,7 @@ def move(
         dx: Horizontal distance.
         dy: Vertical distance (positive is down).
         drop_through: Ignore one-way platforms, for dropping down through them.
+        solids: Boxes that block like solid tiles from every side. `body` itself is skipped.
 
     Returns:
         The contacts made. Velocity is the caller's business: zero it on contact if needed.
@@ -93,9 +113,9 @@ def move(
     steps = max(1, math.ceil(max(abs(dx), abs(dy)) / (grid.tile_size / 2)))
     step_x, step_y = dx / steps, dy / steps
     for _ in range(steps):
-        if step_x and _step_x(grid, body, step_x, contacts):
+        if step_x and _step_x(grid, body, step_x, contacts, solids):
             step_x = 0.0
-        if step_y and _step_y(grid, body, step_y, contacts, drop_through=drop_through):
+        if step_y and _step_y(grid, body, step_y, contacts, solids, drop_through=drop_through):
             step_y = 0.0
     return contacts
 
@@ -110,7 +130,9 @@ def _columns(grid: TileSource, body: Body) -> range:
     return range(math.floor(body.x / size), math.floor((body.x + body.width - EPSILON) / size) + 1)
 
 
-def _step_x(grid: TileSource, body: Body, distance: float, contacts: Contacts) -> bool:
+def _step_x(
+    grid: TileSource, body: Body, distance: float, contacts: Contacts, solids: Sequence[Body]
+) -> bool:
     size = grid.tile_size
     new_x = body.x + distance
     if distance > 0:
@@ -125,12 +147,27 @@ def _step_x(grid: TileSource, body: Body, distance: float, contacts: Contacts) -
             body.x = (column + 1) * size
             contacts.left = True
             return True
+    for solid in solids:
+        if solid is not body and _meets(solid, new_x, body.y, body.width, body.height):
+            if distance > 0:
+                body.x = solid.x - body.width
+                contacts.right = True
+            else:
+                body.x = solid.x + solid.width
+                contacts.left = True
+            return True
     body.x = new_x
     return False
 
 
 def _step_y(
-    grid: TileSource, body: Body, distance: float, contacts: Contacts, *, drop_through: bool
+    grid: TileSource,
+    body: Body,
+    distance: float,
+    contacts: Contacts,
+    solids: Sequence[Body],
+    *,
+    drop_through: bool,
 ) -> bool:
     size = grid.tile_size
     new_y = body.y + distance
@@ -148,6 +185,17 @@ def _step_y(
         row = math.floor(new_y / size)
         if any(grid.get(column, row) is Tile.SOLID for column in _columns(grid, body)):
             body.y = (row + 1) * size
+            contacts.ceiling = True
+            return True
+    for solid in solids:
+        if solid is body or not _meets(solid, body.x, new_y, body.width, body.height):
+            continue
+        if distance > 0 and body.bottom <= solid.y + EPSILON:
+            body.y = solid.y - body.height
+            contacts.ground, contacts.one_way = True, False
+            return True
+        if distance < 0 and body.y >= solid.bottom - EPSILON:
+            body.y = solid.bottom
             contacts.ceiling = True
             return True
     body.y = new_y

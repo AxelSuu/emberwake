@@ -1,0 +1,15 @@
+fields = { Area = "lab" }
+
+[entities.p]
+type = "PressurePlate"
+fields = { Targets = ["d"] }
+[entities.d]
+type = "Door"
+[entities.c]
+type = "PushCrate"
+[entities.C]
+type = "PushCrate"
+[entities.k]
+type = "Beacon"
+[entities.e]
+type = "Ember"

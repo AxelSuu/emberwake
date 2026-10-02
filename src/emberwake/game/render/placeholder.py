@@ -310,6 +310,16 @@ class EntityArt:
         image.fill(PLANK_LIGHT, (rect.left + 1, rect.top + 1, rect.width - 2, 1))
 
     @staticmethod
+    def _push_crate(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, rect)
+        image.fill(PLANK_DARK, rect.inflate(-2, -2))
+        for y in range(rect.top + 4, rect.bottom - 3, 4):
+            image.fill(PLANK, (rect.left + 2, y, rect.width - 4, 2))
+        image.fill(ROCK_EDGE, (rect.left, rect.top + 1, 3, rect.height - 2))
+        image.fill(ROCK_EDGE, (rect.right - 3, rect.top + 1, 3, rect.height - 2))
+        image.fill(PLANK_LIGHT, (rect.left + 3, rect.top + 1, rect.width - 6, 1))
+
+    @staticmethod
     def _pot(image: pygame.Surface, rect: pygame.Rect) -> None:
         w, h = rect.size
         pygame.draw.ellipse(image, PLANK_DARK, (1, 3, w - 2, h - 3))

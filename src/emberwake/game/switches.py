@@ -43,6 +43,8 @@ class Photocell:
     """On while the light at its centre reaches `threshold`."""
 
     threshold: float = 0.4
+    sealed: bool = False
+    """Behind a casing: reads no light until something breaks it open (the Lamprey does)."""
 
 
 @component
@@ -78,7 +80,7 @@ def photocell_system(world: World, dt: float) -> None:
     """Switch every photocell on or off by the light at it."""
     for eid, body, cell, switch in world.query(Body, Photocell, Switch):
         light = light_at(world, body.center_x, body.y + body.height / 2)
-        set_switch(world, eid, switch, light > 0 and light >= cell.threshold)
+        set_switch(world, eid, switch, not cell.sealed and light > 0 and light >= cell.threshold)
 
 
 def brazier_system(world: World, dt: float) -> None:
