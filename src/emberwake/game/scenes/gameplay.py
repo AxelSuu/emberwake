@@ -65,6 +65,15 @@ from emberwake.game.flags import Facts, admits, flags_in
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
 from emberwake.game.interact import Collected, Interactable, Switch
+from emberwake.game.lamprey import (
+    Bitten,
+    Breached,
+    CasingBroken,
+    Drained,
+    Lamprey,
+    LampreyDefeated,
+    PhaseChanged,
+)
 from emberwake.game.lamps import LampLit, LampSnuffed
 from emberwake.game.light import Ember, LightSource
 from emberwake.game.lore import EchoHeard, EchoPlay, speeches
@@ -80,6 +89,7 @@ from emberwake.game.render.bubble import Bubbles
 from emberwake.game.render.fx import Flash
 from emberwake.game.render.glow import Glows
 from emberwake.game.render.hud import Hud, HudState
+from emberwake.game.render.lamprey_view import LampreyView
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
 from emberwake.game.render.player_view import Light, PlayerView
 from emberwake.game.render.toast import Toasts
@@ -231,6 +241,7 @@ class GameplayScene(Scene):
         self.art = EntityArt()
         self.bank = SpriteBank(paths.sprites())
         self.glows = Glows()
+        self.lampreys: dict[EntityId, LampreyView] = {}
         self.view = PlayerView(self.sprite, self.bank, self.glows)
         self._colors: dict[str, tuple[int, int, int]] = {}
 
@@ -284,6 +295,7 @@ class GameplayScene(Scene):
             feel.breakables,
             feel.crates,
             feel.encounters,
+            feel.lamprey,
         )
         for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
@@ -335,6 +347,7 @@ class GameplayScene(Scene):
             bus.subscribe(Toppled, self._on_toppled),
             bus.subscribe(EncounterStarted, self._on_encounter),
             bus.subscribe(EncounterCleared, self._on_encounter),
+            *self._subscribe_lamprey(bus),
             bus.subscribe(Talk, self._on_talk),
             bus.subscribe(GoalReached, self._on_goal),
             bus.subscribe(TrialDoorUsed, self._on_trial_door),
@@ -634,6 +647,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.crates)
             self.world.insert_resource(feel.switches)
             self.world.insert_resource(feel.encounters)
+            self.world.insert_resource(feel.lamprey)
             self.camera.retune(feel.camera)
         prefabs = self._read_prefabs()
         if prefabs is not None:
@@ -789,6 +803,7 @@ class GameplayScene(Scene):
             self.trial_time += dt
         if self.ghost is not None:
             self.ghost.update(self.grid, dt)
+        self._animate_lampreys(dt)
         if not self.motor.dead:
             self._animate(dt)
         if self.motor.grounded and not self.motor.dead:
@@ -876,6 +891,13 @@ class GameplayScene(Scene):
                 self._dust("slide_dust", body.center_x + side * body.width / 2, body.y + 6)
         swing, kindle = self.world.find(self.player, Swing), self.world.find(self.player, Kindle)
         self.view.update(body, motor, swing, kindle, dt)
+
+    def _animate_lampreys(self, dt: float) -> None:
+        """Advance the body chain of every Lamprey, and forget the views of those gone."""
+        live = {eid: (body, lamprey) for eid, body, lamprey in self.world.query(Body, Lamprey)}
+        self.lampreys = {eid: view for eid, view in self.lampreys.items() if eid in live}
+        for eid, (body, lamprey) in live.items():
+            self.lampreys.setdefault(eid, LampreyView()).update(body, lamprey, dt)
 
     def _dust(self, emitter: str, x: float, y: float) -> None:
         if (spec := self.emitters.get(emitter)) is not None:
@@ -1085,6 +1107,33 @@ class GameplayScene(Scene):
     def _on_encounter(self, _: EncounterStarted | EncounterCleared) -> None:
         self.camera.shake.add(self.feel.encounters.trauma)
 
+    def _subscribe_lamprey(self, bus: EventBus) -> list[Callable[[], None]]:
+        def shake(event: object) -> None:
+            self.camera.shake.add(self.feel.juice.dash_trauma)
+
+        def burst(emitter: str) -> Callable[[Bitten | Breached | CasingBroken], None]:
+            return lambda event: self._dust(emitter, event.x, event.y)
+
+        return [
+            bus.subscribe(Bitten, shake),
+            bus.subscribe(Bitten, burst("debris")),
+            bus.subscribe(Breached, burst("land_dust")),
+            bus.subscribe(CasingBroken, burst("debris")),
+            bus.subscribe(CasingBroken, shake),
+            bus.subscribe(Drained, shake),
+            bus.subscribe(PhaseChanged, shake),
+            bus.subscribe(LampreyDefeated, self._on_lamprey_defeated),
+        ]
+
+    def _on_lamprey_defeated(self, event: LampreyDefeated) -> None:
+        juice = self.feel.juice
+        self.hitstop = max(self.hitstop, juice.death_hitstop)
+        self.camera.shake.add(juice.death_trauma)
+        self.flash.start(juice.beacon_flash)
+        self._dust("debris", event.x, event.y)
+        self.ctx.audio.sfx("world/break")
+        self.progress.save(self.spawner)
+
     def _on_killed(self, event: Killed) -> None:
         if event.target == self.player and not self.motor.dead:
             self.motor.dead = True
@@ -1208,6 +1257,7 @@ class GameplayScene(Scene):
             if self.world.has(eid, Flare):
                 image = self.art.image("flare", (round(body.width), round(body.height)))
                 self._queue_lit(image, round(body.x) - ox, round(body.y) - oy)
+        self._queue_lampreys(ox, oy)
         for _, play in self.world.query(EchoPlay):
             if play.ghost is not None and play.running:
                 self._queue_ghost(play.ghost, ox, oy)
@@ -1227,6 +1277,13 @@ class GameplayScene(Scene):
             if interactable.in_range:
                 above = (round(body.center_x) - ox, round(body.y) - oy - 3)
                 frame.sprite(*self._at(self.art.prompt, above), layer=Layer.OVERLAY)
+
+    def _queue_lampreys(self, ox: int, oy: int) -> None:
+        for eid, body, lamprey in self.world.query(Body, Lamprey):
+            if (view := self.lampreys.get(eid)) is not None:
+                flash = self.flashes.get(eid, 0.0) / HIT_FLASH
+                view.queue(self.frame, body, lamprey, (ox, oy), flash)
+                view.queue_water(self.frame, body, lamprey, (ox, oy))
 
     def _finished(self, sprite: Sprite) -> pygame.Surface | None:
         """The finished art for `sprite` now: its state's clip, else its looping sheet."""

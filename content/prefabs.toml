@@ -72,7 +72,7 @@ Brazier = {}
 Switch = {}
 
 [photocell]
-fields = { Targets = "Switch.targets", Threshold = "Photocell.threshold" }
+fields = { Targets = "Switch.targets", Threshold = "Photocell.threshold", Sealed = "Photocell.sealed" }
 [photocell.components]
 Sprite = { image = "photocell", active_image = "photocell_on" }
 Photocell = {}
@@ -120,6 +120,11 @@ LightSource = { radius = 88.0, color = "#f9c22b" }
 [rat_spawn]
 [rat_spawn.components]
 RatSpawn = {}
+
+[lamprey]
+[lamprey.components]
+Lamprey = {}
+LightSource = { radius = 56.0, color = "#fbb954" }
 
 [encounter]
 fields = { Doors = "Encounter.doors", Targets = "Switch.targets" }
