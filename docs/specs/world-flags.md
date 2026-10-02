@@ -33,6 +33,8 @@ or vanish after events, all decided by conditions in the level data.
 - **SetFlag** (`Flag`, `Value` 1, `Mode` set or add): an invisible zone. When the player steps
   in, it sets the flag to `Value`, or adds `Value` to it. Stepping in again does it again (which
   matters for add); an `Unless` on its own flag makes it fire once.
+- **Beacon** `Flag`: relighting the beacon sets the flag to 1, so a FlagSwitch can open a door
+  once a beacon somewhere is lit (the Cistern Gate waits on both Quarter Lamps).
 - **Dev.** F7 lists the flags the levels read or write next to the dialogue's; toggling one
   changes the world as soon as the overlay closes. `--flags` seeds flags before the first room
   spawns.
@@ -53,6 +55,8 @@ None.
 - [x] Toggling a flag with F7, a `--flags` seed, a dialogue and a grant each make gated
   entities react.
 - [x] The validator reports a malformed condition.
+- [x] Lighting a beacon with a `Flag` sets it; the validator counts it as written and set once
+  the beacon is reached.
 - [x] Enemy_Yard uses each piece: meeting the Tinker opens the alcove door (FlagSwitch), his
   flares bring out an ember (`has.`), and stepping into the alcove (SetFlag) takes that ember
   away (`Unless`) and lights a brazier (`Requires`).

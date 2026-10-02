@@ -11,7 +11,7 @@
 	"iid": "87b725ab-f0a4-5a9b-ba96-4e58e071114b",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703.0,
-	"nextUid": 194,
+	"nextUid": 195,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -810,6 +810,48 @@
 				"pivotX": 0.5,
 				"pivotY": 1.0,
 				"fieldDefs": [
+					{
+						"identifier": "Flag",
+						"doc": "A save flag set to 1 once it is lit",
+						"__type": "String",
+						"uid": 194,
+						"type": "F_String",
+						"isArray": false,
+						"canBeNull": false,
+						"arrayMinLength": null,
+						"arrayMaxLength": null,
+						"editorDisplayMode": "NameAndValue",
+						"editorDisplayScale": 1.0,
+						"editorDisplayPos": "Above",
+						"editorLinkStyle": "CurvedArrow",
+						"editorDisplayColor": null,
+						"editorAlwaysShow": false,
+						"editorShowInWorld": true,
+						"editorCutLongValues": true,
+						"editorTextSuffix": null,
+						"editorTextPrefix": null,
+						"useForSmartColor": false,
+						"exportToToc": false,
+						"searchable": false,
+						"min": null,
+						"max": null,
+						"regex": null,
+						"acceptFileTypes": null,
+						"defaultOverride": {
+							"id": "V_String",
+							"params": [
+								""
+							]
+						},
+						"textLanguageMode": null,
+						"symmetricalRef": false,
+						"autoChainRef": true,
+						"allowOutOfLevelRef": true,
+						"allowedRefs": "Any",
+						"allowedRefsEntityUid": null,
+						"allowedRefTags": [],
+						"tilesetUid": null
+					},
 					{
 						"identifier": "Requires",
 						"doc": "Condition for the entity to be in the world",
@@ -6289,6 +6331,21 @@
 							],
 							"fieldInstances": [
 								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
+								{
 									"__identifier": "Requires",
 									"__type": "String",
 									"__value": null,
@@ -7622,6 +7679,21 @@
 								480
 							],
 							"fieldInstances": [
+								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
 								{
 									"__identifier": "Requires",
 									"__type": "String",
@@ -10493,6 +10565,21 @@
 							],
 							"fieldInstances": [
 								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
+								{
 									"__identifier": "Requires",
 									"__type": "String",
 									"__value": null,
@@ -13216,6 +13303,21 @@
 								144
 							],
 							"fieldInstances": [
+								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
 								{
 									"__identifier": "Requires",
 									"__type": "String",
@@ -17423,6 +17525,21 @@
 							],
 							"fieldInstances": [
 								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
+								{
 									"__identifier": "Requires",
 									"__type": "String",
 									"__value": null,
@@ -19609,6 +19726,21 @@
 								160
 							],
 							"fieldInstances": [
+								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
 								{
 									"__identifier": "Requires",
 									"__type": "String",
@@ -22417,6 +22549,21 @@
 							],
 							"fieldInstances": [
 								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
+								{
 									"__identifier": "Requires",
 									"__type": "String",
 									"__value": null,
@@ -24383,6 +24530,21 @@
 							],
 							"fieldInstances": [
 								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
+								{
 									"__identifier": "Requires",
 									"__type": "String",
 									"__value": null,
@@ -25127,6 +25289,21 @@
 								160
 							],
 							"fieldInstances": [
+								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
 								{
 									"__identifier": "Requires",
 									"__type": "String",
@@ -26175,6 +26352,21 @@
 								160
 							],
 							"fieldInstances": [
+								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
 								{
 									"__identifier": "Requires",
 									"__type": "String",
@@ -27316,6 +27508,21 @@
 								160
 							],
 							"fieldInstances": [
+								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
 								{
 									"__identifier": "Requires",
 									"__type": "String",
@@ -28463,6 +28670,21 @@
 								160
 							],
 							"fieldInstances": [
+								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
 								{
 									"__identifier": "Requires",
 									"__type": "String",
@@ -33184,6 +33406,21 @@
 							],
 							"fieldInstances": [
 								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
+								{
 									"__identifier": "Requires",
 									"__type": "String",
 									"__value": null,
@@ -34417,6 +34654,21 @@
 								160
 							],
 							"fieldInstances": [
+								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
 								{
 									"__identifier": "Requires",
 									"__type": "String",
@@ -35680,6 +35932,21 @@
 								224
 							],
 							"fieldInstances": [
+								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
 								{
 									"__identifier": "Requires",
 									"__type": "String",
@@ -41742,6 +42009,21 @@
 								320
 							],
 							"fieldInstances": [
+								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
 								{
 									"__identifier": "Requires",
 									"__type": "String",
@@ -48122,6 +48404,21 @@
 							],
 							"fieldInstances": [
 								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
+								{
 									"__identifier": "Requires",
 									"__type": "String",
 									"__value": null,
@@ -51191,6 +51488,21 @@
 							],
 							"fieldInstances": [
 								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
+								{
 									"__identifier": "Requires",
 									"__type": "String",
 									"__value": null,
@@ -51801,6 +52113,21 @@
 								320
 							],
 							"fieldInstances": [
+								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "",
+									"__tile": null,
+									"defUid": 194,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												""
+											]
+										}
+									]
+								},
 								{
 									"__identifier": "Requires",
 									"__type": "String",

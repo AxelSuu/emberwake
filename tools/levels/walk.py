@@ -149,6 +149,8 @@ class Walk:
         entity = thing.entity
         if thing.kind == "Grant":
             self._give(entity.field("Thing"), entity.field("Count", 1), abilities, items, facts)
+        elif thing.kind == "Beacon" and (flag := entity.field("Flag")):
+            facts[flag] = 1
         elif thing.kind == "SetFlag" and (flag := entity.field("Flag")):
             if entity.field("Mode") == "add":
                 wide.add(flag)

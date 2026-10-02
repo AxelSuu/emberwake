@@ -30,11 +30,13 @@ Switch = { mode = "momentary" }
 PressurePlate = {}
 
 [beacon]
+fields = { Flag = "BeaconFlag.flag" }
 persist = ["Beacon"]
 [beacon.components]
 Sprite = { image = "beacon", active_image = "beacon_lit" }
 Interactable = { prompt = "relight" }
 Beacon = {}
+BeaconFlag = {}
 
 [lamp]
 fields = { Beacon = "Shelter.beacon" }

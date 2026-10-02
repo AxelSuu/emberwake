@@ -109,7 +109,7 @@ def admits(entity: EntityInstance, facts: Mapping[str, int]) -> bool:
 
 
 def flags_in(levels: Iterable[Level]) -> set[str]:
-    """The save flags the levels read (Requires, Unless, Condition) or write (SetFlag)."""
+    """The save flags the levels read (Requires, Unless, Condition) or write (SetFlag, Beacon)."""
     names: set[str] = set()
     for level in levels:
         for entity in level.entities():
@@ -117,7 +117,7 @@ def flags_in(levels: Iterable[Level]) -> set[str]:
                 if condition := entity.field(field_name):
                     with contextlib.suppress(DialogueError):
                         names.add(flag_of(condition))
-            if entity.identifier == "SetFlag" and (flag := entity.field("Flag")):
+            if entity.identifier in ("SetFlag", "Beacon") and (flag := entity.field("Flag")):
                 names.add(flag)
     return {name for name in names if not name.startswith(HAS)}
 

@@ -114,7 +114,7 @@ def _written(world: Index, rules: Rules) -> set[str]:
         for node in graph.values():
             flags |= node.set.keys() | node.add.keys()
     for thing in world.things:
-        if thing.kind == "SetFlag" and (flag := thing.entity.field("Flag")):
+        if thing.kind in ("SetFlag", "Beacon") and (flag := thing.entity.field("Flag")):
             flags.add(flag)
     return flags
 

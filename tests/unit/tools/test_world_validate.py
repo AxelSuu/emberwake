@@ -255,6 +255,23 @@ fields = { Flag = "lit" }
         rooms["A"] = ((0, 0), partition("..P..s....d....z"), toml)
         assert len(reaching(problems(rooms))) == 1
 
+    def test_a_lit_beacon_flag_opens_a_flag_switch_door(self):
+        toml = """
+[entities.d]
+type = "Door"
+[entities.s]
+type = "FlagSwitch"
+fields = { Condition = "lit", Targets = ["d"] }
+[entities.k]
+type = "Beacon"
+fields = { Flag = "lit" }
+"""
+        rooms = pair()
+        rooms["A"] = ((0, 0), partition("..Pk.s....d"), toml)
+        assert problems(rooms) == []
+        rooms["A"] = ((0, 0), partition("..P..s....d....k"), toml)
+        assert len(reaching(problems(rooms))) == 1
+
     def test_an_all_door_needs_every_source(self):
         toml = LEVER_AND_DOOR.replace('type = "Door"', 'type = "Door"\nfields = { Mode = "all" }')
         toml += '[entities.m]\ntype = "Lever"\nfields = { Targets = ["d"] }\n'
