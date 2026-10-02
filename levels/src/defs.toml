@@ -90,3 +90,9 @@ size = [16, 48]
 pivot = [0.0, 0.0]
 resizable = true
 doc = "Trial finish line"
+
+# Fields every entity type has. Conditions use the dialogue syntax; has.<thing> reads abilities
+# (1 or 0) and item counts. See docs/specs/world-flags.md.
+[entity_fields]
+Requires = { type = "String", doc = "Condition for the entity to be in the world" }
+Unless = { type = "String", doc = "Condition that takes the entity out of the world" }
