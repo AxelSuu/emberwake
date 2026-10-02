@@ -1,0 +1,45 @@
+# Sluice, cell [12, 9] 4x1. West (col 0, rows 5 to 7, walkway row 8) is Market_Square's tunnel
+# under its east terrace; east (col 79, same rows) is the Pump_House. Channels of water over
+# spikes: A is dashed across, B is too wide; their valves (levers a, b) shut the inverted doors
+# into a floor for good. Crate c pushed into the dip holds plate p and gate G open. The pit at
+# x 60..62 drops to the Rat_Warren. C is dashed across under a Drip Lurker; valve v drains it
+# for the way back. Lost Light 3 waits on the ledge above the east exit.
+fields = { Backdrop = "ruins" }
+
+[entities.A]
+type = "Door"
+fields = { Invert = true }
+[entities.a]
+type = "Lever"
+fields = { Targets = ["A"], Mode = "once" }
+[entities.B]
+type = "Door"
+fields = { Invert = true }
+[entities.b]
+type = "Lever"
+fields = { Targets = ["B"], Mode = "once" }
+[entities.C]
+type = "Door"
+fields = { Invert = true }
+[entities.v]
+type = "Lever"
+fields = { Targets = ["C"], Mode = "once" }
+[entities.p]
+type = "PressurePlate"
+fields = { Targets = ["G"] }
+[entities.G]
+type = "Door"
+[entities.c]
+type = "PushCrate"
+[entities.l]
+type = "DripLurker"
+[entities.m]
+type = "DripLurker"
+[entities.L]
+type = "LostLight"
+fields = { Id = "sluice" }
+[entities.s]
+type = "Signpost"
+fields = { Text = "sluice_valves" }
+[entities.e]
+type = "Ember"

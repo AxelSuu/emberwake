@@ -10,6 +10,7 @@ from emberwake.engine.ecs import component
 from emberwake.engine.physics import Body
 from emberwake.engine.world.spawning import Identity
 from emberwake.game.combat import Health
+from emberwake.game.flags import Facts
 from emberwake.game.interact import Interactable
 from emberwake.game.player.controller import Motor
 from emberwake.game.player.tuning import PlayerTuning
@@ -22,6 +23,17 @@ if TYPE_CHECKING:
 @dataclass(slots=True)
 class Beacon:
     lit: bool = False
+
+
+@component
+@dataclass(slots=True)
+class BeaconFlag:
+    """A save flag set to 1 when the beacon is lit, so a FlagSwitch can wire it to doors.
+
+    Apart from `Beacon` so saves never carry it: it always comes from the level.
+    """
+
+    flag: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,12 +53,15 @@ class Rested:
 def beacon_system(world: World, dt: float) -> None:
     """A used beacon lights (again) and is a rest: dash, health and flame refilled.
 
-    It asks for a save via `BeaconLit`; others refill flares and reset enemies on `Rested`.
+    Its `BeaconFlag`, if any, is set. It asks for a save via `BeaconLit`; others refill flares and
+    reset enemies on `Rested`.
     """
     for eid, interactable, beacon in world.query(Interactable, Beacon):
         if not interactable.used:
             continue
         beacon.lit = True
+        if (raises := world.find(eid, BeaconFlag)) and raises.flag:
+            world.resource(Facts).flags[raises.flag] = 1
         charges = world.resource(PlayerTuning).dash_charges
         for _, motor in world.query(Motor):
             motor.dash_charges = max(motor.dash_charges, charges)

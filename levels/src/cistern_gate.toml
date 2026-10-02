@@ -1,0 +1,24 @@
+# Cistern_Gate, cell [10, 10] 2x1. Its top (tiles x 4..7) is under Market_Square's grate; a
+# ladder of one-ways climbs back. Door d opens once both Quarter Lamps burn (Clock_Face:A sets
+# lamp_a, Pump_House:B lamp_b); behind it tiles x 28..31 of the floor drop into the Cistern.
+fields = { Backdrop = "cavern" }
+
+[entities.d]
+type = "Door"
+fields = { Mode = "all" }
+[entities.a]
+type = "FlagSwitch"
+fields = { Condition = "lamp_a", Targets = ["d"] }
+[entities.b]
+type = "FlagSwitch"
+fields = { Condition = "lamp_b", Targets = ["d"] }
+[entities.k]
+type = "Beacon"
+[entities.E]
+type = "Echo"
+fields = { Id = "cistern_gate" }
+[entities.s]
+type = "Signpost"
+fields = { Text = "gate_lamps" }
+[entities.e]
+type = "Ember"

@@ -7,8 +7,9 @@ from emberwake.engine.core.events import EventBus
 from emberwake.engine.ecs import World
 from emberwake.engine.physics import Body
 from emberwake.engine.world.spawning import Identity
-from emberwake.game.beacons import Beacon, BeaconLit, Rested, beacon_system
+from emberwake.game.beacons import Beacon, BeaconFlag, BeaconLit, Rested, beacon_system
 from emberwake.game.combat import Health
+from emberwake.game.flags import Facts
 from emberwake.game.interact import Interactable
 from emberwake.game.player.controller import Motor
 from emberwake.game.player.tuning import PlayerTuning
@@ -31,3 +32,20 @@ def test_using_a_beacon_lights_it_heals_and_rests() -> None:
     assert world.get(player, Health).current == 5
     assert world.get(player, Motor).dash_charges == PlayerTuning().dash_charges
     assert [type(event) for event in events] == [Rested, BeaconLit]
+
+
+def test_a_beacon_with_a_flag_sets_it_when_lit() -> None:
+    world, flags = World(), dict[str, int]()
+    world.insert_resource(EventBus())
+    world.insert_resource(PlayerTuning())
+    world.insert_resource(Facts(flags, [], {}))
+    world.spawn(
+        Body(0, 0, 16, 16),
+        Interactable(used=True),
+        Beacon(),
+        BeaconFlag("lamp_b"),
+        Identity("b1", "Room", "beacon"),
+    )
+    world.flush()
+    beacon_system(world, 1 / 60)
+    assert flags == {"lamp_b": 1}

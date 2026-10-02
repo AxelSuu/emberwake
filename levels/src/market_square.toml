@@ -2,8 +2,8 @@
 # Tinkers_Nook's barred door, which the lever w opens for good. Floor tiles x 8..15 are a one-way
 # over the Photocell_Gallery's top. Ceiling tiles x 28..31 open into the Belfry; the ladder of
 # one-ways climbs there. East (col 79, rows 6 to 8, floor row 9) is the Trial_Gate.
-# For #136: the Sluice's way in goes through the east terrace's bottom half (rows 11..20), the
-# grate down to Cistern_Gate through the floor at x 40..79.
+# The tunnel under the east terrace (rows 16 to 18, floor row 19) leads to the Sluice; the grate,
+# a one-way in the floor at x 44..47, drops into the Cistern_Gate.
 fields = { Backdrop = "ruins" }
 
 [entities.w]
