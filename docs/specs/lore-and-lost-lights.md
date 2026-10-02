@@ -1,6 +1,6 @@
 # Signposts, Echoes, Lost Lights and Trial doors
 
-**Milestone:** M9  **Status:** draft  **Issue:** #127
+**Milestone:** M9  **Status:** done  **Issue:** #127
 
 ## Goal
 The world talks to the player and has things to find: signs that teach the controls with the
@@ -44,19 +44,20 @@ beacon, and doors into the Trials.
 | Lost Light `rescue` | 24 px | distance from a beacon at which it is rescued |
 
 ## Acceptance criteria
-- [ ] A signpost shows its text only while the player is near, with the current keys; rebinding
+- [x] A signpost shows its text only while the player is near, with the current keys; rebinding
   an action changes the key shown.
-- [ ] Using an Echo plays its replay as a translucent ghost and shows its line; a missing replay
+- [x] Using an Echo plays its replay as a translucent ghost and shows its line; a missing replay
   still shows the line.
-- [ ] A heard Echo is saved: `echo_<Id>` is set, `echoes` counts it once however often it is
+- [x] A heard Echo is saved: `echo_<Id>` is set, `echoes` counts it once however often it is
   heard, and it counts toward the area's light %.
-- [ ] A Lost Light follows the player about `delay` seconds behind, also across rooms.
-- [ ] Leading it to a beacon rescues it once: flag, count, light %, saved and gone from the room.
-- [ ] Dying sends a following light home; it can be led again.
-- [ ] A Trial door unlocks its Trial in the menu and starts it; a locked Trial is hidden until
+- [x] A Lost Light follows the player about `delay` seconds behind, also across rooms.
+- [x] Leading it to a beacon rescues it once: flag, count, light %, saved and gone from the room.
+- [x] Dying sends a following light home; it can be led again.
+- [x] A Trial door unlocks its Trial in the menu and starts it; a locked Trial is hidden until
   then.
-- [ ] `Lore_Hall` (a lab room) has each of them.
+- [x] `Lore_Hall` (a lab room) has each of them.
 
 ## Tests
-`tests/unit/game/test_lore.py` (signposts, Echoes, Trial menu), `tests/unit/game/test_lost_lights.py`,
-`tests/integration/test_lore.py` (`Lore_Hall`, saving, rebinding).
+`tests/unit/game/test_lore.py` (signposts, Echoes, the world's content), `test_lost_lights.py`
+(three streamed rooms), `test_trials.py` and `test_records.py` (locking), and
+`tests/integration/test_lore.py` (`Lore_Hall`: each feature, saving, light %, the menu).
