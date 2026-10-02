@@ -58,3 +58,6 @@ cell = [89, 0]
 
 [rooms.Arena_Lab]
 cell = [70, 2]
+
+[rooms.Belfry]
+cell = [8, 6]
