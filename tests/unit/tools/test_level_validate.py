@@ -133,6 +133,46 @@ def test_light_rules_must_name_a_persisted_field(rules: dict[str, str], message:
     assert problems == [message]
 
 
+@REGISTRY.register
+@dataclass(slots=True)
+class Held:
+    beacon: str = ""
+
+
+LAMPS = """
+[entities.b]
+type = "Beacon"
+[entities.x]
+type = "Ember"
+[entities.l]
+type = "Lamp"
+fields = { Beacon = "b" }
+[entities.m]
+type = "Lamp"
+fields = { Beacon = "x" }
+[entities.n]
+type = "Lamp"
+"""
+LAMP_PREFABS = {
+    **GOOD,
+    "lamp": Prefab(components={"Held": {}}, fields={"Beacon": "Held.beacon"}),
+}
+
+
+def lamp_room(toml: str) -> Project:
+    rows = [INSIDE] * 6 + ["#.l.m.n" + "." * 12 + "#"] * 2 + ["#.Pbx" + "." * 14 + "#"]
+    text = "\n".join([WALL, *rows, WALL])
+    room = make_room("Hall", (0, 0), text, from_data(RoomFile, tomllib.loads(toml)))
+    return from_data(Project, build_project(Source(DEFS, [room])))
+
+
+def test_a_lamps_beacon_must_be_a_beacon():
+    problems = validate(lamp_room(LAMPS), LAMP_PREFABS, REGISTRY)
+    assert len(problems) == 1
+    assert "Hall Lamp" in problems[0]
+    assert problems[0].endswith("Beacon is Ember, not a Beacon")
+
+
 def conditioned(entity: str, fields: dict[str, str]) -> list[str]:
     room_file = from_data(RoomFile, {"entities": {"e": {"type": entity, "fields": fields}}})
     rows = [WALL, *[INSIDE] * 8, "#.P.e" + "." * 14 + "#", WALL]

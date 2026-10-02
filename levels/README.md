@@ -64,6 +64,7 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | Lever | Interact to switch its targets (Mode toggle/momentary/once) |
 | PressurePlate | On while something stands on it |
 | Beacon | Interact to relight: saves, refills the dash and becomes the continue point |
+| Lamp | Dead lamp post: a swing lights it, a Wisp-eater snuffs it. `Beacon` (a ref) is the beacon that makes it permanent once both are lit ([spec](../docs/specs/lamps.md)) |
 | Ember | Collectible |
 | Grant | Touch to receive an ability or item (`Thing`, a key of `content/grants.toml`, and `Count`) |
 | FlagSwitch | Not drawn: powers its `Targets` while its `Condition` holds, also while its room is unloaded |

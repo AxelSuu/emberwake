@@ -36,6 +36,13 @@ fields.Targets = { type = "EntityRef", array = true }
 color = "#fbff86"
 doc = "Relight to save and set the continue point"
 
+[entities.Lamp]
+color = "#fbb954"
+size = [16, 32]
+pivot = [0.5, 1.0]
+doc = "A dead lamp post: a swing lights it, a Wisp-eater snuffs it unless its beacon is lit"
+fields.Beacon = { type = "EntityRef", doc = "The beacon that holds it once both are lit" }
+
 [entities.Ember]
 color = "#ea4f36"
 pivot = [0.5, 0.5]

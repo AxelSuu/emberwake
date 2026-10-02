@@ -40,6 +40,7 @@ def validate(
     if areas is not None:
         problems += _check_areas(areas, prefabs, registry, strings)
     missing: set[str] = set()
+    kinds = {e.iid: e.identifier for level in project.all_levels for e in level.entities()}
     for level in project.all_levels:
         backdrop = level.field("Backdrop")
         if backdrops is not None and backdrop and backdrop not in backdrops:
@@ -59,11 +60,20 @@ def validate(
             unknown = sorted(prefab.fields.keys() - values.keys())
             if unknown:
                 problems.append(f"{where}: no LDtk fields {unknown} for prefab {name}")
+            problems += _check_shelter(entity, where, kinds)
             try:
                 build(prefab, values, registry)
             except (KeyError, SerdeError) as error:
                 problems.append(f"{where}: {error}")
     return problems
+
+
+def _check_shelter(entity: EntityInstance, where: str, kinds: Mapping[str, str]) -> list[str]:
+    """A lamp's Beacon field must point at a beacon."""
+    target = entity.values().get("Beacon") if entity.identifier == "Lamp" else None
+    if target is None or kinds.get(target) == "Beacon":
+        return []
+    return [f"{where}: Beacon is {kinds.get(target, 'missing')}, not a Beacon"]
 
 
 def _check_conditions(where: str, entity: EntityInstance, values: Mapping[str, Any]) -> list[str]:

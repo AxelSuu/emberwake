@@ -19,8 +19,8 @@ back as the player lights it, so progress shows on screen and not only in menus.
   loaded or not. What counts is data: `[light]` in `content/areas.toml` maps a prefab to the
   `Component.field` that is true once it is lit; the prefab must persist that component. The
   value comes from the saved world state, or from the level file while the entity was never
-  saved. Today only beacons count (`Beacon.lit`); lamps (#121), Lost Lights and Echoes (#127)
-  each add a line.
+  saved. Today beacons (`Beacon.lit`) and lamps (`Lamp.lit`) count; Lost Lights and Echoes
+  (#127) each add a line.
 - The percent is rounded down, so 100 % means everything. An area with nothing to light counts
   as fully lit and shows no percent.
 - It is recounted when the player enters another area, when a beacon is lit and when the pause

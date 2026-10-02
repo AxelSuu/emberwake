@@ -62,6 +62,7 @@ from emberwake.game.flags import Facts, admits, flags_in
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
 from emberwake.game.interact import Collected, Interactable, Switch
+from emberwake.game.lamps import LampLit, LampSnuffed
 from emberwake.game.light import Ember, LightSource
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.kindle import Kindle, Kindled
@@ -259,7 +260,7 @@ class GameplayScene(Scene):
         resources = (self.actions, self.ctx.bus, self.grid, self.wiring, self.rooms, self.spawner)
         self.world.insert_resource(self.facts)
         feel = self.feel
-        tunings = (feel.player, feel.rooms, feel.light, feel.enemies, feel.swing)
+        tunings = (feel.player, feel.rooms, feel.light, feel.lamps, feel.enemies, feel.swing)
         for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
@@ -316,6 +317,8 @@ class GameplayScene(Scene):
             bus.subscribe(FlareThrown, self._on_flare),
             bus.subscribe(FlareFizzled, self._on_fizzle),
             bus.subscribe(BeaconLit, self._on_light_changed),
+            bus.subscribe(LampLit, self._on_lamp_lit),
+            bus.subscribe(LampSnuffed, self._on_lamp_snuffed),
             *self.progress.subscribe(bus),
         ]
 
@@ -574,6 +577,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.player)
             self.world.insert_resource(feel.rooms)
             self.world.insert_resource(feel.light)
+            self.world.insert_resource(feel.lamps)
             self.world.insert_resource(feel.enemies)
             self.world.insert_resource(feel.swing)
             self.camera.retune(feel.camera)
@@ -1022,6 +1026,21 @@ class GameplayScene(Scene):
         if (burst := self.emitters.get("beacon_burst")) is not None:
             self.particles.burst(burst, event.x, event.y - 14)
         self.progress.checkpoint(event.room, event.iid, self.spawner)
+
+    def _on_lamp_lit(self, event: LampLit) -> None:
+        self.ctx.audio.sfx("player/kindle")
+        if (burst := self.emitters.get("kindle")) is not None:
+            self.particles.burst(burst, event.x, event.y - 8)
+        self._lamps_changed()
+
+    def _on_lamp_snuffed(self, _: LampSnuffed) -> None:
+        self.ctx.audio.sfx("player/fizzle")
+        self._lamps_changed()
+
+    def _lamps_changed(self) -> None:
+        self._count_light()
+        if self.trial is None:
+            self.hud.banner(*self._area_text())
 
     # Rendering
 

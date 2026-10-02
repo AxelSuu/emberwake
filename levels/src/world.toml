@@ -30,3 +30,6 @@ cell = [0, 6]
 
 [rooms.Trial_Pits]
 cell = [0, 8]
+
+[rooms.Lamp_Lab]
+cell = [0, 10]
