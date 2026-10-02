@@ -61,3 +61,6 @@ cell = [70, 2]
 
 [rooms.Belfry]
 cell = [8, 6]
+
+[rooms.Clocktower_Stair]
+cell = [8, 2]

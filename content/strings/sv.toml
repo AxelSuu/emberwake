@@ -275,6 +275,7 @@ name = "Karta över Sjunkna kvarteret"
 [sign]
 lore_move = "Spring med {left} och {right}.\nHoppa med {jump}."
 belfry_hook = "En mässingskrok hänger över gapet.\nDu har inget att kasta än."
+pogo = "Håll {down} och slå i luften:\nspetsarna studsar dig upp."
 
 [echo]
 lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."
