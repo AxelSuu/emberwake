@@ -98,6 +98,18 @@ size = [16, 16]
 pivot = [0.5, 0.5]
 doc = "Flier drawn to light; swoops at the player"
 
+[entities.DripLurker]
+color = "#6b3e75"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Hangs from the ceiling above it; drops on the player below when its spot is dark"
+
+[entities.Gearbug]
+color = "#a24b6f"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Patrols behind an armored front and vents on a cycle; pogo its back"
+
 [entities.Tinker]
 color = "#fbb954"
 size = [16, 16]

@@ -56,6 +56,16 @@ drag = 3.0
 size = 1
 colors = ["#9babb2", "#625565"]
 
+[steam]
+count = 14
+speed = [15, 50]
+angle = [225, 315]
+life = [0.5, 1.0]
+gravity = -50
+drag = 1.5
+size = 2
+colors = ["#c7dcd0", "#9babb2", "#7f708a"]
+
 [debris]
 count = 14
 speed = [50, 150]

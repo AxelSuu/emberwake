@@ -7,10 +7,21 @@ from emberwake.engine.physics import Body, Tile, TileGrid
 from emberwake.engine.world.rooms import WorldGrid
 from emberwake.engine.world.spawning import Identity
 from emberwake.game.beacons import Beacon
-from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team, combat_system
-from emberwake.game.enemies import Brain, EnemyTuning, enemy_system
+from emberwake.game.combat import (
+    Blocked,
+    Damaged,
+    Guard,
+    Health,
+    Hitbox,
+    Hurtbox,
+    Killed,
+    Knockback,
+    Team,
+    combat_system,
+)
+from emberwake.game.enemies import Brain, EnemyTuning, Vented, enemy_system
 from emberwake.game.lamps import Lamp, LampSnuffed
-from emberwake.game.light import LightSource, LightTuning
+from emberwake.game.light import LightSource, LightTuning, light_at
 from emberwake.game.player.controller import Motor
 
 STEP = 1 / 60
@@ -35,6 +46,8 @@ class Yard:
         self.killed: list[Killed] = []
         self.bus.subscribe(Damaged, self.damaged.append)
         self.bus.subscribe(Killed, self.killed.append)
+        self.vented: list[Vented] = []
+        self.bus.subscribe(Vented, self.vented.append)
         for resource in (TUNING, LightTuning(), self.bus):
             self.world.insert_resource(resource)
         self.world.insert_resource(grid, key=WorldGrid)
@@ -293,3 +306,211 @@ def test_sprites_show_their_brain_state_and_how_long() -> None:
     sprite = yard.world.get(rat, Sprite)
     assert sprite.state == "patrol"
     assert sprite.since == STEP
+
+
+LURKER_Y = 20
+"""Where a test lurker hangs; its bottom is 36 and a player on the floor is 88 px below."""
+
+
+def lurker(yard: Yard, x: float = 100, y: float = LURKER_Y) -> EntityId:
+    eid = yard.enemy("drip_lurker", x, y)
+    yard.tick()
+    return eid
+
+
+def test_a_lurker_drops_on_a_player_below_in_the_dark_then_climbs_home() -> None:
+    yard = Yard()
+    bug = lurker(yard)
+    yard.player(103)
+    yard.tick(TUNING.lurker_rest + 0.1)
+    assert yard.brain(bug).state == "warn"
+    assert yard.body(bug).y == LURKER_Y
+    yard.tick(TUNING.lurker_warn)
+    assert yard.brain(bug).state == "drop"
+    yard.tick(1.0)
+    assert yard.brain(bug).state == "ground"
+    assert yard.body(bug).bottom == FLOOR * 16
+    yard.tick(TUNING.lurker_ground_time)
+    assert yard.brain(bug).state == "climb"
+    yard.tick(2.0)
+    assert yard.brain(bug).state == "ceiling"
+    assert (yard.body(bug).x, yard.body(bug).y) == (100, LURKER_Y)
+
+
+def test_a_lurker_ignores_a_player_off_to_the_side_or_behind_a_ledge() -> None:
+    yard = Yard()
+    bug = lurker(yard)
+    far = yard.player(160)
+    yard.tick(2.0)
+    assert yard.brain(bug).state == "ceiling"
+    yard.world.get(far, Body).x = 103
+    for column in range(5, 9):
+        yard.grid.set(column, 5, Tile.ONE_WAY)
+    yard.tick(2.0)
+    assert yard.brain(bug).state == "ceiling"
+
+
+def test_a_lurker_stays_up_and_tucked_while_its_spot_is_lit() -> None:
+    yard = Yard()
+    bug = lurker(yard)
+    yard.player(103)
+    yard.world.spawn(Body(100, 30, 16, 16), LightSource(radius=80))
+    yard.world.flush()
+    yard.tick(TUNING.lurker_rest + TUNING.lurker_warn + 0.5)
+    assert yard.brain(bug).state == "retract"
+    assert yard.body(bug).y == LURKER_Y
+    assert not yard.world.get(bug, Hitbox).active
+    assert yard.world.get(bug, Guard) == Guard(0, True)
+
+
+def test_a_lurker_comes_out_again_when_the_light_goes() -> None:
+    yard = Yard()
+    bug = lurker(yard)
+    lamp = yard.world.spawn(Body(100, 30, 16, 16), LightSource(radius=80))
+    yard.world.flush()
+    yard.tick(0.1)
+    assert yard.brain(bug).state == "retract"
+    yard.world.despawn(lamp)
+    yard.world.flush()
+    yard.tick(0.1)
+    assert yard.brain(bug).state == "ceiling"
+    assert yard.world.get(bug, Hitbox).active
+    assert not yard.world.get(bug, Guard).active
+
+
+def test_light_cancels_a_warning() -> None:
+    yard = Yard()
+    bug = lurker(yard)
+    yard.player(103)
+    yard.tick(TUNING.lurker_rest + 0.2)
+    assert yard.brain(bug).state == "warn"
+    yard.world.spawn(Body(100, 30, 16, 16), LightSource(radius=80))
+    yard.world.flush()
+    yard.tick(0.1)
+    assert yard.brain(bug).state == "retract"
+    assert yard.body(bug).y == LURKER_Y
+
+
+def test_light_sends_a_lurker_on_the_ground_back_up() -> None:
+    yard = Yard()
+    bug = lurker(yard)
+    yard.player(103)
+    yard.tick(TUNING.lurker_rest + TUNING.lurker_warn + 1.0)
+    assert yard.brain(bug).state == "ground"
+    yard.world.spawn(Body(100, 100, 16, 16), LightSource(radius=120))
+    yard.world.flush()
+    yard.tick(0.1)
+    assert yard.brain(bug).state == "climb"
+
+
+def test_the_players_own_lantern_does_not_scare_a_lurker() -> None:
+    yard = Yard()
+    bug = lurker(yard, y=90)
+    yard.player(103)
+    assert light_at(yard.world, 108, 98) >= LightTuning().lit_threshold
+    assert light_at(yard.world, 108, 98, lantern=False) == 0
+    yard.tick(TUNING.lurker_rest + TUNING.lurker_warn + 0.2)
+    assert yard.brain(bug).state in ("drop", "ground")
+
+
+def test_a_hit_on_a_hanging_lurker_makes_it_drop_without_a_knock() -> None:
+    yard = Yard()
+    bug = lurker(yard)
+    yard.world.add(bug, Knockback(120, -50))
+    yard.world.flush()
+    yard.tick()
+    assert yard.brain(bug).state == "drop"
+    assert yard.body(bug).x == 100
+    assert yard.brain(bug).stagger == 0
+
+
+def test_a_lurker_hurts_by_contact_as_it_falls() -> None:
+    yard = Yard()
+    lurker(yard)
+    player = yard.player(103)
+    yard.world.add(player, Health(3, iframes=1.0), Hurtbox(Team.PLAYER))
+    yard.world.flush()
+    for _ in range(150):
+        enemy_system(yard.world, STEP)
+        yard.world.flush()
+        combat_system(yard.world, STEP)
+        yard.world.flush()
+    assert yard.world.get(player, Health).current == 2
+
+
+def test_the_gearbug_walks_hisses_vents_and_walks_again() -> None:
+    yard = Yard()
+    bug = yard.enemy("gearbug", 100, facing=1)
+    yard.tick()
+    start = yard.body(bug).x
+    yard.tick(TUNING.gearbug_cycle - 0.2)
+    assert yard.brain(bug).state == "patrol"
+    assert yard.body(bug).x > start + 10
+    assert yard.world.get(bug, Guard) == Guard(1, True)
+    yard.tick(0.4)
+    assert yard.brain(bug).state == "hiss"
+    stopped = yard.body(bug).x
+    yard.tick(TUNING.gearbug_hiss)
+    assert yard.brain(bug).state == "vent"
+    assert len(yard.vented) == 1
+    assert not yard.world.get(bug, Guard).active
+    yard.tick(TUNING.gearbug_vent)
+    assert yard.brain(bug).state == "patrol"
+    assert yard.body(bug).x - stopped < 3
+    assert yard.world.get(bug, Guard).active
+
+
+def test_the_gearbug_guards_the_side_it_faces_and_turns_at_walls() -> None:
+    yard = Yard(walls=(10,))
+    bug = yard.enemy("gearbug", 100, facing=1)
+    yard.tick(TUNING.gearbug_cycle - 0.2)
+    assert yard.brain(bug).facing == -1
+    assert yard.world.get(bug, Guard).facing == -1
+
+
+def swing_at(yard: Yard, bug: EntityId, from_side: int) -> int:
+    """Hit the bug from the left (-1) or right (1) with a player hitbox; returns its health."""
+    target = yard.body(bug)
+    owner = yard.world.spawn(Body(target.center_x + from_side * 18 - 5, target.y - 4, 10, 20))
+    box = Hitbox(offset=(-6, 2), size=(22, 14), targets=Team.ENEMY, flip=from_side > 0)
+    box.activate()
+    yard.world.add(owner, box)
+    yard.world.flush()
+    combat_system(yard.world, STEP)
+    yard.world.flush()
+    return yard.world.get(bug, Health).current
+
+
+def test_a_gearbug_shrugs_off_swings_at_its_front_but_not_from_behind() -> None:
+    yard = Yard()
+    blocked: list[Blocked] = []
+    yard.bus.subscribe(Blocked, blocked.append)
+    bug = yard.enemy("gearbug", 100, facing=-1)
+    yard.tick(0.1)
+    assert swing_at(yard, bug, -1) == TUNING.gearbug_hp
+    assert len(blocked) == 1
+    assert not yard.world.has(bug, Knockback)
+    assert swing_at(yard, bug, 1) == TUNING.gearbug_hp - 1
+
+
+def test_a_venting_gearbug_is_open_to_swings_from_the_front() -> None:
+    yard = Yard()
+    bug = yard.enemy("gearbug", 100, facing=-1)
+    yard.tick(TUNING.gearbug_cycle + TUNING.gearbug_hiss + 0.1)
+    assert yard.brain(bug).state == "vent"
+    assert swing_at(yard, bug, -1) == TUNING.gearbug_hp - 1
+
+
+def test_open_enemies_draw_their_active_sprite() -> None:
+    from emberwake.game.components import Sprite  # noqa: PLC0415
+    from emberwake.game.render.sprites import sprite_system  # noqa: PLC0415
+
+    yard = Yard()
+    bug = yard.enemy("gearbug", 100)
+    yard.world.add(bug, Sprite("gearbug", "gearbug_open"))
+    yard.tick()
+    sprite_system(yard.world, STEP)
+    assert yard.world.get(bug, Sprite).current == "gearbug"
+    yard.tick(TUNING.gearbug_cycle + TUNING.gearbug_hiss + 0.1)
+    sprite_system(yard.world, STEP)
+    assert yard.world.get(bug, Sprite).current == "gearbug_open"

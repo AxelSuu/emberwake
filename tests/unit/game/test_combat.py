@@ -7,7 +7,9 @@ from emberwake.engine.ecs import EntityId, World
 from emberwake.engine.physics import Body
 from emberwake.game import components  # noqa: F401
 from emberwake.game.combat import (
+    Blocked,
     Damaged,
+    Guard,
     Health,
     Hitbox,
     Hurtbox,
@@ -27,6 +29,8 @@ class Arena:
         self.killed: list[Killed] = []
         self.bus.subscribe(Damaged, self.damaged.append)
         self.bus.subscribe(Killed, self.killed.append)
+        self.blocked: list[Blocked] = []
+        self.bus.subscribe(Blocked, self.blocked.append)
 
     def attacker(self, x: float = 0, **hitbox: object) -> EntityId:
         box = Hitbox(offset=(16, 0), size=(16, 16), **hitbox)  # ty: ignore[invalid-argument-type]
@@ -171,3 +175,63 @@ def test_invulnerability_counts_down() -> None:
     assert a.world.get(target, Health).invulnerable == pytest.approx(0.2)
     a.tick(1.0)
     assert a.world.get(target, Health).invulnerable == 0
+
+
+def guarded(a: Arena, x: float, facing: int, *, active: bool = True) -> EntityId:
+    target = a.enemy(x)
+    a.world.add(target, Guard(facing, active))
+    return target
+
+
+def test_a_guard_blocks_hits_from_the_side_it_faces() -> None:
+    a = Arena()
+    a.attacker()
+    target = guarded(a, 16, facing=-1)
+    a.tick()
+    assert a.world.get(target, Health).current == 3
+    assert not a.damaged
+    assert not a.world.has(target, Knockback)
+    assert [event.target for event in a.blocked] == [target]
+
+
+def test_a_guard_lets_hits_from_the_other_side_through() -> None:
+    a = Arena()
+    a.attacker()
+    target = guarded(a, 16, facing=1)
+    a.tick()
+    assert a.world.get(target, Health).current == 2
+    assert not a.blocked
+
+
+def test_a_guard_does_not_cover_hits_from_above() -> None:
+    a = Arena()
+    attacker = a.attacker()
+    a.world.get(attacker, Body).y = -10
+    target = guarded(a, 16, facing=-1)
+    a.tick()
+    assert a.world.get(target, Health).current == 2
+
+
+def test_an_all_round_guard_blocks_every_side_and_an_inactive_one_none() -> None:
+    a = Arena()
+    a.attacker()
+    shut = guarded(a, 16, facing=0)
+    a.tick()
+    assert a.world.get(shut, Health).current == 3
+    b = Arena()
+    b.attacker()
+    open_ = guarded(b, 16, facing=-1, active=False)
+    b.tick()
+    assert b.world.get(open_, Health).current == 2
+
+
+def test_a_blocked_hit_is_reported_once_per_activation() -> None:
+    a = Arena()
+    attacker = a.attacker()
+    guarded(a, 16, facing=-1)
+    for _ in range(5):
+        a.tick()
+    assert len(a.blocked) == 1
+    a.world.get(attacker, Hitbox).activate()
+    a.tick()
+    assert len(a.blocked) == 2

@@ -75,11 +75,14 @@ class Hitbox:
     active: bool = False
     hit: list[int] = field(default_factory=list)
     """Entities already hurt by this activation."""
+    blocked: list[int] = field(default_factory=list)
+    """Guarded entities whose armor already stopped this activation."""
 
     def activate(self) -> None:
         """Start a new swing."""
         self.active = True
         self.hit.clear()
+        self.blocked.clear()
 
     def deactivate(self) -> None:
         self.active = False
@@ -90,6 +93,28 @@ class Hitbox:
         w, h = self.size
         left = body.x + (body.width - x - w if self.flip else x)
         return Body(left, body.y + y, w, h)
+
+
+@component
+@dataclass(slots=True)
+class Guard:
+    """Armor: while `active`, hits from the side `facing` (not from above) do nothing.
+
+    A `facing` of 0 guards every side.
+    """
+
+    facing: int = 0
+    active: bool = False
+
+    def blocks(self, attacker: Body, target: Body) -> bool:
+        """Whether a hit from `attacker` on `target` is stopped."""
+        if not self.active:
+            return False
+        if self.facing == 0:
+            return True
+        above = attacker.bottom <= target.y + target.height / 2
+        side = 1 if attacker.center_x >= target.center_x else -1
+        return not above and side == self.facing
 
 
 @component
@@ -116,6 +141,17 @@ class Damaged:
 
 
 @dataclass(frozen=True, slots=True)
+class Blocked:
+    """A hit stopped by armor."""
+
+    target: EntityId
+    attacker: EntityId
+    x: float
+    y: float
+    """Where the target was (its centre)."""
+
+
+@dataclass(frozen=True, slots=True)
 class Killed:
     target: EntityId
     attacker: EntityId
@@ -132,11 +168,16 @@ def combat_system(world: World, dt: float) -> None:
             continue
         area = hitbox.area(owner)
         for target, body, health, hurtbox in hurtable:
-            if target == attacker or target in hitbox.hit:
+            if target == attacker or target in hitbox.hit or target in hitbox.blocked:
                 continue
             if health.dead or health.invulnerable > 0 or not hitbox.targets & hurtbox.team:
                 continue
             if not overlap(area, body):
+                continue
+            guard = world.find(target, Guard)
+            if guard is not None and guard.blocks(owner, body):
+                hitbox.blocked.append(target)
+                bus.publish(Blocked(target, attacker, body.center_x, body.y + body.height / 2))
                 continue
             hitbox.hit.append(target)
             health.current = max(health.current - hitbox.damage, 0)

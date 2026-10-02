@@ -31,6 +31,9 @@ cell = [0, 6]
 [rooms.Trial_Pits]
 cell = [0, 8]
 
+[rooms.Enemy_Gallery]
+cell = [66, 0]
+
 [rooms.Break_Lab]
 cell = [63, 0]
 

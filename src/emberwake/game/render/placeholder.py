@@ -391,6 +391,37 @@ class EntityArt:
         image.fill(EYES, (rect.centerx - 2, rect.centery - 1, 4, 2))
 
     @staticmethod
+    def _drip_lurker(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(palette.HORIZON, (rect.left + 1, rect.top, rect.width - 2, 5))
+        image.fill(CLOAK_DARK, (rect.left + 3, rect.top + 5, rect.width - 6, 6))
+        image.fill(CLOAK_SHADE, (rect.centerx - 2, rect.top + 11, 4, 4))
+        image.fill(EYES, (rect.centerx - 4, rect.top + 7, 2, 2))
+        image.fill(EYES, (rect.centerx + 2, rect.top + 7, 2, 2))
+
+    @staticmethod
+    def _drip_lurker_hidden(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(palette.HORIZON, (rect.left + 3, rect.top, rect.width - 6, 3))
+        image.fill(CLOAK_DARK, (rect.left + 5, rect.top + 3, rect.width - 10, 2))
+
+    @staticmethod
+    def _gearbug(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_LIGHT, (rect.left + 1, rect.bottom - 9, rect.width - 5, 8))
+        image.fill(ROCK_EDGE, (rect.left + 2, rect.bottom - 11, rect.width - 8, 2))
+        image.fill(ROCK_DARK, (rect.right - 5, rect.bottom - 10, 4, 9))
+        image.fill(ROCK_EDGE, (rect.right - 4, rect.bottom - 9, 2, 7))
+        image.fill(PLANK_DARK, (rect.left + 3, rect.bottom - 7, 2, 2))
+        image.fill(ROCK_DARK, (rect.left + 2, rect.bottom - 1, 3, 1))
+        image.fill(ROCK_DARK, (rect.right - 7, rect.bottom - 1, 3, 1))
+
+    @staticmethod
+    def _gearbug_open(image: pygame.Surface, rect: pygame.Rect) -> None:
+        EntityArt._gearbug(image, rect)
+        image.fill(ROCK_DARK, (rect.right - 5, rect.bottom - 10, 4, 9))
+        image.fill(SPIKE, (rect.right - 4, rect.bottom - 8, 2, 5))
+        image.fill(palette.MIST, (rect.left + 3, rect.bottom - 14, 3, 2))
+        image.fill(palette.MIST, (rect.left + 7, rect.bottom - 15, 3, 2))
+
+    @staticmethod
     def _flare(image: pygame.Surface, rect: pygame.Rect) -> None:
         image.fill(palette.EMBER_WARM, rect)
         image.fill(palette.EMBER_CORE, rect.inflate(-2, -2))
