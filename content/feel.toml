@@ -57,6 +57,12 @@ ember_pull = 240.0
 hitstop = 3
 trauma = 0.15
 
+[crates]
+# docs/specs/push-crates.md
+push_speed = 60.0
+gravity = 1200.0
+max_fall = 360.0
+
 [encounters]
 # docs/specs/encounters.md
 wave_delay = 1.0

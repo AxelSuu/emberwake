@@ -54,6 +54,7 @@ from emberwake.game.cinder import CinderRecovered, cinder_parts
 from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
 from emberwake.game.cosmetics import Cosmetics, load_cosmetics
+from emberwake.game.crates import reset_crates
 from emberwake.game.data.records import RunResult, format_time, load_records, save_records, unlock
 from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
@@ -281,6 +282,7 @@ class GameplayScene(Scene):
             feel.swing,
             feel.switches,
             feel.breakables,
+            feel.crates,
             feel.encounters,
         )
         for resource in (*resources, *tunings):
@@ -629,6 +631,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.enemies)
             self.world.insert_resource(feel.swing)
             self.world.insert_resource(feel.breakables)
+            self.world.insert_resource(feel.crates)
             self.world.insert_resource(feel.switches)
             self.world.insert_resource(feel.encounters)
             self.camera.retune(feel.camera)
@@ -1109,6 +1112,7 @@ class GameplayScene(Scene):
 
     def _on_rested(self, _: Rested) -> None:
         self.world.resource(FlareKit).fill()
+        reset_crates(self.world, self.spawner.state)
         if (ember := self.world.find(self.player, Ember)) is not None:
             ember.current = ember.max
 
