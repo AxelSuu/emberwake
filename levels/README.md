@@ -65,6 +65,7 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | PressurePlate | On while something stands on it |
 | Beacon | Interact to relight: saves, refills the dash and becomes the continue point |
 | Ember | Collectible |
+| Hesper, Quill | NPCs ([spec](../docs/specs/npcs.md)); gate each spot with `Requires`/`Unless` on `hesper_stage` or `quill_stage`. `--room Npc_Lab` has every spot |
 | Grant | Touch to receive an ability or item (`Thing`, a key of `content/grants.toml`, and `Count`) |
 | FlagSwitch | Not drawn: powers its `Targets` while its `Condition` holds, also while its room is unloaded |
 | SetFlag | Invisible zone: stepping in sets `Flag` to `Value`, or adds it with `Mode = "add"` |

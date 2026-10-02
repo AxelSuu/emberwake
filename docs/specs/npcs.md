@@ -1,6 +1,6 @@
 # NPCs: Keeper Hesper and Quill
 
-**Milestone:** M9  **Status:** ready  **Issue:** #131
+**Milestone:** M9  **Status:** done  **Issue:** #131
 
 ## Goal
 The Quarter has people who answer to what the player has done: the Keeper rewards rescued Lost
@@ -48,16 +48,16 @@ Lights, Quill sells the Quarter map, and both stand in different places as the s
 | Light 3 reward | Oil Flask | Hesper's dialogue |
 
 ## Acceptance criteria
-- [ ] Hesper and Quill can be talked to; their lines exist in English and Swedish.
-- [ ] Each NPC is only in the spot its stage flag selects, and moves when the flag changes,
+- [x] Hesper and Quill can be talked to; their lines exist in English and Swedish.
+- [x] Each NPC is only in the spot its stage flag selects, and moves when the flag changes,
   live and in a fresh room load.
-- [ ] Their dialogue changes with the stage flag.
-- [ ] Hesper pays each Lost Light threshold once: embers, a flare pouch, an Oil Flask; several
+- [x] Their dialogue changes with the stage flag.
+- [x] Hesper pays each Lost Light threshold once: embers, a flare pouch, an Oil Flask; several
   owed at once are all paid, and nothing is paid twice.
-- [ ] Quill sells the map for embers; an unaffordable or already bought map cannot be bought.
-- [ ] A bought map is in the save's inventory and survives quit and continue.
-- [ ] The Tinker's shop still works unchanged.
-- [ ] `--room Npc_Lab` shows every placement.
+- [x] Quill sells the map for embers; an unaffordable or already bought map cannot be bought.
+- [x] A bought map is in the save's inventory and survives quit and continue.
+- [x] The Tinker's shop still works unchanged.
+- [x] `--room Npc_Lab` shows every placement.
 
 ## Tests
 `tests/unit/game/test_shop.py` (shops, grant items), `tests/unit/game/test_npcs.py` (dialogue

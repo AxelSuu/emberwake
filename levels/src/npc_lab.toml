@@ -1,0 +1,22 @@
+fields = { Area = "lab" }
+
+[entities.k]
+type = "Beacon"
+[entities.z]
+type = "SetFlag"
+fields = { Flag = "lost_lights", Mode = "add" }
+[entities.h]
+type = "Hesper"
+fields = { Unless = "hesper_stage>=1" }
+[entities.H]
+type = "Hesper"
+fields = { Requires = "hesper_stage>=1" }
+[entities.q]
+type = "Quill"
+fields = { Unless = "quill_stage>=1" }
+[entities.Q]
+type = "Quill"
+fields = { Requires = "quill_stage>=1", Unless = "quill_stage>=2" }
+[entities.r]
+type = "Quill"
+fields = { Requires = "quill_stage>=2" }
