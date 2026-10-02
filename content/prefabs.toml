@@ -111,6 +111,16 @@ Brain = { kind = "drip_lurker" }
 Sprite = { image = "gearbug", active_image = "gearbug_open" }
 Brain = { kind = "gearbug" }
 
+[clockrat_king]
+[clockrat_king.components]
+Sprite = { image = "clockrat_king", active_image = "clockrat_king_down" }
+Brain = { kind = "clockrat_king" }
+LightSource = { radius = 88.0, color = "#f9c22b" }
+
+[rat_spawn]
+[rat_spawn.components]
+RatSpawn = {}
+
 [tinker]
 [tinker.components]
 Sprite = { image = "tinker" }

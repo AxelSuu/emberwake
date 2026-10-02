@@ -42,3 +42,6 @@ cell = [60, 0]
 
 [rooms.Lamp_Lab]
 cell = [0, 10]
+
+[rooms.King_Lab]
+cell = [69, 0]

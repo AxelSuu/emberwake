@@ -8,3 +8,4 @@ One file per mechanic, written before implementation. Copy `_template.md`.
 - [Light switches](light-switches.md): photocells, ignitable braziers and bells
 - [World flags](world-flags.md): Requires and Unless, FlagSwitch, SetFlag
 - [Drip Lurker and Gearbug](drip-lurker-gearbug.md): ceiling dropper, armored vent bug
+- [Clockrat King](clockrat-king.md): elite that charges, calls rats and topples when hit on the crown

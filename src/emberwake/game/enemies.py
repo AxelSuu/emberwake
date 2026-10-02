@@ -1,4 +1,4 @@
-"""Enemies: finite-state brains and five kinds, built on health, hit boxes and light.
+"""Enemies: finite-state brains and six kinds, built on health, hit boxes and light.
 
 - **Clockrat** patrols, turns at walls and ledges, and charges when it sees the player.
 - **Gloomcrawler** is a creature of shadow: it creeps toward the player, burns in light and flees
@@ -9,7 +9,10 @@
   makes it retract.
 - **Gearbug** patrols behind an armored front and vents on a cycle, open while it does.
 
-Rules for the last two: docs/specs/drip-lurker-gearbug.md.
+- **Clockrat King** is an elite: armored on every side but above, it charges and calls rats, and
+  a hit on the crown topples it.
+
+Rules for the last three: docs/specs/drip-lurker-gearbug.md, docs/specs/clockrat-king.md.
 
 An entity needs only a `Body` and a `Brain`; the system gives it health, a hurt box and a
 contact hit box on its first tick.
@@ -18,6 +21,7 @@ contact hit box on its first tick.
 from __future__ import annotations
 
 import math
+import random
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
@@ -26,6 +30,7 @@ from emberwake.engine.core.fsm import Fsm
 from emberwake.engine.ecs import EntityId, World, component
 from emberwake.engine.physics import Body, Tile, move, overlaps
 from emberwake.engine.world.rooms import WorldGrid
+from emberwake.engine.world.spawning import Identity, Spawner
 from emberwake.game.beacons import Beacon
 from emberwake.game.combat import (
     Damaged,
@@ -37,6 +42,7 @@ from emberwake.game.combat import (
     Knockback,
     Team,
 )
+from emberwake.game.components import Sprite
 from emberwake.game.interact import player_body
 from emberwake.game.lamps import nearest_prey, snuff
 from emberwake.game.light import LightSource, LightTuning, falloff, light_at
@@ -105,6 +111,23 @@ class EnemyTuning:
     """Seconds of patrol between vents."""
     gearbug_hiss: float = 0.6
     gearbug_vent: float = 1.5
+    king_hp: int = 10
+    king_speed: float = 28.0
+    king_sight: float = 128.0
+    king_rear: float = 0.6
+    """Seconds of warning before it charges."""
+    king_charge_speed: float = 150.0
+    king_charge_time: float = 1.2
+    king_rest: float = 1.0
+    king_alert: float = 224.0
+    """How far sideways the player may be for it to call rats."""
+    king_summon_every: float = 6.0
+    """Seconds of patrol between calls."""
+    king_call: float = 1.0
+    """Seconds it stands calling before the rats appear."""
+    king_summon_count: int = 2
+    king_rats_max: int = 3
+    king_topple_time: float = 2.5
 
 
 @component
@@ -136,6 +159,51 @@ class Vented:
     eid: EntityId
     x: float
     y: float
+
+
+@dataclass(frozen=True, slots=True)
+class Toppled:
+    """A Clockrat King was knocked flat, at its centre."""
+
+    eid: EntityId
+    x: float
+    y: float
+
+
+@dataclass(frozen=True, slots=True)
+class Summoned:
+    """A rat was called to the ground at (`x`, `y`), its feet."""
+
+    eid: EntityId
+    x: float
+    y: float
+
+
+@component
+@dataclass(slots=True)
+class RatSpawn:
+    """Marks a spot where a Clockrat King's rats appear, for the King in the same room."""
+
+
+@component
+@dataclass(slots=True)
+class Court:
+    """What a Clockrat King has called: its rats and the dice that place them."""
+
+    rng: random.Random
+    rats: list[EntityId] = field(default_factory=list)
+    idle: float = 0.0
+    """Seconds of patrol since the last call."""
+    used: list[tuple[float, float]] = field(default_factory=list)
+    """Markers used in this round of calls; every one is used before any repeats."""
+
+
+@component
+@dataclass(slots=True)
+class Minion:
+    """A rat that belongs to `owner` and goes when it does."""
+
+    owner: EntityId
 
 
 @dataclass(slots=True)
@@ -468,6 +536,117 @@ def gearbug_guard(brain: Brain) -> int | None:
     return None if brain.state == "vent" else brain.facing
 
 
+# Clockrat King
+
+
+def king_court(ctx: Ctx) -> Court:
+    return ctx.world.get(ctx.eid, Court)
+
+
+def king_calls(ctx: Ctx) -> bool:
+    """A call is due, the player is near and there is room for more rats."""
+    t, court = ctx.tuning, king_court(ctx)
+    alive = sum(1 for rat in court.rats if ctx.world.reserved(rat))
+    near = ctx.player is not None and (abs(ctx.player.center_x - ctx.body.center_x) <= t.king_alert)
+    return court.idle >= t.king_summon_every and near and alive < t.king_rats_max
+
+
+def king_patrol(ctx: Ctx, dt: float, t: float) -> str | None:
+    king_court(ctx).idle += dt
+    wall, ledge = walk(ctx, ctx.tuning.king_speed, dt)
+    if wall or ledge:
+        turn(ctx.brain)
+    if king_calls(ctx):
+        return "call"
+    return "rear" if ctx.see_player(ctx.tuning.king_sight) else None
+
+
+def king_rear(ctx: Ctx, dt: float, t: float) -> str | None:
+    ctx.brain.facing = ctx.toward_player()
+    walk(ctx, 0.0, dt)
+    return "charge" if t >= ctx.tuning.king_rear else None
+
+
+def king_charge(ctx: Ctx, dt: float, t: float) -> str | None:
+    wall, ledge = walk(ctx, ctx.tuning.king_charge_speed, dt)
+    if not (wall or ledge or t >= ctx.tuning.king_charge_time):
+        return None
+    if wall or ledge:
+        turn(ctx.brain)
+    return "rest"
+
+
+def king_rest(ctx: Ctx, dt: float, t: float) -> str | None:
+    walk(ctx, 0.0, dt)
+    return "patrol" if t >= ctx.tuning.king_rest else None
+
+
+def king_call(ctx: Ctx, dt: float, t: float) -> str | None:
+    walk(ctx, 0.0, dt)
+    if t < ctx.tuning.king_call:
+        return None
+    summon(ctx)
+    return "patrol"
+
+
+def summon(ctx: Ctx) -> None:
+    """Call rats to the markers of its room: the next unused ones, in dice-rolled order."""
+    world, court, t = ctx.world, king_court(ctx), ctx.tuning
+    court.idle = 0.0
+    court.rats = [rat for rat in court.rats if world.reserved(rat)]
+    markers = sorted(
+        (body.center_x, body.bottom)
+        for eid, body, _ in world.query(Body, RatSpawn)
+        if _room(world, eid) == _room(world, ctx.eid)
+    )
+    bus = world.resource(EventBus)
+    for _ in range(min(t.king_summon_count, t.king_rats_max - len(court.rats))):
+        free = [m for m in markers if m not in court.used]
+        if not free and markers:
+            court.used.clear()
+            free = markers
+        if not free:
+            return
+        x, y = court.rng.choice(free)
+        court.used.append((x, y))
+        rat = world.spawn(
+            Body(x - 8, y - 16, 16, 16),
+            Brain("clockrat", facing=court.rng.choice((-1, 1))),
+            Sprite("clockrat"),
+            Minion(ctx.eid),
+        )
+        court.rats.append(rat)
+        bus.publish(Summoned(rat, x, y))
+
+
+def _room(world: World, eid: EntityId) -> str | None:
+    identity = world.find(eid, Identity)
+    return None if identity is None else identity.room
+
+
+def king_toppled(ctx: Ctx, dt: float, t: float) -> str | None:
+    if t == 0.0:
+        ctx.world.resource(EventBus).publish(Toppled(ctx.eid, *ctx.centre))
+    settle(ctx, dt)
+    return "patrol" if t >= ctx.tuning.king_topple_time else None
+
+
+CLOCKRAT_KING: Fsm[Ctx] = Fsm(
+    {
+        "patrol": king_patrol,
+        "rear": king_rear,
+        "charge": king_charge,
+        "rest": king_rest,
+        "call": king_call,
+        "toppled": king_toppled,
+    }
+)
+
+
+def king_guard(brain: Brain) -> int | None:
+    return None if brain.state == "toppled" else 0
+
+
 @dataclass(frozen=True, slots=True)
 class Kind:
     fsm: Fsm[Ctx]
@@ -487,6 +666,16 @@ class Kind:
     """States drawn with the sprite's active image."""
     directional: bool = False
     """Drawn mirrored when it faces left."""
+    crown: bool = False
+    """Its all-round armor leaves the top open: a hit from above gets through."""
+    heavy: bool = False
+    """A hit never knocks it about."""
+    dark: frozenset[str] = frozenset()
+    """States in which its `LightSource` is out."""
+    court: bool = False
+    """Calls rats."""
+    permanent: bool = False
+    """Killed for good: retired by iid, never respawned."""
 
 
 KINDS = {
@@ -510,6 +699,21 @@ KINDS = {
         open=frozenset({"vent"}),
         directional=True,
     ),
+    "clockrat_king": Kind(
+        CLOCKRAT_KING,
+        "patrol",
+        "king_hp",
+        guard=king_guard,
+        harmless=frozenset({"toppled"}),
+        pinned=dict.fromkeys(("patrol", "rear", "charge", "rest", "call"), "toppled"),
+        open=frozenset({"toppled"}),
+        directional=True,
+        crown=True,
+        heavy=True,
+        dark=frozenset({"toppled"}),
+        court=True,
+        permanent=True,
+    ),
 }
 
 
@@ -517,6 +721,9 @@ def enemy_system(world: World, dt: float) -> None:
     """Equip new enemies, run every brain one step, burn shadow creatures and clear the dead."""
     tuning, grid = world.resource(EnemyTuning), world.resource(WorldGrid)
     bus, player = world.resource(EventBus), player_body(world)
+    for eid, minion in list(world.query(Minion)):
+        if minion.owner not in world:
+            world.despawn(eid)
     for eid, body, brain in list(world.query(Body, Brain)):
         kind = KINDS[brain.kind]
         if not world.has(eid, Health):
@@ -524,7 +731,7 @@ def enemy_system(world: World, dt: float) -> None:
             continue
         health = world.get(eid, Health)
         if health.dead:
-            world.despawn(eid)
+            _clear(world, eid, kind)
             continue
         hitbox = world.get(eid, Hitbox)
         hitbox.hit.clear()
@@ -540,8 +747,21 @@ def enemy_system(world: World, dt: float) -> None:
             side = kind.guard(brain)
             guard = world.get(eid, Guard)
             guard.active, guard.facing = side is not None, side or 0
+        if kind.dark and (lamp := world.find(eid, LightSource)) is not None:
+            lamp.strength = 0.0 if state in kind.dark else 1.0
         if kind.shadow:
             _burn(ctx, health, bus, dt)
+
+
+def _clear(world: World, eid: EntityId, kind: Kind) -> None:
+    """Remove a dead enemy and whatever it called; a permanent one is retired by iid."""
+    court = world.find(eid, Court)
+    for rat in court.rats if court is not None else ():
+        world.despawn(rat)
+    if kind.permanent and world.has_resource(Spawner) and world.has(eid, Identity):
+        world.resource(Spawner).retire(eid)
+    else:
+        world.despawn(eid)
 
 
 def _stagger(  # noqa: PLR0917
@@ -553,6 +773,8 @@ def _stagger(  # noqa: PLR0917
         world.remove(eid, Knockback)
         if brain.state in kind.pinned:
             brain.state, brain.time = kind.pinned[brain.state], 0.0
+            return False
+        if kind.heavy:
             return False
         brain.push = (knock.vx, knock.vy)
         tuning = world.resource(SwingTuning) if world.has_resource(SwingTuning) else SwingTuning()
@@ -582,7 +804,10 @@ def _equip(world: World, eid: EntityId, kind: Kind, tuning: EnemyTuning) -> None
     brain.state = brain.state or kind.first
     brain.home = (body.center_x, body.y + body.height / 2)
     if kind.guard is not None:
-        world.add(eid, Guard())
+        world.add(eid, Guard(top=not kind.crown))
+    if kind.court:
+        identity = world.find(eid, Identity)
+        world.add(eid, Court(random.Random(identity.iid if identity else kind.first)))
     world.add(
         eid,
         Health(hp, iframes=0.0),

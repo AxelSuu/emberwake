@@ -235,3 +235,16 @@ def test_a_blocked_hit_is_reported_once_per_activation() -> None:
     a.world.get(attacker, Hitbox).activate()
     a.tick()
     assert len(a.blocked) == 2
+
+
+def test_an_all_round_guard_with_an_open_top_lets_hits_from_above_through() -> None:
+    a = Arena()
+    attacker = a.attacker()
+    target = a.enemy(16)
+    a.world.add(target, Guard(0, True, top=False))
+    a.tick()
+    assert a.world.get(target, Health).current == 3
+    a.world.get(attacker, Body).y = -10
+    a.world.get(attacker, Hitbox).activate()
+    a.tick()
+    assert a.world.get(target, Health).current == 2

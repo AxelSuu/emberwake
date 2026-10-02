@@ -19,7 +19,16 @@ from emberwake.game.combat import (
     Team,
     combat_system,
 )
-from emberwake.game.enemies import Brain, EnemyTuning, Vented, enemy_system
+from emberwake.game.enemies import (
+    Brain,
+    Court,
+    EnemyTuning,
+    RatSpawn,
+    Summoned,
+    Toppled,
+    Vented,
+    enemy_system,
+)
 from emberwake.game.lamps import Lamp, LampSnuffed
 from emberwake.game.light import LightSource, LightTuning, light_at
 from emberwake.game.player.controller import Motor
@@ -514,3 +523,258 @@ def test_open_enemies_draw_their_active_sprite() -> None:
     yard.tick(TUNING.gearbug_cycle + TUNING.gearbug_hiss + 0.1)
     sprite_system(yard.world, STEP)
     assert yard.world.get(bug, Sprite).current == "gearbug_open"
+
+
+KING_Y = FLOOR * 16 - 32
+
+
+def king(yard: Yard, x: float = 200, facing: int = 1, iid: str | None = None) -> EntityId:
+    eid = yard.world.spawn(
+        Body(x, KING_Y, 32, 32), Brain("clockrat_king", facing=facing), LightSource(88.0)
+    )
+    if iid is not None:
+        yard.world.add(eid, Identity(iid, "Room", "clockrat_king"))
+    yard.world.flush()
+    yard.tick(2 * STEP)
+    return eid
+
+
+def marker(yard: Yard, x: float) -> None:
+    yard.world.spawn(
+        Body(x, FLOOR * 16 - 16, 16, 16), RatSpawn(), Identity(f"marker-{x}", "Room", "rat_spawn")
+    )
+    yard.world.flush()
+
+
+def hit_king(yard: Yard, boss: EntityId, *, above: bool = False, side: int = 1) -> None:
+    """One swing at the King from `side`, from over its crown if `above`."""
+    target = yard.body(boss)
+    y = target.y - 14 if above else target.y + 12
+    owner = yard.world.spawn(Body(target.center_x + side * 22 - 5, y, 10, 20))
+    box = Hitbox(offset=(-6, 18 if above else 2), size=(22, 14), targets=Team.ENEMY)
+    box.activate()
+    yard.world.add(owner, box)
+    yard.world.flush()
+    combat_system(yard.world, STEP)
+    yard.world.flush()
+    yard.tick()
+
+
+def rats(yard: Yard) -> list[EntityId]:
+    return [e for e, b in yard.world.query(Brain) if b.kind == "clockrat"]
+
+
+def test_the_king_patrols_and_turns_at_a_wall() -> None:
+    yard = Yard(walls=(16,))
+    boss = king(yard, 200, facing=1)
+    yard.tick(2.0)
+    assert yard.brain(boss).facing == -1
+    assert yard.body(boss).x + 32 <= 16 * 16
+
+
+def test_the_king_rears_charges_and_rests() -> None:
+    yard = Yard()
+    boss = king(yard, 100)
+    yard.player(180)
+    yard.tick()
+    assert yard.brain(boss).state == "rear"
+    before = yard.body(boss).x
+    yard.tick(TUNING.king_rear + 0.1)
+    assert yard.brain(boss).state == "charge"
+    yard.tick(0.3)
+    assert yard.body(boss).x - before > TUNING.king_charge_speed * 0.25
+    yard.tick(TUNING.king_charge_time)
+    assert yard.brain(boss).state in ("rest", "patrol")
+    yard.tick(TUNING.king_rest + 0.1)
+    assert yard.brain(boss).state != "rest"
+
+
+def test_the_king_turns_at_a_ledge_after_a_charge() -> None:
+    yard = Yard()
+    for column in range(10, 14):
+        yard.grid.set(column, FLOOR, Tile.EMPTY)
+    boss = king(yard, 100, facing=1)
+    yard.player(180)
+    yard.tick(3.0)
+    assert yard.body(boss).y == KING_Y
+    assert yard.body(boss).x < 10 * 16
+
+
+def test_the_king_is_armored_on_every_side_but_above() -> None:
+    yard = Yard()
+    blocked: list[Blocked] = []
+    yard.bus.subscribe(Blocked, blocked.append)
+    boss = king(yard)
+    guard = yard.world.get(boss, Guard)
+    assert (guard.active, guard.facing, guard.top) == (True, 0, False)
+    hit_king(yard, boss, side=-1)
+    hit_king(yard, boss, side=1)
+    assert yard.world.get(boss, Health).current == TUNING.king_hp
+    assert len(blocked) == 2
+    assert yard.brain(boss).state == "patrol"
+
+
+def test_a_hit_from_above_hurts_and_topples_without_a_knock() -> None:
+    yard = Yard()
+    boss = king(yard)
+    before = yard.body(boss).x
+    hit_king(yard, boss, above=True)
+    assert yard.world.get(boss, Health).current == TUNING.king_hp - 1
+    assert yard.brain(boss).state == "toppled"
+    assert yard.brain(boss).stagger == 0.0
+    assert not yard.world.has(boss, Knockback)
+    assert abs(yard.body(boss).x - before) < 1
+
+
+def test_a_hit_topples_it_from_every_upright_state() -> None:
+    for state in ("patrol", "rear", "charge", "rest", "call"):
+        yard = Yard()
+        boss = king(yard)
+        yard.brain(boss).state = state
+        hit_king(yard, boss, above=True)
+        assert yard.brain(boss).state == "toppled", state
+
+
+def test_a_toppled_king_is_open_dark_and_harmless_then_gets_up() -> None:
+    yard = Yard()
+    boss = king(yard)
+    lamp = yard.world.get(boss, LightSource)
+    assert lamp.strength == 1.0
+    hit_king(yard, boss, above=True)
+    yard.tick()
+    assert lamp.strength == 0.0
+    assert not yard.world.get(boss, Hitbox).active
+    assert not yard.world.get(boss, Guard).active
+    health = yard.world.get(boss, Health)
+    hit_king(yard, boss, side=1)
+    assert health.current == TUNING.king_hp - 2
+    yard.tick(TUNING.king_topple_time - 0.5)
+    hit_king(yard, boss, side=-1)
+    assert yard.brain(boss).state == "toppled"
+    yard.tick(0.6)
+    assert yard.brain(boss).state == "patrol"
+    assert lamp.strength == 1.0
+    assert yard.world.get(boss, Guard).active
+
+
+def test_a_toppled_king_publishes_toppled_once() -> None:
+    yard = Yard()
+    seen: list[Toppled] = []
+    yard.bus.subscribe(Toppled, seen.append)
+    boss = king(yard)
+    hit_king(yard, boss, above=True)
+    yard.tick(1.0)
+    assert [event.eid for event in seen] == [boss]
+
+
+def test_the_king_calls_rats_to_the_markers_of_its_room() -> None:
+    yard = Yard()
+    marker(yard, 40)
+    marker(yard, 330)
+    boss = king(yard, 200, iid="a")
+    yard.player(260)
+    called: list[Summoned] = []
+    yard.bus.subscribe(Summoned, called.append)
+    yard.world.get(boss, Court).idle = TUNING.king_summon_every
+    yard.tick()
+    assert yard.brain(boss).state == "call"
+    assert not rats(yard)
+    yard.tick(TUNING.king_call + 0.1)
+    assert len(rats(yard)) == TUNING.king_summon_count
+    assert sorted(event.x for event in called) == [48.0, 338.0]
+    assert yard.world.get(boss, Court).idle < 1.0
+
+
+def test_the_king_only_calls_while_the_player_is_near_and_up_to_the_cap() -> None:
+    yard = Yard()
+    marker(yard, 40)
+    marker(yard, 330)
+    boss = king(yard, 200, iid="k")
+    court = yard.world.get(boss, Court)
+    court.idle = TUNING.king_summon_every
+    far = yard.player(200 + TUNING.king_alert + 60)
+    yard.tick(1.0)
+    assert not rats(yard)
+    yard.world.get(far, Body).x = 300
+    for _ in range(4):
+        court.idle = TUNING.king_summon_every
+        yard.brain(boss).state = "patrol"
+        yard.tick(TUNING.king_call + 0.3)
+    assert len(rats(yard)) == TUNING.king_rats_max
+
+
+def test_markers_come_round_before_any_repeats_and_in_the_same_order_for_an_iid() -> None:
+    def calls(iid: str) -> list[float]:
+        yard = Yard()
+        for x in (40, 100, 330):
+            marker(yard, x)
+        boss = king(yard, 200, iid=iid)
+        court = yard.world.get(boss, Court)
+        out: list[Summoned] = []
+        yard.bus.subscribe(Summoned, out.append)
+        for _ in range(3):
+            for rat in rats(yard):
+                yard.world.despawn(rat)
+            yard.world.flush()
+            yard.brain(boss).state, yard.brain(boss).time = "call", TUNING.king_call
+            court.rats.clear()
+            yard.tick()
+        return [event.x for event in out]
+
+    first = calls("king-1")
+    assert calls("king-1") == first
+    assert len(first) == 6
+    assert sorted(first[:3]) == [48.0, 108.0, 338.0]
+
+
+def test_a_king_ignores_markers_in_other_rooms() -> None:
+    yard = Yard()
+    yard.world.spawn(Body(40, FLOOR * 16 - 16, 16, 16), RatSpawn(), Identity("m", "Elsewhere", "x"))
+    boss = king(yard, 200, iid="a")
+    yard.brain(boss).state, yard.brain(boss).time = "call", TUNING.king_call
+    yard.tick()
+    assert not rats(yard)
+
+
+def test_rats_go_when_the_king_dies() -> None:
+    yard = Yard()
+    marker(yard, 40)
+    marker(yard, 330)
+    boss = king(yard, 200, iid="k")
+    yard.brain(boss).state, yard.brain(boss).time = "call", TUNING.king_call
+    yard.tick()
+    assert len(rats(yard)) == 2
+    yard.world.get(boss, Health).dead = True
+    yard.tick()
+    assert not rats(yard)
+    assert boss not in yard.world
+
+
+def test_rats_go_when_the_king_is_unloaded() -> None:
+    yard = Yard()
+    marker(yard, 40)
+    boss = king(yard, 200, iid="k")
+    yard.brain(boss).state, yard.brain(boss).time = "call", TUNING.king_call
+    yard.tick()
+    assert rats(yard)
+    yard.world.despawn(boss)
+    yard.world.flush()
+    yard.tick()
+    assert not rats(yard)
+
+
+def test_a_dead_king_is_retired_by_iid_and_a_dead_rat_is_not() -> None:
+    from emberwake.engine.world.spawning import Spawner, WorldState  # noqa: PLC0415
+
+    yard = Yard()
+    state = WorldState()
+    yard.world.insert_resource(Spawner(yard.world, {}, state))
+    boss = king(yard, 200, iid="the-king")
+    rat = yard.enemy("clockrat", 40)
+    yard.world.add(rat, Identity("rat", "Room", "clockrat"))
+    yard.world.flush()
+    yard.tick()
+    yard.world.get(boss, Health).dead = True
+    yard.world.get(rat, Health).dead = True
+    yard.tick()
+    assert state.removed == ["the-king"]
