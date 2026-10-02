@@ -1,6 +1,6 @@
 # Lifts and moving platforms
 
-**Milestone:** M9  **Status:** draft  **Issue:** #125
+**Milestone:** M9  **Status:** done  **Issue:** #125
 
 ## Goal
 Rooms that move: a platform the player rides up a shaft or across a pit, driven by a lever, a
@@ -64,20 +64,20 @@ plate or a flag, or carrying on by itself. It never crushes the player and never
 | dwell | 0.8 | s a looping platform rests at each end |
 
 ## Acceptance criteria
-- [ ] A powered lift travels to its last node at `speed` and stays; unpowered it returns.
-- [ ] An unwired platform loops along its path and rests `dwell` at each end.
-- [ ] A player or crate standing on a moving platform is carried by its displacement, up, down
+- [x] A powered lift travels to its last node at `speed` and stays; unpowered it returns.
+- [x] An unwired platform loops along its path and rests `dwell` at each end.
+- [x] A player or crate standing on a moving platform is carried by its displacement, up, down
   and sideways, and a crate stacked on a carried crate too; a rider that is jumping away is not.
-- [ ] The player can stand on, jump from and wall-slide against a platform.
-- [ ] A platform does not move into a player below, beside or above it, nor into a rider that
+- [x] The player can stand on, jump from and wall-slide against a platform.
+- [x] A platform does not move into a player below, beside or above it, nor into a rider that
   would be pressed into a wall or ceiling, and moves on once the way is clear. Nobody is hurt.
-- [ ] A platform's place on its path survives its room reloading, and quitting and continuing.
-- [ ] Two runs of the same input leave platforms and riders in the same places.
-- [ ] A gap crossable only by a lift whose lever is reachable, or by a looping platform, passes
+- [x] A platform's place on its path survives its room reloading, and quitting and continuing.
+- [x] Two runs of the same input leave platforms and riders in the same places.
+- [x] A gap crossable only by a lift whose lever is reachable, or by a looping platform, passes
   the world validator; a lift whose lever is not reachable is reported.
-- [ ] `Lift_Lab` has a lever lift, a looping platform over spikes and a two-node lift.
+- [x] `Lift_Lab` has a lever lift, a looping platform over spikes and a two-node lift.
 
 ## Tests
 `tests/unit/game/test_platforms.py` drives the system on a small world: carrying, wiring,
 looping, holding, persistence; `tests/integration/test_lifts.py` plays `Lift_Lab`;
-`tests/unit/tools/test_world_validate.py` covers the validator rule.
+`tests/unit/tools/test_world_validate.py` (`TestLifts`) covers the validator rule.

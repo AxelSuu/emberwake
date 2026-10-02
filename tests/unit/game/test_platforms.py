@@ -22,7 +22,7 @@ from emberwake.game.crates import CrateTuning, PushCrate, crate_system
 from emberwake.game.flags import Facts
 from emberwake.game.interact import Switch
 from emberwake.game.platforms import Platform, PlatformRest, PlatformTuning, platform_system
-from emberwake.game.player.controller import Motor
+from emberwake.game.player.controller import Motor, PlayerState
 from emberwake.game.player.system import player_system
 from emberwake.game.player.tuning import PlayerTuning
 from emberwake.game.scenes.gameplay import COLLISIONS
@@ -258,6 +258,16 @@ def test_the_player_can_jump_from_a_platform_and_is_not_carried_after():
     rig.tick(ticks=8)
     assert rig.body.x == start
     assert rig.platform.x - 3 * 16 > 10 * SPEED
+
+
+def test_the_player_slides_down_the_side_of_a_platform():
+    rig = Rig().tick()
+    rig.put(48 - 10.0, 150 - 20.0)
+    rig.motor.grounded = False
+    rig.motor.vy = 200.0
+    rig.tick(Action.RIGHT)
+    assert rig.motor.state is PlayerState.WALL_SLIDE
+    assert rig.body.x + rig.body.width == 48
 
 
 def test_a_crate_and_a_crate_on_it_ride_a_lift():
