@@ -50,7 +50,10 @@ from the room name and marker, so moving an entity keeps its saved state.
 
 See `src/defs.toml` for fields. Each entity spawns the prefab named after it in snake_case from
 `content/prefabs.toml`; `uv run python -m tools.levels validate` (part of `just check`) fails if
-one has no prefab or its fields do not fit.
+one has no prefab or its fields do not fit. It also checks the world as a whole: wiring targets
+exist, flags are set somewhere, every entrance has a PlayerStart within 6 tiles, and every room
+but the `lab` and trial rooms is reachable from the start room with the abilities found by then
+([spec](../docs/specs/world-validator.md)).
 
 Every entity also takes `Requires` and `Unless`, conditions in the dialogue syntax over the save's
 flags, with `has.<thing>` for abilities and item counts (`Requires = "met_tinker"`, `Unless =
