@@ -12,23 +12,32 @@ from emberwake.engine.physics import Body
 from emberwake.engine.world.rooms import RoomStreamer, WorldGrid
 from emberwake.engine.world.spawning import Identity
 from emberwake.game.combat import Guard, Health, Hitbox, Hurtbox, Knockback, Team
-from emberwake.game.interact import player_body
+from emberwake.game.flags import Facts
+from emberwake.game.interact import Switch, overlap, player_body
 from emberwake.game.lamprey import (
+    DEFEATED,
+    DRAINED,
     MODES,
+    CasingBroken,
     Ctx,
+    Drained,
     Lamprey,
     LampreyTuning,
     PhaseChanged,
     inside,
     phase_for,
     place,
+    set_mode,
 )
 from emberwake.game.lamprey_tree import build_tree
 from emberwake.game.light import LightSource
+from emberwake.game.switches import Photocell
 
 if TYPE_CHECKING:
     from emberwake.engine.ecs import EntityId, World
 
+BREAKING = frozenset({"lunge", "dazed"})
+"""Modes in which the head breaks the casing it touches."""
 LURE_DIM = 0.5
 """Share of its light the lure gives under water."""
 
@@ -48,6 +57,7 @@ def lamprey_system(world: World, dt: float) -> None:
             _advance(ctx, health, bus)
             if lamprey.tree is not None:
                 lamprey.tree.tick(ctx, dt)
+            _drain(ctx, bus)
         lamprey.since += dt
         _apply(world, eid, lamprey)
 
@@ -75,6 +85,9 @@ def _equip(
         Guard(active=True),
     )
     lamprey.tree = build_tree()
+    facts = world.resource(Facts)
+    if not facts.flags.get(DEFEATED):
+        facts.flags.pop(DRAINED, None)
 
 
 def _arena(world: World, eid: EntityId) -> tuple[float, float, float, float] | None:
@@ -92,9 +105,44 @@ def _advance(ctx: Ctx, health: Health, bus: EventBus) -> None:
     if phase == bb.phase:
         return
     bb.phase = phase
+    if phase == 3:
+        bb.casings = [
+            cid
+            for cid, cell_body, cell in ctx.world.query(Body, Photocell)
+            if cell.sealed and inside(bb.arena, *_centre(cell_body))
+        ]
     if bb.tree is not None:
         bb.tree.reset(ctx)
     bus.publish(PhaseChanged(phase))
+
+
+def _drain(ctx: Ctx, bus: EventBus) -> None:
+    """Break the casings a lunge reaches; once all are lit the water goes and it slumps."""
+    bb, world = ctx.bb, ctx.world
+    if bb.phase < 3 or bb.drained:
+        return
+    if bb.mode in BREAKING:
+        for cid in bb.casings:
+            if not world.reserved(cid):
+                continue
+            cell, body = world.get(cid, Photocell), world.get(cid, Body)
+            if cell.sealed and overlap(ctx.body, body):
+                cell.sealed = False
+                bb.broken.append(cid)
+                bus.publish(CasingBroken(body.center_x, body.y + body.height / 2))
+    if all(world.reserved(cid) and _lit(world, cid) for cid in bb.casings):
+        bb.drained = True
+        world.resource(Facts).flags[DRAINED] = 1
+        if bb.tree is not None:
+            bb.tree.reset(ctx)
+        place(ctx.body, ctx.centre[0], bb.home[1])
+        set_mode(bb, "slump")
+        bus.publish(Drained())
+
+
+def _lit(world: World, eid: EntityId) -> bool:
+    cell, switch = world.get(eid, Photocell), world.get(eid, Switch)
+    return not cell.sealed and switch.on
 
 
 def _apply(world: World, eid: EntityId, lamprey: Lamprey) -> None:

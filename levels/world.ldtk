@@ -11,7 +11,7 @@
 	"iid": "87b725ab-f0a4-5a9b-ba96-4e58e071114b",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703.0,
-	"nextUid": 149,
+	"nextUid": 150,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -1780,6 +1780,48 @@
 							"id": "V_Float",
 							"params": [
 								0.4
+							]
+						},
+						"textLanguageMode": null,
+						"symmetricalRef": false,
+						"autoChainRef": true,
+						"allowOutOfLevelRef": true,
+						"allowedRefs": "Any",
+						"allowedRefsEntityUid": null,
+						"allowedRefTags": [],
+						"tilesetUid": null
+					},
+					{
+						"identifier": "Sealed",
+						"doc": "Dark until a casing breaks (the Lamprey breaks them)",
+						"__type": "Bool",
+						"uid": 149,
+						"type": "F_Bool",
+						"isArray": false,
+						"canBeNull": false,
+						"arrayMinLength": null,
+						"arrayMaxLength": null,
+						"editorDisplayMode": "NameAndValue",
+						"editorDisplayScale": 1.0,
+						"editorDisplayPos": "Above",
+						"editorLinkStyle": "CurvedArrow",
+						"editorDisplayColor": null,
+						"editorAlwaysShow": false,
+						"editorShowInWorld": true,
+						"editorCutLongValues": true,
+						"editorTextSuffix": null,
+						"editorTextPrefix": null,
+						"useForSmartColor": false,
+						"exportToToc": false,
+						"searchable": false,
+						"min": null,
+						"max": null,
+						"regex": null,
+						"acceptFileTypes": null,
+						"defaultOverride": {
+							"id": "V_Bool",
+							"params": [
+								false
 							]
 						},
 						"textLanguageMode": null,
@@ -17309,6 +17351,21 @@
 											"id": "V_Float",
 											"params": [
 												0.4
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Sealed",
+									"__type": "Bool",
+									"__value": false,
+									"__tile": null,
+									"defUid": 149,
+									"realEditorValues": [
+										{
+											"id": "V_Bool",
+											"params": [
+												false
 											]
 										}
 									]

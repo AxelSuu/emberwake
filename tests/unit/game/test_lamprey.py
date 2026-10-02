@@ -7,12 +7,17 @@ from emberwake.engine.physics import Body, Tile, TileGrid
 from emberwake.engine.world.rooms import WorldGrid
 from emberwake.engine.world.spawning import Identity
 from emberwake.game.combat import Blocked, Guard, Health, Hitbox, Hurtbox, Team, combat_system
+from emberwake.game.flags import Facts
 from emberwake.game.flares import Flare
+from emberwake.game.interact import Switch
 from emberwake.game.lamprey import (
+    DRAINED,
     MODES,
     Bitten,
     Breached,
+    CasingBroken,
     Ctx,
+    Drained,
     Lamprey,
     LampreyTuning,
     PhaseChanged,
@@ -23,6 +28,7 @@ from emberwake.game.lamprey_system import lamprey_system
 from emberwake.game.lamps import Lamp, LampSnuffed
 from emberwake.game.light import LightSource, LightTuning
 from emberwake.game.player.controller import Motor
+from emberwake.game.switches import Photocell, photocell_system
 
 STEP = 1 / 60
 TILE = 16
@@ -56,7 +62,8 @@ class Arena:
         self.bus.subscribe(LampSnuffed, self.snuffed.append)
         self.blocked: list[Blocked] = []
         self.bus.subscribe(Blocked, self.blocked.append)
-        for resource in (tuning, LightTuning(), self.bus):
+        self.facts = Facts({}, [], {})
+        for resource in (tuning, LightTuning(), self.bus, self.facts):
             self.world.insert_resource(resource)
         self.world.insert_resource(grid, key=WorldGrid)
         self.boss = self.world.spawn(Body(18 * TILE, WATER - 16, 32, 16), Lamprey())
@@ -69,6 +76,7 @@ class Arena:
         for _ in range(max(1, round(seconds / STEP))):
             lamprey_system(self.world, STEP)
             combat_system(self.world, STEP)
+            photocell_system(self.world, STEP)
             self.world.flush()
 
     def ctx(self) -> Ctx:
@@ -124,6 +132,19 @@ class Arena:
             Body(x - 8, WATER - 80, 16, 32),
             Lamp(lit=lit, protected=protected),
             Identity(f"lamp-{x}", "Arena", "lamp"),
+        )
+        if lit:
+            self.world.add(eid, LightSource(radius=80.0))
+        self.world.flush()
+        return eid
+
+    def photocell(self, x: float, *, sealed: bool = True) -> EntityId:
+        """A photocell 40 px above a lamp's centre, where a lunge up at the lamp passes."""
+        eid = self.world.spawn(
+            Body(x - 8, WATER - 112, 16, 16),
+            Photocell(sealed=sealed),
+            Switch(),
+            Identity(f"cell-{x}-{sealed}", "Arena", "photocell"),
         )
         self.world.flush()
         return eid
@@ -331,8 +352,8 @@ def test_a_phase_change_aborts_the_running_step() -> None:
     assert arena.state.phase == 2
     tree = arena.state.tree
     assert tree is not None
-    assert tree.root.children[0].running
-    assert not tree.root.children[1].running
+    assert tree.root.children[1].running
+    assert not tree.root.children[2].running
 
 
 def second_phase(arena: Arena) -> None:
@@ -407,3 +428,130 @@ def test_a_breaching_back_is_open_from_above_only() -> None:
     assert arena.blocked
     arena.strike(above=True)
     assert arena.health.current == 11
+
+
+def third_phase(arena: Arena) -> None:
+    arena.health.current = 6
+    arena.tick()
+    assert arena.state.phase == 3
+
+
+def drained_arena() -> tuple[Arena, list[EntityId]]:
+    arena = Arena()
+    arena.lamp(300)
+    arena.lamp(600)
+    cells = [arena.photocell(300), arena.photocell(600)]
+    third_phase(arena)
+    return arena, cells
+
+
+def test_the_lure_goes_out_in_phase_three() -> None:
+    arena = Arena()
+    arena.world.add(arena.boss, LightSource())
+    arena.world.flush()
+    arena.tick()
+    assert arena.world.get(arena.boss, LightSource).strength == 0.5
+    third_phase(arena)
+    assert arena.world.get(arena.boss, LightSource).strength == 0.0
+
+
+def test_a_sealed_photocell_reads_dark_beside_a_lit_lamp() -> None:
+    arena = Arena()
+    arena.lamp(300)
+    sealed, open_ = arena.photocell(300), arena.photocell(300, sealed=False)
+    arena.tick()
+    assert not arena.world.get(sealed, Switch).on
+    assert arena.world.get(open_, Switch).on
+
+
+def test_a_stunned_phase_three_head_keeps_its_armor_while_flooded() -> None:
+    arena, _ = drained_arena()
+    arena.run_until("dazed")
+    arena.strike()
+    assert arena.health.current == 6
+    assert arena.blocked
+    assert not arena.world.get(arena.boss, Hitbox).active
+
+
+def test_a_lunge_through_a_sealed_photocell_breaks_its_casing() -> None:
+    arena = Arena()
+    arena.lamp(500)
+    cell = arena.photocell(500)
+    arena.photocell(800)
+    broken: list[CasingBroken] = []
+    arena.bus.subscribe(CasingBroken, broken.append)
+    third_phase(arena)
+    arena.run_until("lunge")
+    assert arena.world.get(cell, Photocell).sealed
+    arena.run_until("dazed")
+    assert not arena.world.get(cell, Photocell).sealed
+    assert arena.state.broken == [cell]
+    assert len(broken) == 1
+
+
+def test_the_arena_drains_once_every_casing_is_broken_and_lit() -> None:
+    arena, cells = drained_arena()
+    drained: list[Drained] = []
+    arena.bus.subscribe(Drained, drained.append)
+    arena.run_until("dazed")
+    assert not arena.state.drained
+    assert sum(not arena.world.get(c, Photocell).sealed for c in cells) == 1
+    arena.world.get(cells[1], Photocell).sealed = False
+    arena.tick(0.1)
+    assert arena.state.drained
+    assert arena.facts.flags[DRAINED] == 1
+    assert len(drained) == 1
+    head = arena.world.get(arena.boss, Body)
+    assert head.y + head.height / 2 == arena.state.home[1]
+
+
+def test_a_broken_casing_in_the_dark_does_not_drain_it() -> None:
+    arena, cells = drained_arena()
+    for cell in cells:
+        arena.world.get(cell, Photocell).sealed = False
+    for eid, lamp in list(arena.world.query(Lamp)):
+        lamp.lit = False
+        arena.world.remove(eid, LightSource)
+    arena.world.flush()
+    arena.tick(0.5)
+    assert not arena.state.drained
+    assert DRAINED not in arena.facts.flags
+
+
+def test_drained_it_thrashes_at_the_player_then_gasps_open() -> None:
+    arena, cells = drained_arena()
+    for cell in cells:
+        arena.world.get(cell, Photocell).sealed = False
+    arena.tick(0.1)
+    assert arena.state.drained
+    arena.run_until("thrash")
+    arena.strike()
+    assert arena.health.current == 6
+    assert arena.world.get(arena.boss, Hitbox).active
+    head, player = arena.world.get(arena.boss, Body), arena.world.get(arena.player, Body)
+    x = head.center_x
+    arena.tick(0.5)
+    assert abs(head.center_x - player.center_x) < abs(x - player.center_x)
+    arena.run_until("gasp")
+    assert not arena.world.get(arena.boss, Hitbox).active
+    arena.strike()
+    assert arena.health.current == 5
+    assert arena.modes(5.0)[:3] == ["gasp", "thrash", "gasp"]
+
+
+def test_an_arena_without_casings_drains_as_phase_three_begins() -> None:
+    arena = Arena()
+    third_phase(arena)
+    assert arena.state.drained
+
+
+def test_a_stale_drained_flag_is_cleared_when_it_spawns() -> None:
+    world = World()
+    facts = Facts({DRAINED: 1}, [], {})
+    for resource in (TUNING, LightTuning(), EventBus(), facts):
+        world.insert_resource(resource)
+    world.insert_resource(TileGrid(4, 4, TILE, bytearray(16)), key=WorldGrid)
+    world.spawn(Body(0, 0, 32, 16), Lamprey())
+    world.flush()
+    lamprey_system(world, STEP)
+    assert DRAINED not in facts.flags

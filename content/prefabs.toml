@@ -72,7 +72,7 @@ Brazier = {}
 Switch = {}
 
 [photocell]
-fields = { Targets = "Switch.targets", Threshold = "Photocell.threshold" }
+fields = { Targets = "Switch.targets", Threshold = "Photocell.threshold", Sealed = "Photocell.sealed" }
 [photocell.components]
 Sprite = { image = "photocell", active_image = "photocell_on" }
 Photocell = {}

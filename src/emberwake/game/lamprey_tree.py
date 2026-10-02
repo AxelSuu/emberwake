@@ -57,6 +57,14 @@ def build_tree() -> Tree[Ctx]:
     """A tree for one Lamprey: nodes keep run state, so every Lamprey needs its own."""
     return Tree(
         Selector(
+            Sequence(
+                Condition(in_phase(3)),
+                Selector(
+                    Sequence(Condition(is_drained), thrash_cycle()),
+                    lure_cycle(armored=True),
+                    Action(circle),
+                ),
+            ),
             Sequence(Condition(in_phase(2)), breach_cycle()),
             Sequence(Condition(in_phase(1)), lure_cycle()),
             Action(circle),
@@ -98,6 +106,11 @@ def breach_cycle() -> Leaf:
     )
 
 
+def thrash_cycle() -> Leaf:
+    """Phase 3, drained: slide at the player on the floor, then gasp, open, for a moment."""
+    return Sequence(Action(thrash), Action(gasp))
+
+
 # Conditions
 
 
@@ -123,6 +136,10 @@ def has_quarry(c: Ctx) -> bool:
     else:
         c.bb.target = None
     return c.bb.target is not None
+
+
+def is_drained(c: Ctx) -> bool:
+    return c.bb.drained
 
 
 def bit_stone(c: Ctx) -> bool:
@@ -271,3 +288,18 @@ def dive(c: Ctx, dt: float, t: float) -> Status:
 def rest(c: Ctx, dt: float, t: float) -> Status:
     set_mode(c.bb, "swim")
     return SUCCESS if t >= c.tuning.rest_time else RUNNING
+
+
+def thrash(c: Ctx, dt: float, t: float) -> Status:
+    """Slide along the floor at the player: armored, and it hurts."""
+    set_mode(c.bb, "thrash")
+    if c.player is not None:
+        goal = column(c, c.player.center_x)
+        swim_to(c, (goal, c.bb.home[1]), c.tuning.thrash_speed, dt)
+    return SUCCESS if t >= c.tuning.thrash_time else RUNNING
+
+
+def gasp(c: Ctx, dt: float, t: float) -> Status:
+    """Stopped and open: the window to hit its head."""
+    set_mode(c.bb, "gasp")
+    return SUCCESS if t >= c.tuning.gasp_time else RUNNING

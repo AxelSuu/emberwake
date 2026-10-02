@@ -74,6 +74,7 @@ color = "#8ff8e2"
 doc = "On while the light at it reaches the threshold"
 fields.Targets = { type = "EntityRef", array = true }
 fields.Threshold = { type = "Float", default = 0.4, doc = "Light level, 0 to 1" }
+fields.Sealed = { type = "Bool", default = false, doc = "Dark until a casing breaks (the Lamprey breaks them)" }
 
 [entities.Bell]
 color = "#fbb954"
