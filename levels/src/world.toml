@@ -29,6 +29,9 @@ cell = [5, 9]
 [rooms.Lever_Hall]
 cell = [4, 10]
 
+[rooms.Cistern_Shaft]
+cell = [4, 11]
+
 [rooms.Upper_Room]
 cell = [68, 0]
 

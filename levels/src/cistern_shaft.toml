@@ -1,0 +1,11 @@
+fields = { Backdrop = "cavern" }
+
+[entities.a]
+type = "Lever"
+fields = { Targets = ["b"], Mode = "once" }
+[entities.b]
+type = "Door"
+[entities.d]
+type = "DripLurker"
+[entities.m]
+type = "Lamp"
