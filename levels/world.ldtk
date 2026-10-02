@@ -11,7 +11,7 @@
 	"iid": "87b725ab-f0a4-5a9b-ba96-4e58e071114b",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703.0,
-	"nextUid": 148,
+	"nextUid": 149,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -23825,6 +23825,90 @@
 							]
 						},
 						{
+							"__identifier": "CrackedWall",
+							"__grid": [
+								12,
+								21
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#966C6C",
+							"__worldX": 520,
+							"__worldY": 1744,
+							"iid": "f8c0869f-1e78-553f-ae49-ba82bc02d14a",
+							"width": 16,
+							"height": 32,
+							"defUid": 128,
+							"px": [
+								200,
+								336
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 126,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 127,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "PlayerStart",
+							"__grid": [
+								17,
+								21
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#F9C22B",
+							"__worldX": 600,
+							"__worldY": 1744,
+							"iid": "a20d1663-2288-5a47-94dd-b72aa798226f",
+							"width": 16,
+							"height": 16,
+							"defUid": 3,
+							"px": [
+								280,
+								336
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 37,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 38,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
 							"__identifier": "Ember",
 							"__grid": [
 								8,
@@ -24010,7 +24094,7 @@
 							"__smartColor": "#F9C22B",
 							"__worldX": 472,
 							"__worldY": 1920,
-							"iid": "682aac24-f9ad-55ef-8788-b5113ad6960a",
+							"iid": "8e2329df-3f61-5c74-b33e-233eb1c4d058",
 							"width": 16,
 							"height": 16,
 							"defUid": 3,
@@ -24450,21 +24534,9 @@
 						0,
 						0,
 						0,
-						1,
-						1,
-						1,
-						1,
-						1,
-						1,
-						1,
-						1,
-						1,
-						1,
-						1,
-						1,
-						1,
-						1,
-						1,
+						0,
+						0,
+						0,
 						0,
 						0,
 						0,
@@ -24477,7 +24549,19 @@
 						1,
 						1,
 						1,
-						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
 						1,
 						1,
 						1,
@@ -24730,6 +24814,657 @@
 				{
 					"dir": "s",
 					"levelIid": "1eefac5d-8454-52b5-a4c3-a7e102ad55f0"
+				},
+				{
+					"dir": "e",
+					"levelIid": "8b432069-3d94-55af-b350-6559afba7429"
+				}
+			]
+		},
+		{
+			"identifier": "Old_Guild",
+			"iid": "8b432069-3d94-55af-b350-6559afba7429",
+			"uid": 148,
+			"worldX": 640,
+			"worldY": 1584,
+			"worldDepth": 0,
+			"pxWid": 320,
+			"pxHei": 176,
+			"__bgColor": "#2E222F",
+			"bgColor": null,
+			"useAutoIdentifier": false,
+			"bgRelPath": null,
+			"bgPos": null,
+			"bgPivotX": 0.5,
+			"bgPivotY": 0.5,
+			"__smartColor": "#ADADB5",
+			"__bgPos": null,
+			"externalRelPath": null,
+			"fieldInstances": [
+				{
+					"__identifier": "Generated",
+					"__type": "Bool",
+					"__value": true,
+					"__tile": null,
+					"defUid": 15,
+					"realEditorValues": [
+						{
+							"id": "V_Bool",
+							"params": [
+								true
+							]
+						}
+					]
+				},
+				{
+					"__identifier": "Backdrop",
+					"__type": "String",
+					"__value": "ruins",
+					"__tile": null,
+					"defUid": 19,
+					"realEditorValues": [
+						{
+							"id": "V_String",
+							"params": [
+								"ruins"
+							]
+						}
+					]
+				},
+				{
+					"__identifier": "Area",
+					"__type": "String",
+					"__value": "quarter",
+					"__tile": null,
+					"defUid": 37,
+					"realEditorValues": [
+						{
+							"id": "V_String",
+							"params": [
+								"quarter"
+							]
+						}
+					]
+				},
+				{
+					"__identifier": "Music",
+					"__type": "String",
+					"__value": "",
+					"__tile": null,
+					"defUid": 38,
+					"realEditorValues": [
+						{
+							"id": "V_String",
+							"params": [
+								""
+							]
+						}
+					]
+				}
+			],
+			"layerInstances": [
+				{
+					"__identifier": "Entities",
+					"__type": "Entities",
+					"__cWid": 20,
+					"__cHei": 11,
+					"__gridSize": 16,
+					"__opacity": 1.0,
+					"__pxTotalOffsetX": 0,
+					"__pxTotalOffsetY": 0,
+					"__tilesetDefUid": null,
+					"__tilesetRelPath": null,
+					"iid": "e7f0de93-cd6d-51ab-a024-a52ecd4b2af8",
+					"levelId": 148,
+					"layerDefUid": 1,
+					"pxOffsetX": 0,
+					"pxOffsetY": 0,
+					"visible": true,
+					"optionalRules": [],
+					"intGridCsv": [],
+					"autoLayerTiles": [],
+					"seed": 1000148,
+					"overrideTilesetUid": null,
+					"gridTiles": [],
+					"entityInstances": [
+						{
+							"__identifier": "Grant",
+							"__grid": [
+								14,
+								9
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FBFF86",
+							"__worldX": 872,
+							"__worldY": 1728,
+							"iid": "484f350e-276e-5c74-b0cf-6ee31acf9c3d",
+							"width": 16,
+							"height": 16,
+							"defUid": 36,
+							"px": [
+								232,
+								144
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Thing",
+									"__type": "String",
+									"__value": "shard",
+									"__tile": null,
+									"defUid": 34,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"shard"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Count",
+									"__type": "Int",
+									"__value": 1,
+									"__tile": null,
+									"defUid": 35,
+									"realEditorValues": [
+										{
+											"id": "V_Int",
+											"params": [
+												1
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 49,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 50,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "PlayerStart",
+							"__grid": [
+								2,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#F9C22B",
+							"__worldX": 680,
+							"__worldY": 1744,
+							"iid": "79c343d3-6c9a-5890-9afc-78c5a74de6f9",
+							"width": 16,
+							"height": 16,
+							"defUid": 3,
+							"px": [
+								40,
+								160
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 37,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 38,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "Pot",
+							"__grid": [
+								5,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#E6904E",
+							"__worldX": 728,
+							"__worldY": 1744,
+							"iid": "2737bfee-1401-5cc0-8536-df560c351f37",
+							"width": 16,
+							"height": 16,
+							"defUid": 136,
+							"px": [
+								88,
+								160
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Embers",
+									"__type": "Int",
+									"__value": 1,
+									"__tile": null,
+									"defUid": 133,
+									"realEditorValues": [
+										{
+											"id": "V_Int",
+											"params": [
+												1
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 134,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 135,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "Echo",
+							"__grid": [
+								8,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#8FF8E2",
+							"__worldX": 776,
+							"__worldY": 1744,
+							"iid": "3fa6a97e-3c56-5a66-bcf2-d231076e6944",
+							"width": 16,
+							"height": 16,
+							"defUid": 117,
+							"px": [
+								136,
+								160
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Id",
+									"__type": "String",
+									"__value": "old_guild",
+									"__tile": null,
+									"defUid": 114,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"old_guild"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 115,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 116,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "Pot",
+							"__grid": [
+								18,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#E6904E",
+							"__worldX": 936,
+							"__worldY": 1744,
+							"iid": "789e866d-8e47-5894-af86-5f55cbcac852",
+							"width": 16,
+							"height": 16,
+							"defUid": 136,
+							"px": [
+								296,
+								160
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Embers",
+									"__type": "Int",
+									"__value": 1,
+									"__tile": null,
+									"defUid": 133,
+									"realEditorValues": [
+										{
+											"id": "V_Int",
+											"params": [
+												1
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 134,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 135,
+									"realEditorValues": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"__identifier": "Collisions",
+					"__type": "IntGrid",
+					"__cWid": 20,
+					"__cHei": 11,
+					"__gridSize": 16,
+					"__opacity": 1.0,
+					"__pxTotalOffsetX": 0,
+					"__pxTotalOffsetY": 0,
+					"__tilesetDefUid": null,
+					"__tilesetRelPath": null,
+					"iid": "d7cc7a33-a2a1-5ef8-83d6-64b5c6969af1",
+					"levelId": 148,
+					"layerDefUid": 2,
+					"pxOffsetX": 0,
+					"pxOffsetY": 0,
+					"visible": true,
+					"optionalRules": [],
+					"intGridCsv": [
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						1,
+						1,
+						1,
+						0,
+						0,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1
+					],
+					"autoLayerTiles": [],
+					"seed": 1000148,
+					"overrideTilesetUid": null,
+					"gridTiles": [],
+					"entityInstances": []
+				}
+			],
+			"__neighbours": [
+				{
+					"dir": "w",
+					"levelIid": "07cb0d9d-787d-506e-b2ee-5c7e67f2fdf5"
 				}
 			]
 		}

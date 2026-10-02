@@ -58,3 +58,6 @@ cell = [89, 0]
 
 [rooms.Well_Climb]
 cell = [1, 8]
+
+[rooms.Old_Guild]
+cell = [2, 9]

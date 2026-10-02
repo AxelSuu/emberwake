@@ -281,6 +281,7 @@ wake_jump = "Jump with {jump}. Hold it for a higher one."
 [echo]
 lore_hall = "I lit this lamp last. The oil ran out before the street did."
 wake = "My last round. Up the well, then fourteen lamps before dark. The tide came first."
+old_guild = "Lamplighters of the Guild, hear me. The oil will not last the winter. Carry the flame, not the fuel."
 
 [lore]
 echo_heard = "Echo heard"
