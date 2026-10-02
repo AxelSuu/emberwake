@@ -107,6 +107,9 @@ cell = [8, 8]
 [rooms.Trial_Gate]
 cell = [12, 8]
 
+[rooms.Cistern_Gate]
+cell = [10, 10]
+
 [rooms.Sluice]
 cell = [12, 9]
 

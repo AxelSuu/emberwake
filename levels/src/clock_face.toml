@@ -2,7 +2,7 @@
 # Clocktower_Stair, plugged by door d while the King's Encounter Z runs. The Clockrat King
 # (wave 2, spawned at K) calls rats to the r markers.
 # A is Quarter Lamp A: a Beacon behind door o, which the cleared Encounter opens. With Lamp B in
-# the Pump House it powers the Cistern Gate door (a later batch reads Clock_Face:A); it also holds
+# the Pump House it powers the Cistern Gate door (lighting it sets lamp_a); it also holds
 # the Belfry's lamps.
 # Shard 3 (S) sits on the ledge top left, past two spike bulbs to pogo off from the catwalk's west
 # end; the steps up are crumbling platforms.
@@ -27,6 +27,7 @@ fields = { Encounter = "Z", Wave = 2, Kind = "clockrat_king" }
 type = "RatSpawn"
 [entities.A]
 type = "Beacon"
+fields = { Flag = "lamp_a" }
 [entities.e]
 type = "Ember"
 fields = { Value = 5 }

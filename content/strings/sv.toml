@@ -291,11 +291,13 @@ square_great_lamp = "Den Stora Lampan, kall. Två kvarterslampor måste brinna f
 trial_gate = "Prövningsdörrar. Ställ dig vid en och tryck {interact} för att köra en prövning; dina tider väntar i menyn."
 sluice_valves = "Ventiler tömmer kanalerna för gott. Tryck {interact} vid en."
 pump_twist = "Pumpdörren vill ha tyngd på plattan och ljus på linsen, båda på en gång."
+gate_lamps = "Porten vaknar när båda kvarterslamporna brinner: klocktornets och pumphusets."
 
 [echo]
 lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."
 wake = "Min sista runda. Upp ur brunnen, sedan fjorton lampor före mörkret. Tidvattnet kom först."
 old_guild = "Lampgnistare i Gillet, hör mig. Oljan räcker inte vintern. Bär lågan, inte bränslet."
+cistern_gate = "Natten då Lyktan slocknade gick bränsleledningen här. Vi förseglade porten och ljög."
 
 [lore]
 echo_heard = "Eko hört"
