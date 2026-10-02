@@ -48,8 +48,44 @@ and `clocktower` presets.
 ```
 
 `--` and `|` are open passages, `<=|` a shortcut door opened from the right, `:` a secret behind
-a cracked wall, `...>` a way that needs a later ability, A and B the Quarter Lamps. Exact cells
-are chosen while greyboxing; the schematic fixes only the topology.
+a cracked wall, `...>` a way that needs a later ability, A and B the Quarter Lamps.
+
+Cells (top-left `[x, y]` in `levels/src/world.toml`), fixed so room batches can be built in
+parallel. Two sizes differ from the table below so the Underways come back up into the Square:
+the Plate Room is 2x1 and the Photocell Gallery 3x3, its top opening into the Square's floor.
+
+```
+ x:  0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17
+ y0                          CF CF
+ y1                          CF CF
+ y2                          CS
+ y3                          CS
+ y4                          CS
+ y5                          CS
+ y6                          BE BE
+ y7                          BE BE
+ y8     WC LR LR LR LR TN TN MS MS MS MS TG TG
+ y9     WC OG       GC GC    MS MS MS MS SL SL SL SL PH PH
+ y10    WC       LH GC GC PG PG PG CG CG       RW RW
+ y11 WK WK       SH       PG PG PG CI CI CI
+ y12 WK WK       SH PR PR PG PG PG CI CI CI
+```
+
+| Room | Cell | Size | | Room | Cell | Size |
+|---|---|---|---|---|---|---|
+| Wake | [0, 11] | 2x2 | | Market_Square | [8, 8] | 4x2 |
+| Well_Climb | [1, 8] | 1x3 | | Trial_Gate | [12, 8] | 2x1 |
+| Old_Guild | [2, 9] | 1x1 | | Belfry | [8, 6] | 2x2 |
+| Lamp_Row | [2, 8] | 4x1 | | Clocktower_Stair | [8, 2] | 1x4 |
+| Tinkers_Nook | [6, 8] | 2x1 | | Clock_Face | [8, 0] | 2x2 |
+| Gloom_Cellar | [5, 9] | 2x2 | | Sluice | [12, 9] | 4x1 |
+| Lever_Hall | [4, 10] | 1x1 | | Pump_House | [16, 9] | 2x1 |
+| Cistern_Shaft | [4, 11] | 1x2 | | Rat_Warren | [14, 10] | 2x1 |
+| Plate_Room | [5, 12] | 2x1 | | Cistern_Gate | [10, 10] | 2x1 |
+| Photocell_Gallery | [7, 10] | 3x3 | | Cistern | [10, 11] | 3x2 |
+
+Codes are the rooms' initials (CF Clock Face, CS Clocktower Stair, PR Plate Room, PG Photocell
+Gallery, CI Cistern, CG Cistern Gate). Only touching edges can connect; every other shared edge stays a wall.
 
 ## Rooms
 
