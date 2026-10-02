@@ -61,3 +61,6 @@ cell = [1, 8]
 
 [rooms.Old_Guild]
 cell = [2, 9]
+
+[rooms.Lamp_Row]
+cell = [2, 8]
