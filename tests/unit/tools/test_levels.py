@@ -147,6 +147,20 @@ def test_loads_through_the_engine_with_fields_and_wiring(tmp_path: Path):
     assert (target["entityIid"], target["levelIid"]) == (door.iid, hall.iid)
 
 
+def test_every_entity_type_takes_the_common_fields(tmp_path: Path):
+    toml = HALL_TOML.replace('type = "Ember"', 'type = "Ember"\nfields = { Requires = "met" }')
+    built = build_project(source(Hall=((0, 0), HALL, toml)))
+    for entity in built["defs"]["entities"]:
+        names = [f["identifier"] for f in entity["fieldDefs"]]
+        assert names[-2:] == ["Requires", "Unless"], entity["identifier"]
+    assert errors(built) == []
+    path = tmp_path / "world.ldtk"
+    path.write_text(json.dumps(built))
+    hall = load_project(path).level("Hall")
+    assert [e.field("Requires") for e in hall.entities("Ember")] == ["met", "met"]
+    assert {e.field("Unless") for e in hall.entities()} == {None}
+
+
 def test_marker_iids_survive_moving_the_entity():
     moved = HALL.replace("#.P..a", "#.Pa..")
     before = build_project(source())
