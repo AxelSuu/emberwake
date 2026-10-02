@@ -3,7 +3,7 @@
 # is <name in lower case>.txt plus an optional .toml.
 
 [rooms.Wake]
-cell = [0, 0]
+cell = [0, 11]
 
 [rooms.Test_Room]
 cell = [60, 0]
@@ -67,3 +67,21 @@ cell = [85, 0]
 
 [rooms.Lamp_Lab]
 cell = [89, 0]
+
+[rooms.Well_Climb]
+cell = [1, 8]
+
+[rooms.Old_Guild]
+cell = [2, 9]
+
+[rooms.Lamp_Row]
+cell = [2, 8]
+
+[rooms.Arena_Lab]
+cell = [70, 2]
+
+[rooms.Crate_Lab]
+cell = [73, 2]
+
+[rooms.Cistern_Lab]
+cell = [70, 4]

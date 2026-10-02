@@ -1,0 +1,5 @@
+[entities.e]
+type = "Ember"
+
+[entities.w]
+type = "CrackedWall"

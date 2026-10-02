@@ -19,7 +19,8 @@ rebuilt. Do not edit generated levels in LDtk; the next build overwrites them.
 | `src/<room>.txt` | The room's tiles, one character per 16 px tile; size in whole grid cells |
 | `src/<room>.toml` | Optional: what each marker is, its fields and wiring, plus level fields such as `Backdrop` (a preset in `content/backdrops.toml`, default `cavern`) |
 
-Real rooms start at cell x 0 with `Wake` at [0, 0]. The dev rooms (area `lab`) live at x 60 and
+Real rooms start at cell x 0 with `Wake` at [0, 11]; the Sunken Quarter's cells are fixed in
+[the world doc](../docs/world/sunken-quarter.md). The dev rooms (area `lab`) live at x 60 and
 up so they never touch the real map: the greybox cluster takes x 60 to 69, y 0 to 9; put new lab
 rooms at x 70 and up (or further down at x 60), each clear of every other room, and set
 `Area = "lab"`.
@@ -67,21 +68,25 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 
 | Entity | Meaning |
 |---|---|
-| PlayerStart | Spawn point; after a hazard death the one nearest the room's entrance (pivot: bottom centre) |
+| PlayerStart | Spawn point; after a hazard death the one nearest the room's entrance; a new game or a warp starts at the lowest (pivot: bottom centre) |
 | Door | Solid while closed; opens while its sources are on (Mode any/all, Invert) |
 | Lever | Interact to switch its targets (Mode toggle/momentary/once) |
-| PressurePlate | On while something stands on it |
+| PressurePlate | On while the player stands on it or a PushCrate rests on it |
 | Beacon | Interact to relight: saves, refills the dash and becomes the continue point |
 | Brazier | Cold until a swing or a flare lights it (`Lit` places it lit); then a light and an on switch, saved by iid. Its `Targets` are receivers |
-| Photocell | On while the light at it reaches `Threshold` (default 0.4); `Targets` are receivers |
+| Photocell | On while the light at it reaches `Threshold` (default 0.4); `Targets` are receivers. `Sealed` keeps it dark until the Lamprey breaks its casing |
 | Bell | A swing rings it: stuns enemies nearby and pulses its `Targets` for a moment |
 | Lamp | Dead lamp post: a swing lights it, a Wisp-eater snuffs it. `Beacon` (a ref) is the beacon that makes it permanent once both are lit ([spec](../docs/specs/lamps.md)) |
+| Lamprey | Boss ([spec](../docs/specs/lamprey.md)): its head at the water line of its arena, which is the room. `--room Cistern_Lab` has the arena: lamps, sealed photocells and a drain door on a FlagSwitch for `lamprey_drained` |
 | Ember | Collectible |
 | CrackedWall | Solid until the lantern strikes it, then gone for good ([spec](../docs/specs/breakables.md)) |
+| PushCrate | A box the player pushes by walking into it; falls, stacks, can be stood on and weighs plates; saved by iid, home again after a beacon rest ([spec](../docs/specs/push-crates.md)) |
 | Crate | Solid; breaks for good when struck and flings `Embers` loose embers |
 | Pot | Not solid; breaks like a crate |
 | CrumblingPlatform | One-way; clears 0.5 s after the player lands on it and returns 2 s later |
 | Hesper, Quill | NPCs ([spec](../docs/specs/npcs.md)); gate each spot with `Requires`/`Unless` on `hesper_stage` or `quill_stage`. `--room Npc_Lab` has every spot |
+| Encounter | Arena zone: the player's body in it shuts its `Doors` (open unless it runs; `Mode` and `Invert` are ignored) and starts the waves; clearing it powers its `Targets`, for good ([spec](../docs/specs/encounters.md)) |
+| WaveSpawn | Where an enemy of `Kind` (an enemy prefab) appears in `Wave` (from 1, no gaps) of the `Encounter` (a ref, same room). Markers cannot sit inside a zone, so leave a row free |
 | Grant | Touch to receive an ability or item (`Thing`, a key of `content/grants.toml`, and `Count`) |
 | FlagSwitch | Not drawn: powers its `Targets` while its `Condition` holds, also while its room is unloaded |
 | SetFlag | Invisible zone: stepping in sets `Flag` to `Value`, or adds it with `Mode = "add"` |

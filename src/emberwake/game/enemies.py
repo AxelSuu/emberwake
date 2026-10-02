@@ -676,6 +676,8 @@ class Kind:
     """Calls rats."""
     permanent: bool = False
     """Killed for good: retired by iid, never respawned."""
+    size: tuple[int, int] = (16, 16)
+    """Body size, px, for one that is not placed in a level."""
 
 
 KINDS = {
@@ -713,6 +715,7 @@ KINDS = {
         dark=frozenset({"toppled"}),
         court=True,
         permanent=True,
+        size=(32, 32),
     ),
 }
 
@@ -758,7 +761,8 @@ def _clear(world: World, eid: EntityId, kind: Kind) -> None:
     court = world.find(eid, Court)
     for rat in court.rats if court is not None else ():
         world.despawn(rat)
-    if kind.permanent and world.has_resource(Spawner) and world.has(eid, Identity):
+    placed = world.has(eid, Identity) and not world.has(eid, Minion)
+    if kind.permanent and placed and world.has_resource(Spawner):
         world.resource(Spawner).retire(eid)
     else:
         world.despawn(eid)

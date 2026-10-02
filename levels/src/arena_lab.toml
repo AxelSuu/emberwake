@@ -1,0 +1,22 @@
+fields = { Area = "lab" }
+
+[entities.Z]
+type = "Encounter"
+fields = { Doors = ["d"], Targets = ["o"] }
+[entities.d]
+type = "Door"
+[entities.o]
+type = "Door"
+[entities.a]
+type = "WaveSpawn"
+fields = { Encounter = "Z", Wave = 1, Kind = "clockrat" }
+[entities.K]
+type = "WaveSpawn"
+fields = { Encounter = "Z", Wave = 2, Kind = "clockrat_king" }
+[entities.r]
+type = "RatSpawn"
+[entities.k]
+type = "Beacon"
+[entities.e]
+type = "Ember"
+fields = { Value = 5 }

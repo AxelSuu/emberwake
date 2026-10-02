@@ -38,6 +38,7 @@ class Leg:
     x: float
     jump: bool = False
     dash: bool = False
+    dash_age: int = 4
     interact: bool = False
     down: bool = False
     """Drop through the one-way underfoot."""
@@ -95,7 +96,7 @@ class Pilot(ReplayPlayer[Action]):
             frame.add(Action.DOWN)
         pressed = {
             Action.JUMP: (leg.jump and age <= JUMP_HOLD) or (leg.down and 3 <= age <= 5),
-            Action.DASH: leg.dash and 4 <= age < 6,
+            Action.DASH: leg.dash and leg.dash_age <= age < leg.dash_age + 2,
             Action.INTERACT: leg.interact and age == 1,
             Action.SWING: leg.swing and age == 1,
         }

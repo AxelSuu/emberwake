@@ -44,6 +44,7 @@ class Walk:
     def __init__(self, world: Index, rules: Rules) -> None:
         self.world, self.rules = world, rules
         self.doors = {t.iid: t for t in world.things if t.kind == "Door"}
+        self.crates = [t for t in world.things if t.kind == "PushCrate"]
         self.sources: dict[str, list[Thing]] = defaultdict(list)
         by_iid = {t.iid: t for t in world.things}
         for thing in world.things:
@@ -123,6 +124,10 @@ class Walk:
             if source.kind == "FlagSwitch":
                 condition = source.entity.field("Condition")
                 return bool(condition) and _holds(condition, facts, wide)
+            if source.kind == "PressurePlate":
+                return source in reached or any(
+                    crate.room == source.room and crate in reached for crate in self.crates
+                )
             return source in reached
 
         states = [on(source) for source in self.sources[door.iid]]

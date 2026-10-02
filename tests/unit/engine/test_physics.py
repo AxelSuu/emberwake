@@ -111,3 +111,41 @@ def test_moves_never_end_inside_solids(moves: list[tuple[float, float]], x: floa
 def test_void_is_below_the_grid():
     assert not ROOM.void(-50, 7 * TS)
     assert ROOM.void(5, 7 * TS + 1)
+
+
+def test_solid_boxes_block_from_every_side():
+    box = Body(6 * TS, 4 * TS, TS, TS)
+    left = Body(3 * TS, 4 * TS + 2, 10, 14)
+    assert move(ROOM, left, 200, 0, solids=[box]).right
+    assert left.x + left.width == box.x
+    right = Body(8 * TS + 4, 4 * TS + 2, 10, 14)
+    assert move(ROOM, right, -200, 0, solids=[box]).left
+    assert right.x == box.x + box.width
+
+    above = Body(6 * TS + 3, 2 * TS, 10, 14)
+    contacts = move(ROOM, above, 0, 200, solids=[box])
+    assert contacts.ground
+    assert not contacts.one_way
+    assert above.bottom == box.y
+    below = Body(6 * TS + 3, 5 * TS - 4, 10, 4)
+    below.y = box.bottom
+    assert move(ROOM, below, 0, -200, solids=[box]).ceiling
+    assert below.y == box.bottom
+
+
+def test_a_body_is_not_blocked_by_itself_or_by_touching_boxes():
+    body = Body(2 * TS, 5 * TS - 20, 10, 20)
+    assert not move(ROOM, body, 5, 0, solids=[body]).right
+    wall = Body(body.x + body.width + 4, 4 * TS, TS, TS)
+    floor = Body(0, body.bottom, 200, TS)
+    contacts = move(ROOM, body, 0, 0, solids=[wall, floor])
+    assert not contacts.right
+    assert not contacts.ground
+    assert not move(ROOM, body, 3, 0, solids=[floor]).left
+
+
+def test_overlaps_sees_solids_but_not_touching_ones():
+    box = Body(6 * TS, 4 * TS, TS, TS)
+    assert overlaps(ROOM, 6 * TS + 4, 4 * TS + 4, 4, 4, solids=[box])
+    assert not overlaps(ROOM, 6 * TS + 4, 4 * TS + 4, 4, 4)
+    assert not overlaps(ROOM, 7 * TS, 4 * TS, 4, 4, solids=[box])
