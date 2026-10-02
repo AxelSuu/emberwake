@@ -607,7 +607,8 @@ class GameplayScene(Scene):
         self.mapper.handle(event)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                self.manager.push(PauseScene(self.ctx))
+                self._count_light()
+                self.manager.push(PauseScene(self.ctx, *self._area_text()))
             elif event.key == pygame.K_RETURN and self.cutscenes.active:
                 self.cutscenes.skip()
             elif self.ctx.dev:

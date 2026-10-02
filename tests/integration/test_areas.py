@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING
 
+import pygame
 import pytest
 from tools.levels.ldtk import build_project
 from tools.levels.source import Defs, MarkerSpec, RoomFile, Source, make_room, read_toml
@@ -12,13 +13,16 @@ from tools.levels.source import Defs, MarkerSpec, RoomFile, Source, make_room, r
 from emberwake.engine.input.replay import Replay, ReplayPlayer
 from emberwake.engine.render.post import Grade
 from emberwake.engine.scene import SceneManager
+from emberwake.engine.ui import Label
 from emberwake.engine.world.ldtk import load_project
-from emberwake.engine.world.spawning import WorldState
+from emberwake.engine.world.spawning import Identity, WorldState
 from emberwake.game import paths
 from emberwake.game.actions import Action
 from emberwake.game.areas import AreaLight
+from emberwake.game.beacons import Beacon
 from emberwake.game.data.save import SaveSlot, save_slot
 from emberwake.game.scenes.gameplay import GameplayScene
+from emberwake.game.scenes.pause import PauseScene
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -136,3 +140,14 @@ def test_banners_show_when_the_area_changes_and_not_within_one(ctx: GameContext,
 def test_a_trial_shows_no_banner(ctx: GameContext):
     scene = GameplayScene(ctx, trial="sprint")
     assert scene.hud.banner_left == 0
+
+
+def test_the_pause_menu_shows_the_area_with_a_fresh_count(ctx: GameContext, world_path: Path):
+    scene = start(ctx, world_path)
+    for _, _, beacon in scene.world.query(Identity, Beacon):
+        beacon.lit = True
+    scene.handle(pygame.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE, mod=0))
+    scene.manager.apply_pending()
+    assert isinstance(scene.manager.top, PauseScene)
+    labels = [c.text for c in scene.manager.top.ui.root.children if isinstance(c, Label)]
+    assert labels == ["Paused", "The Lab", "Light 100 %"]
