@@ -480,6 +480,9 @@ class TestEncounters:
     def test_a_door_an_encounter_shuts_does_not_wall_off_the_rest(self):
         assert problems(arena()) == []
 
+    def test_its_door_is_open_before_the_zone_is_reached(self):
+        assert problems(arena(floor="..P.......d.zw")) == []
+
     def test_a_door_nothing_opens_still_does(self):
         toml = ARENA.replace('fields = { Doors = ["d"] }', "")
         assert len(reaching(problems(arena(toml)))) == 1

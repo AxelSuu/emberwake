@@ -50,6 +50,13 @@ class Walk:
         by_iid = {t.iid: t for t in world.things}
         platforms = {t.iid: t for t in world.things if t.kind == "Platform"}
         self.sweeps = {iid: _sweep(platform, by_iid) for iid, platform in platforms.items()}
+        self.locked = {
+            iid
+            for t in world.things
+            if t.kind == "Encounter"
+            for iid in t.entity.values().get("Doors") or []
+        }
+        """Doors an Encounter shuts: open unless it runs, so passable even before its zone."""
         self.gates = {**self.doors, **platforms}
         """Doors and platforms: what the player needs the signals to use."""
         for thing in world.things:
@@ -135,7 +142,7 @@ class Walk:
         return not requires or _holds(requires, facts, wide)
 
     def _opens(self, gate: Thing, reached: list[Thing], facts: Known, wide: set[str]) -> bool:
-        if gate.entity.field("Invert"):
+        if gate.entity.field("Invert") or gate.iid in self.locked:
             return True
         if gate.kind == "Platform" and not self.sources[gate.iid]:
             return True
