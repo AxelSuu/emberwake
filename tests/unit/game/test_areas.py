@@ -20,18 +20,21 @@ import emberwake.game.components  # noqa: F401  (registers Beacon)
 from emberwake.engine.core.serde import from_data
 from emberwake.engine.ecs import COMPONENTS, Registry
 from emberwake.engine.ecs.prefabs import Prefab
+from emberwake.engine.render.post import Grade
 from emberwake.engine.world.ldtk import Level, Project
 from emberwake.engine.world.spawning import WorldState
 from emberwake.game import paths
 from emberwake.game.areas import (
     DEFAULT_AREA,
+    AreaGrade,
+    AreaLight,
     Areas,
     AreaSpec,
-    Light,
     LightCensus,
     area_of,
     load_areas,
     music_of,
+    saturation,
 )
 
 DEFS = read_toml(Defs, paths.levels("src/defs.toml"))
@@ -98,17 +101,17 @@ def lit(*iids: str, component: str = "Beacon") -> WorldState:
 def test_light_is_lit_beacons_over_beacons_per_area_from_the_world_state():
     levels = world(("Hall", "quarter", "kk"), ("Cellar", "quarter", "k"), ("Lab", "lab", "k"))
     census = LightCensus(levels, BEACON, RULES)
-    assert census.count(WorldState()) == {"quarter": Light(0, 3), "lab": Light(0, 1)}
+    assert census.count(WorldState()) == {"quarter": AreaLight(0, 3), "lab": AreaLight(0, 1)}
     state = lit(iids(levels, "Hall")[0], *iids(levels, "Cellar"))
-    assert census.count(state) == {"quarter": Light(2, 3), "lab": Light(0, 1)}
+    assert census.count(state) == {"quarter": AreaLight(2, 3), "lab": AreaLight(0, 1)}
     assert census.count(state)["quarter"].percent == 66
 
 
 def test_nothing_to_light_is_fully_lit():
     census = LightCensus(world(("Hall", "quarter", ""), ("Lab", "lab", "k")), BEACON, RULES)
-    assert census.count(WorldState())["quarter"] == Light()
-    assert (Light().fraction, Light().percent) == (1.0, 100)
-    assert (Light(1, 1).percent, Light(1, 3).fraction) == (100, 1 / 3)
+    assert census.count(WorldState())["quarter"] == AreaLight()
+    assert (AreaLight().fraction, AreaLight().percent) == (1.0, 100)
+    assert (AreaLight(1, 1).percent, AreaLight(1, 3).fraction) == (100, 1 / 3)
 
 
 @dataclass(slots=True)
@@ -127,9 +130,25 @@ def test_a_prefab_added_to_the_rules_counts_and_starts_as_placed():
     levels = world(("Row", "quarter", "lLk"))
     rules = {**RULES, "lamp": "Lamp.lit"}
     census = LightCensus(levels, {**BEACON, "lamp": lamp}, rules, registry)
-    assert census.count(WorldState()) == {"quarter": Light(1, 3)}
+    assert census.count(WorldState()) == {"quarter": AreaLight(1, 3)}
     unlit, pre_lit, _ = iids(levels, "Row")
     state = lit(unlit, component="Lamp")
-    assert census.count(state) == {"quarter": Light(2, 3)}
+    assert census.count(state) == {"quarter": AreaLight(2, 3)}
     state.entities[pre_lit] = {"Lamp": {"lit": False}}
-    assert census.count(state) == {"quarter": Light(1, 3)}
+    assert census.count(state) == {"quarter": AreaLight(1, 3)}
+
+
+def test_a_dark_area_keeps_dim_of_the_saturation_and_a_lit_one_all_of_it():
+    assert saturation(0.0, 0.7) == 0.7
+    assert saturation(1.0, 0.7) == 1.0
+    assert saturation(0.5, 0.6) == 0.8
+    grade = Grade((200, 200, 255), (4, 0, 0), saturation=0.9)
+    area = AreaGrade(dim=0.5, rate=0.5)
+    area.aim(0.0, instantly=True)
+    assert area.apply(grade) == Grade((200, 200, 255), (4, 0, 0), saturation=0.45)
+    area.aim(1.0)
+    area.update(1.0)
+    assert area.light == 0.5
+    area.update(1.0)
+    assert area.apply(grade) == grade
+    assert AreaGrade().apply(Grade()).neutral
