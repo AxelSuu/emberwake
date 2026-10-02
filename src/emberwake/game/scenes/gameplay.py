@@ -484,7 +484,9 @@ class GameplayScene(Scene):
         return name
 
     def _room_loaded(self, room: Room) -> None:
-        layer = ChunkLayer(room.rect.topleft, room.rect.size, tile_painter(room.grid))
+        # Baked over later frames, by when doors, walls and platforms have changed their cells.
+        level_tiles = dataclasses.replace(room.grid, cells=bytearray(room.grid.cells))
+        layer = ChunkLayer(room.rect.topleft, room.rect.size, tile_painter(level_tiles))
         job = layer.bake()
         self.layers[room.name] = (layer, job)
         self.jobs.add(job)
