@@ -300,6 +300,7 @@ lore_hall = "I lit this lamp last. The oil ran out before the street did."
 wake = "My last round. Up the well, then fourteen lamps before dark. The tide came first."
 old_guild = "Lamplighters of the Guild, hear me. The oil will not last the winter. Carry the flame, not the fuel."
 cistern_gate = "The night the Lantern went out, the fuel line ran through here. We sealed the gate and lied."
+cistern = "It drank the oil for a hundred years. The Lantern burned on what it fed."
 
 [lore]
 echo_heard = "Echo heard"

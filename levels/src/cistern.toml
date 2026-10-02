@@ -1,0 +1,35 @@
+# Cistern, cell [10, 11] 3x2: the Lamprey's arena (as Cistern_Lab), entered by a drop from the
+# Cistern_Gate through tiles x 28..31 of row 0. Once the Lamprey is defeated the lift m appears
+# and loops up to n, under that hole, so the player rides back into the gate.
+fields = { Backdrop = "cavern" }
+
+[entities.L]
+type = "Lamprey"
+[entities.a]
+type = "Lamp"
+[entities.b]
+type = "Lamp"
+[entities.c]
+type = "Lamp"
+[entities.d]
+type = "Lamp"
+[entities.p]
+type = "Photocell"
+fields = { Sealed = true }
+[entities.q]
+type = "Photocell"
+fields = { Sealed = true }
+[entities.D]
+type = "Door"
+fields = { Invert = true }
+[entities.f]
+type = "FlagSwitch"
+fields = { Condition = "lamprey_drained", Targets = ["D"] }
+[entities.m]
+type = "Platform"
+fields = { Path = ["n"], Requires = "lamprey_defeated" }
+[entities.n]
+type = "PathNode"
+[entities.E]
+type = "Echo"
+fields = { Id = "cistern", Requires = "lamprey_defeated" }

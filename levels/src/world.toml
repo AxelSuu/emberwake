@@ -110,6 +110,9 @@ cell = [12, 8]
 [rooms.Cistern_Gate]
 cell = [10, 10]
 
+[rooms.Cistern]
+cell = [10, 11]
+
 [rooms.Sluice]
 cell = [12, 9]
 
