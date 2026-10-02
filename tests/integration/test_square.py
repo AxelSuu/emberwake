@@ -114,3 +114,22 @@ def gallery_stage_three() -> Phase:
         Leg(x(GALLERY, 31), jump=True),
         Leg(x(GALLERY, 30), jump=True),
     )
+
+
+def test_the_gallery_is_climbed_to_its_top(ctx: GameContext):
+    scene = run(
+        ctx,
+        "Photocell_Gallery",
+        walk(*gallery_stage_one()),
+        *gallery_stage_two(),
+        gallery_stage_three(),
+        ticks=4000,
+    )
+    assert scene.body.bottom < at(GALLERY, 0, 5)[1]
+
+
+def test_the_gallery_door_is_shut_until_a_flare_lights_the_photocell(ctx: GameContext):
+    scene = start(ctx, "Photocell_Gallery")
+    doors = [door for _, body, door in scene.world.query(Body, Door) if inside(scene, body)]
+    assert len(doors) == 1
+    assert not doors[0].open
