@@ -5,9 +5,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from emberwake.game.beacons import Beacon
+from emberwake.game.breakables import Crumble
 from emberwake.game.components import Sprite
 from emberwake.game.enemies import KINDS, Brain
 from emberwake.game.interact import Switch
+from emberwake.game.lamps import Lamp
 from emberwake.game.signals import Door
 
 if TYPE_CHECKING:
@@ -15,7 +17,7 @@ if TYPE_CHECKING:
 
 
 def sprite_system(world: World, dt: float) -> None:
-    """Switches, doors, beacons and open enemies show active; enemies show their brain state."""
+    """Things that are on, open, lit or gone show active; enemies show their brain state."""
     for eid, sprite in world.query(Sprite):
         sprite.active = _active(world, eid)
         brain = world.find(eid, Brain)
@@ -34,5 +36,11 @@ def _active(world: World, eid: EntityId) -> bool:
     brain = world.find(eid, Brain)
     if brain is not None and brain.state in KINDS[brain.kind].open:
         return True
+    crumble = world.find(eid, Crumble)
+    if crumble is not None and crumble.state == "gone":
+        return True
     beacon = world.find(eid, Beacon)
-    return beacon is not None and beacon.lit
+    if beacon is not None:
+        return beacon.lit
+    lamp = world.find(eid, Lamp)
+    return lamp is not None and lamp.lit

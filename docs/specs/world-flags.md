@@ -1,6 +1,6 @@
 # World flags
 
-**Milestone:** M9  **Status:** ready  **Issue:** #119
+**Milestone:** M9  **Status:** done  **Issue:** #119
 
 ## Goal
 The world changes with the story without one-off code: NPCs move, doors open and things appear
@@ -43,17 +43,17 @@ or vanish after events, all decided by conditions in the level data.
 None.
 
 ## Acceptance criteria
-- [ ] An entity whose `Requires` fails or whose `Unless` holds is not spawned with its room.
-- [ ] A flag change spawns entities that now belong and despawns ones that do not, live, in
+- [x] An entity whose `Requires` fails or whose `Unless` holds is not spawned with its room.
+- [x] A flag change spawns entities that now belong and despawns ones that do not, live, in
   loaded rooms; a despawned entity's persisted state comes back with it.
-- [ ] A killed enemy stays dead and a collected pickup stays gone when flags change.
-- [ ] `has.<ability>` and `has.<item>` read the player's abilities and item counts.
-- [ ] A FlagSwitch powers its targets while its condition holds, also from an unloaded room.
-- [ ] Touching a SetFlag sets its flag, or adds to it.
-- [ ] Toggling a flag with F7, a `--flags` seed, a dialogue and a grant each make gated
+- [x] A killed enemy stays dead and a collected pickup stays gone when flags change.
+- [x] `has.<ability>` and `has.<item>` read the player's abilities and item counts.
+- [x] A FlagSwitch powers its targets while its condition holds, also from an unloaded room.
+- [x] Touching a SetFlag sets its flag, or adds to it.
+- [x] Toggling a flag with F7, a `--flags` seed, a dialogue and a grant each make gated
   entities react.
-- [ ] The validator reports a malformed condition.
-- [ ] Enemy_Yard uses each piece: meeting the Tinker opens the alcove door (FlagSwitch), his
+- [x] The validator reports a malformed condition.
+- [x] Enemy_Yard uses each piece: meeting the Tinker opens the alcove door (FlagSwitch), his
   flares bring out an ember (`has.`), and stepping into the alcove (SetFlag) takes that ember
   away (`Unless`) and lights a brazier (`Requires`).
 
