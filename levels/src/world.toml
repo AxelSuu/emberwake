@@ -110,5 +110,8 @@ cell = [12, 8]
 [rooms.Sluice]
 cell = [12, 9]
 
+[rooms.Pump_House]
+cell = [16, 9]
+
 [rooms.Lift_Lab]
 cell = [76, 2]

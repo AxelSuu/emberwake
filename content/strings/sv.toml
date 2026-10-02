@@ -290,6 +290,7 @@ square_hub = "Torget. Vila vid fyrtornet; väktaren väntar bredvid."
 square_great_lamp = "Den Stora Lampan, kall. Två kvarterslampor måste brinna först."
 trial_gate = "Prövningsdörrar. Ställ dig vid en och tryck {interact} för att köra en prövning; dina tider väntar i menyn."
 sluice_valves = "Ventiler tömmer kanalerna för gott. Tryck {interact} vid en."
+pump_twist = "Pumpdörren vill ha tyngd på plattan och ljus på linsen, båda på en gång."
 
 [echo]
 lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."

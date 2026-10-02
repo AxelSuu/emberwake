@@ -1,0 +1,25 @@
+# Pump_House, cell [16, 9] 2x1. West (col 0, rows 5 to 7, floor row 8) is the Sluice's east.
+# Door d needs both: crate c on plate p and light on the lens o, which sits in the spikes too far
+# from the rim for the lantern, so a flare it is. Behind it, Quarter Lamp B and an Oil Flask.
+fields = { Backdrop = "cavern" }
+
+[entities.p]
+type = "PressurePlate"
+fields = { Targets = ["d"] }
+[entities.c]
+type = "PushCrate"
+[entities.o]
+type = "Photocell"
+fields = { Targets = ["d"] }
+[entities.d]
+type = "Door"
+fields = { Mode = "all" }
+[entities.B]
+type = "Beacon"
+fields = { Flag = "lamp_b" }
+[entities.g]
+type = "Grant"
+fields = { Thing = "oil_flask" }
+[entities.s]
+type = "Signpost"
+fields = { Text = "pump_twist" }
