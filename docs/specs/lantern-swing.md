@@ -25,7 +25,8 @@ windup, hitstop on contact) and never cost movement control.
   `recoil` px/s. Once per swing.
 - **Struck**: every entity with `Strikeable` in the hitbox gets one `Struck` event per swing,
   so lamps, braziers, breakables and bells react without the swing knowing them. A bouncy
-  strikeable pogos like an enemy.
+  strikeable pogos like an enemy. For that tick its `Strikeable.struck` holds the direction, so
+  systems after `strike_system` can react without subscribing.
 - **Juice** (scene): `hitstop` ticks and `trauma` on an enemy hit, sparks, a white flash on the
   enemy, the lantern's light arcing with the swing, and a swish sound.
 
