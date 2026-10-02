@@ -47,6 +47,16 @@ hitstop = 2
 trauma = 0.12
 stagger = 0.25
 
+[breakables]
+crumble_delay = 0.5
+crumble_return = 2.0
+ember_speed = [60.0, 140.0]
+ember_gravity = 600.0
+ember_settle = 0.4
+ember_pull = 240.0
+hitstop = 3
+trauma = 0.15
+
 [camera]
 deadzone = [24, 40]
 smoothing = 7.0
