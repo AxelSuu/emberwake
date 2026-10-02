@@ -39725,6 +39725,100 @@
 									"realEditorValues": []
 								}
 							]
+						},
+						{
+							"__identifier": "SetFlag",
+							"__grid": [
+								10,
+								43
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#8FF8E2",
+							"__worldX": 2728,
+							"__worldY": 1040,
+							"iid": "7031a648-a1d7-5085-b423-1dace9d32544",
+							"width": 80,
+							"height": 16,
+							"defUid": 75,
+							"px": [
+								168,
+								688
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Flag",
+									"__type": "String",
+									"__value": "quill_stage",
+									"__tile": null,
+									"defUid": 70,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"quill_stage"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Value",
+									"__type": "Int",
+									"__value": 1,
+									"__tile": null,
+									"defUid": 71,
+									"realEditorValues": [
+										{
+											"id": "V_Int",
+											"params": [
+												1
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Mode",
+									"__type": "String",
+									"__value": "set",
+									"__tile": null,
+									"defUid": 72,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"set"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 73,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": "quill_stage>=1",
+									"__tile": null,
+									"defUid": 74,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"quill_stage>=1"
+											]
+										}
+									]
+								}
+							]
 						}
 					]
 				},
