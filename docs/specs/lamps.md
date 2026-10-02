@@ -1,6 +1,6 @@
 # Lamps
 
-**Milestone:** M9  **Status:** ready  **Issue:** #121
+**Milestone:** M9  **Status:** done  **Issue:** #121
 
 ## Goal
 Lamp posts are the player's mark on the streets: swing at a dead one and it burns, and it
@@ -49,18 +49,18 @@ beyond saving and the Belfry can threaten what the player lit.
 | wisp_snuff_reach | 10 | px from a lamp's centre at which it snuffs it |
 
 ## Acceptance criteria
-- [ ] Swinging at an unlit lamp lights it and it lights its surroundings; a lit lamp does
+- [x] Swinging at an unlit lamp lights it and it lights its surroundings; a lit lamp does
   nothing more.
-- [ ] A lit lamp is lit after its room unloads and reloads, and after quitting and continuing;
+- [x] A lit lamp is lit after its room unloads and reloads, and after quitting and continuing;
   a snuffed one stays dark.
-- [ ] A lit lamp under a lit beacon is protected, whichever was lit first, including a beacon in
+- [x] A lit lamp under a lit beacon is protected, whichever was lit first, including a beacon in
   another room; one with no beacon, or an unlit one, is not.
-- [ ] A Wisp-eater flies to the nearest lit, unprotected lamp and snuffs it; a protected lamp is
+- [x] A Wisp-eater flies to the nearest lit, unprotected lamp and snuffs it; a protected lamp is
   left alone; the player in sight still draws it off.
-- [ ] Lit lamps count in the area's light %, from the saved state when the room is not loaded,
+- [x] Lit lamps count in the area's light %, from the saved state when the room is not loaded,
   and the banner shows the new percent when one is lit or snuffed.
-- [ ] The validator rejects a lamp whose `Beacon` is not a beacon.
-- [ ] `Lamp_Lab` has lamps, a beacon and a Wisp-eater to try all of it with `--room`.
+- [x] The validator rejects a lamp whose `Beacon` is not a beacon.
+- [x] `Lamp_Lab` has lamps, a beacon and a Wisp-eater to try all of it with `--room`.
 
 ## Tests
 `tests/unit/game/test_lamps.py` drives the lamp system and the Wisp-eater on a small world;
