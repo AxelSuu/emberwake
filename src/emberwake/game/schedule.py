@@ -8,7 +8,7 @@ from emberwake.game.cinder import cinder_system
 from emberwake.game.combat import combat_system
 from emberwake.game.dialogue import npc_system
 from emberwake.game.enemies import enemy_system
-from emberwake.game.flags import gate_system
+from emberwake.game.flags import flag_system, gate_system
 from emberwake.game.flares import flare_system
 from emberwake.game.grants import grant_system
 from emberwake.game.interact import interact_system, pickup_system, plate_system, trigger_system
@@ -25,6 +25,7 @@ PHASES = ("input", "logic", "physics", "post", "camera", "render_prep")
 POST = (
     room_system,
     trigger_system,
+    flag_system,
     cinder_system,
     plate_system,
     pickup_system,
@@ -39,7 +40,7 @@ POST = (
     signal_system,
     door_system,
 )
-"""In order: rooms may spawn or despawn, then contacts, combat and what the swing struck,
+"""In order: rooms may spawn or despawn, then contacts and flags, combat and what the swing struck,
 the world's gates once the facts settle, signals, what signals drive."""
 
 

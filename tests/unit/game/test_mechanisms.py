@@ -19,6 +19,7 @@ from emberwake.engine.world.spawning import Identity, Spawner, WorldState
 from emberwake.game import paths
 from emberwake.game.actions import Action
 from emberwake.game.beacons import Beacon, BeaconLit, beacon_system
+from emberwake.game.flags import Facts
 from emberwake.game.interact import (
     Collected,
     Interactable,
@@ -78,6 +79,7 @@ class Rig:
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
         self.world.insert_resource(PlayerTuning())
+        self.world.insert_resource(Facts({}, [], {}))
         self.world.insert_resource(Wiring.from_levels(project.levels, PREFABS))
         self.spawner.spawn_room(self.grid.rooms[0])
         self.body = Body(0, FEET - 20, 10, 20)

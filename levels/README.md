@@ -66,6 +66,8 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | Beacon | Interact to relight: saves, refills the dash and becomes the continue point |
 | Ember | Collectible |
 | Grant | Touch to receive an ability or item (`Thing`, a key of `content/grants.toml`, and `Count`) |
+| FlagSwitch | Not drawn: powers its `Targets` while its `Condition` holds, also while its room is unloaded |
+| SetFlag | Invisible zone: stepping in sets `Flag` to `Value`, or adds it with `Mode = "add"` |
 
 ## Level fields
 

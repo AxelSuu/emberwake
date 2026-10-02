@@ -9,11 +9,14 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Literal
 
 from emberwake.engine.core.dialogue import DialogueError, holds
+from emberwake.engine.ecs import component
 from emberwake.engine.world.rooms import RoomStreamer
 from emberwake.engine.world.spawning import Spawner
+from emberwake.game.interact import Trigger
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -25,6 +28,26 @@ log = logging.getLogger(__name__)
 
 HAS = "has."
 REQUIRES, UNLESS = "Requires", "Unless"
+
+
+@component
+@dataclass(slots=True)
+class FlagSwitch:
+    """A signal source that is on while its condition holds; `Wiring` evaluates it."""
+
+    condition: str = ""
+    targets: list[str] = field(default_factory=list)
+
+
+@component
+@dataclass(slots=True)
+class SetFlag:
+    """Set or increment a save flag the first time the player enters its trigger."""
+
+    flag: str = ""
+    value: int = 1
+    mode: Literal["set", "add"] = "set"
+    fired: bool = False
 
 
 class Facts(Mapping[str, int]):
@@ -84,9 +107,27 @@ def admits(entity: EntityInstance, facts: Mapping[str, int]) -> bool:
         return False
 
 
+def holds_safely(condition: str, facts: Mapping[str, int]) -> bool:
+    """Whether `condition` holds; a malformed one never does."""
+    try:
+        return holds(condition, facts)
+    except DialogueError:
+        return False
+
+
 def gate_system(world: World, dt: float) -> None:
     """When the facts change, gated entities of loaded rooms come and go."""
     if world.resource(Facts).changed():
         spawner = world.resource(Spawner)
         for room in world.resource(RoomStreamer).loaded.values():
             spawner.regate(room)
+
+
+def flag_system(world: World, dt: float) -> None:
+    """Apply SetFlag zones the player has stepped into."""
+    flags = world.resource(Facts).flags
+    for _, trigger, zone in world.query(Trigger, SetFlag):
+        if trigger.inside and not zone.fired and zone.flag:
+            base = flags.get(zone.flag, 0) if zone.mode == "add" else 0
+            flags[zone.flag] = base + zone.value
+        zone.fired = trigger.inside

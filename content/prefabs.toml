@@ -83,3 +83,14 @@ Npc = { dialogue = "tinker" }
 [goal.components]
 Sprite = { image = "goal" }
 Goal = {}
+
+[flag_switch]
+fields = { Condition = "FlagSwitch.condition", Targets = "FlagSwitch.targets" }
+[flag_switch.components]
+FlagSwitch = {}
+
+[set_flag]
+fields = { Flag = "SetFlag.flag", Value = "SetFlag.value", Mode = "SetFlag.mode" }
+[set_flag.components]
+Trigger = {}
+SetFlag = {}
