@@ -590,7 +590,10 @@ class GameplayScene(Scene):
     def _entry_point(
         self, room: str, near: tuple[float, float] | None = None
     ) -> tuple[float, float]:
-        """The room's PlayerStart nearest to `near` (feet, world px), or `near` if it has none."""
+        """The room's PlayerStart nearest to `near` (feet, world px), or `near` if it has none.
+
+        Without `near` it is the lowest one (leftmost on a tie): a room's start is its floor.
+        """
         level = self.rooms.graph.levels[room]
         starts = [
             (level.world_x + start.px[0], level.world_y + start.px[1])
@@ -598,7 +601,7 @@ class GameplayScene(Scene):
         ]
         if near is None:
             rect = self.rooms.graph.rects[room]
-            return starts[0] if starts else (rect.centerx, rect.centery)
+            return min(starts, key=lambda p: (-p[1], p[0])) if starts else rect.center
         if not starts:
             return near
         return min(starts, key=lambda p: (p[0] - near[0]) ** 2 + (p[1] - near[1]) ** 2)

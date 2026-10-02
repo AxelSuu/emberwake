@@ -84,6 +84,12 @@ the Plate Room is 2x1 and the Photocell Gallery 3x3, its top opening into the Sq
 | Plate_Room | [5, 12] | 2x1 | | Cistern_Gate | [10, 10] | 2x1 |
 | Photocell_Gallery | [7, 10] | 3x3 | | Cistern | [10, 11] | 3x2 |
 
+Built passages (tile rows within each room, floor-level so rooms can be matched): Wake to Well
+Climb at Wake cols 27 to 31 (Well Climb cols 7 to 11); Well Climb to Lamp Row at rows 4 to 8 of
+the east edge, the shared part being rows 6 to 8; Lamp Row to Tinker's Nook at rows 6 to 8 of
+Lamp Row's east wall (floor at row 9), which Tinkers_Nook must open on its west edge at the same
+rows with its floor at row 9; Well Climb to Old Guild at rows 19 and 20, behind a cracked wall.
+
 Codes are the rooms' initials (CF Clock Face, CS Clocktower Stair, PR Plate Room, PG Photocell
 Gallery, CI Cistern, CG Cistern Gate). Only touching edges can connect; every other shared edge stays a wall.
 

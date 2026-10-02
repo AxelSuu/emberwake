@@ -1,0 +1,22 @@
+# Passages: west into Well_Climb at rows 6 to 8 of its east edge, east into Tinkers_Nook at rows
+# 6 to 8 of the east wall (the bottom three tiles above the floor, which is row 9). Tinkers_Nook
+# opens the same rows on its west edge, with its floor at row 9 too.
+fields = { Backdrop = "ruins" }
+
+[entities.a]
+type = "Lamp"
+[entities.b]
+type = "Lamp"
+[entities.c]
+type = "Lamp"
+[entities.d]
+type = "Lamp"
+
+[entities.r]
+type = "Clockrat"
+
+[entities.e]
+type = "Ember"
+
+[entities.o]
+type = "Pot"
