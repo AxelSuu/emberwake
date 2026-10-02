@@ -36,6 +36,15 @@ Sprite = { image = "beacon", active_image = "beacon_lit" }
 Interactable = { prompt = "relight" }
 Beacon = {}
 
+[lamp]
+fields = { Beacon = "Shelter.beacon" }
+persist = ["Lamp"]
+[lamp.components]
+Sprite = { image = "lamp", active_image = "lamp_lit" }
+Strikeable = {}
+Lamp = {}
+Shelter = {}
+
 [ember]
 fields = { Value = "Pickup.value" }
 [ember.components]
@@ -102,3 +111,14 @@ Npc = { dialogue = "tinker" }
 [goal.components]
 Sprite = { image = "goal" }
 Goal = {}
+
+[flag_switch]
+fields = { Condition = "FlagSwitch.condition", Targets = "FlagSwitch.targets" }
+[flag_switch.components]
+FlagSwitch = {}
+
+[set_flag]
+fields = { Flag = "SetFlag.flag", Value = "SetFlag.value", Mode = "SetFlag.mode" }
+[set_flag.components]
+Trigger = {}
+SetFlag = {}

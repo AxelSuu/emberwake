@@ -263,6 +263,23 @@ class EntityArt:
         image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.top + 1, 2, 3))
 
     @staticmethod
+    def _lamp(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 1, rect.top + 7, 2, rect.height - 7))
+        image.fill(ROCK_EDGE, (rect.centerx - 4, rect.bottom - 2, 8, 2))
+        image.fill(LANTERN_FRAME, (rect.centerx - 4, rect.top + 3, 8, 1))
+        image.fill(ROCK, (rect.centerx - 3, rect.top + 4, 6, 4))
+        image.fill(LANTERN_FRAME, (rect.centerx - 3, rect.top + 1, 6, 2))
+
+    @staticmethod
+    def _lamp_lit(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(ROCK_EDGE, (rect.centerx - 1, rect.top + 7, 2, rect.height - 7))
+        image.fill(ROCK_EDGE, (rect.centerx - 4, rect.bottom - 2, 8, 2))
+        image.fill(LANTERN_FRAME, (rect.centerx - 4, rect.top + 3, 8, 1))
+        image.fill(palette.EMBER_WARM, (rect.centerx - 3, rect.top + 4, 6, 4))
+        image.fill(palette.EMBER_CORE, (rect.centerx - 1, rect.top + 5, 2, 2))
+        image.fill(LANTERN_FRAME, (rect.centerx - 3, rect.top + 1, 6, 2))
+
+    @staticmethod
     def _lightform(image: pygame.Surface, rect: pygame.Rect) -> None:
         for x in range(rect.left, rect.right, 4):
             image.fill(ROCK_EDGE, (x, rect.top, 2, 1))

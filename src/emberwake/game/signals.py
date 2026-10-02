@@ -11,6 +11,7 @@ from emberwake.engine.ecs import component
 from emberwake.engine.physics import Body, Tile
 from emberwake.engine.world.rooms import WorldGrid
 from emberwake.engine.world.spawning import Identity, Spawner, prefab_name
+from emberwake.game.flags import Facts, holds_safely
 from emberwake.game.interact import Switch, overlap, player_body
 
 if TYPE_CHECKING:
@@ -20,7 +21,8 @@ if TYPE_CHECKING:
     from emberwake.engine.ecs.prefabs import Prefab
     from emberwake.engine.world.ldtk import Level
 
-TARGETS = "Switch.targets"
+TARGETS = ("Switch.targets", "FlagSwitch.targets")
+CONDITION = "FlagSwitch.condition"
 
 
 @component
@@ -42,27 +44,36 @@ class Wiring:
     """Every receiver's sources across the whole world, so unloaded switches still count."""
 
     sources: dict[str, list[str]] = field(default_factory=dict)
+    conditions: dict[str, str] = field(default_factory=dict)
+    """FlagSwitch iid -> its condition; they are read from the level, never from saved state."""
 
     @classmethod
     def from_levels(cls, levels: Iterable[Level], prefabs: Mapping[str, Prefab]) -> Wiring:
         sources: defaultdict[str, list[str]] = defaultdict(list)
+        conditions: dict[str, str] = {}
         for level in levels:
             for entity in level.entities():
                 prefab = prefabs.get(prefab_name(entity.identifier))
                 if prefab is None:
                     continue
-                names = [name for name, target in prefab.fields.items() if target == TARGETS]
-                for name in names:
-                    for target in entity.values().get(name) or []:
-                        sources[target].append(entity.iid)
-        return cls({target: sorted(iids) for target, iids in sources.items()})
+                values = entity.values()
+                for name, target in prefab.fields.items():
+                    if target in TARGETS:
+                        for receiver in values.get(name) or []:
+                            sources[receiver].append(entity.iid)
+                    elif target == CONDITION:
+                        conditions[entity.iid] = values.get(name) or ""
+        wired = {target: sorted(iids) for target, iids in sources.items()}
+        return cls(wired, conditions)
 
 
 def signal_system(world: World, dt: float) -> None:
     """Power receivers from their sources, one pass in iid order."""
-    wiring, spawner = world.resource(Wiring), world.resource(Spawner)
+    wiring, spawner, facts = world.resource(Wiring), world.resource(Spawner), world.resource(Facts)
 
     def on(iid: str) -> bool:
+        if iid in wiring.conditions:
+            return holds_safely(wiring.conditions[iid], facts)
         eid = spawner.resolve(iid)
         if eid is not None:
             switch = world.find(eid, Switch)

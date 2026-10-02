@@ -5,9 +5,11 @@ from emberwake.engine.core.events import EventBus
 from emberwake.engine.ecs import EntityId, World
 from emberwake.engine.physics import Body, Tile, TileGrid
 from emberwake.engine.world.rooms import WorldGrid
+from emberwake.engine.world.spawning import Identity
 from emberwake.game.beacons import Beacon
 from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team, combat_system
 from emberwake.game.enemies import Brain, EnemyTuning, enemy_system
+from emberwake.game.lamps import Lamp, LampSnuffed
 from emberwake.game.light import LightSource, LightTuning
 from emberwake.game.player.controller import Motor
 
@@ -203,6 +205,70 @@ def test_wisp_eater_swoops_then_retreats_home() -> None:
     far = away()
     yard.tick(0.5)
     assert away() < far
+
+
+def lamp(yard: Yard, x: float, **fields: bool) -> EntityId:
+    identity = Identity(f"lamp{x}", "Room", "lamp")
+    eid = yard.world.spawn(Body(x, 100, 16, 32), identity, Lamp(**fields))
+    yard.world.flush()
+    return eid
+
+
+def test_wisp_eater_hunts_a_lit_lamp_and_snuffs_it() -> None:
+    yard = Yard()
+    snuffed: list[LampSnuffed] = []
+    yard.bus.subscribe(LampSnuffed, snuffed.append)
+    wisp = yard.enemy("wisp_eater", 100, y=40)
+    target = lamp(yard, 200, lit=True)
+    yard.tick(0.1)
+    assert yard.brain(wisp).state == "hunt"
+    yard.tick(3.0)
+    assert not yard.world.get(target, Lamp).lit
+    assert [event.iid for event in snuffed] == ["lamp200"]
+    assert yard.brain(wisp).state in ("retreat", "hover")
+
+
+def test_wisp_eater_goes_for_the_nearest_lamp_first() -> None:
+    yard = Yard()
+    yard.enemy("wisp_eater", 100, y=40)
+    far = lamp(yard, 230, lit=True)
+    near = lamp(yard, 160, lit=True)
+    yard.tick(2.0)
+    assert not yard.world.get(near, Lamp).lit
+    assert yard.world.get(far, Lamp).lit
+
+
+def test_wisp_eater_leaves_protected_and_dark_lamps() -> None:
+    yard = Yard()
+    wisp = yard.enemy("wisp_eater", 100, y=40)
+    held = lamp(yard, 160, lit=True, protected=True)
+    dark = lamp(yard, 190)
+    yard.tick(3.0)
+    assert yard.world.get(held, Lamp).lit
+    assert not yard.world.get(dark, Lamp).lit
+    assert yard.brain(wisp).state == "hover"
+
+
+def test_wisp_eater_gives_up_a_hunt_when_the_lamp_is_protected() -> None:
+    yard = Yard()
+    wisp = yard.enemy("wisp_eater", 100, y=40)
+    target = lamp(yard, 210, lit=True)
+    yard.tick(0.2)
+    assert yard.brain(wisp).state == "hunt"
+    yard.world.get(target, Lamp).protected = True
+    yard.tick(0.1)
+    assert yard.brain(wisp).state == "hover"
+    yard.tick(3.0)
+    assert yard.world.get(target, Lamp).lit
+
+
+def test_wisp_eater_prefers_the_player_in_sight_to_a_lamp() -> None:
+    yard = Yard()
+    wisp = yard.enemy("wisp_eater", 100, y=60)
+    lamp(yard, 150, lit=True)
+    yard.player(130, 100)
+    yard.tick(0.1)
+    assert yard.brain(wisp).state == "swoop"
 
 
 def test_dead_enemies_are_removed() -> None:

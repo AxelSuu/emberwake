@@ -33,3 +33,6 @@ cell = [0, 8]
 
 [rooms.Signal_Lab]
 cell = [60, 0]
+
+[rooms.Lamp_Lab]
+cell = [0, 10]
