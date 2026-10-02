@@ -77,6 +77,8 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | Pot | Not solid; breaks like a crate |
 | CrumblingPlatform | One-way; clears 0.5 s after the player lands on it and returns 2 s later |
 | Hesper, Quill | NPCs ([spec](../docs/specs/npcs.md)); gate each spot with `Requires`/`Unless` on `hesper_stage` or `quill_stage`. `--room Npc_Lab` has every spot |
+| Encounter | Arena zone: the player's body in it shuts its `Doors` (open unless it runs; `Mode` and `Invert` are ignored) and starts the waves; clearing it powers its `Targets`, for good ([spec](../docs/specs/encounters.md)) |
+| WaveSpawn | Where an enemy of `Kind` (an enemy prefab) appears in `Wave` (from 1, no gaps) of the `Encounter` (a ref, same room). Markers cannot sit inside a zone, so leave a row free |
 | Grant | Touch to receive an ability or item (`Thing`, a key of `content/grants.toml`, and `Count`) |
 | FlagSwitch | Not drawn: powers its `Targets` while its `Condition` holds, also while its room is unloaded |
 | SetFlag | Invisible zone: stepping in sets `Flag` to `Value`, or adds it with `Mode = "add"` |

@@ -1,6 +1,6 @@
 # Encounters
 
-**Milestone:** M9  **Status:** draft  **Issue:** #126
+**Milestone:** M9  **Status:** done  **Issue:** #126
 
 ## Goal
 A fight with a beginning and an end: stepping into an arena shuts its doors, waves of enemies
@@ -18,7 +18,9 @@ guards. A cleared arena stays cleared.
 - Waves are numbered from 1 without gaps; every Encounter has at least one WaveSpawn in wave 1.
 
 ### States
-- **idle**: nothing happens until the player's centre is inside the zone.
+- **idle**: nothing happens until the player's body overlaps the zone. (A zone is a rectangle
+  and markers cannot sit inside one, so a zone leaves the spawn row free; the player's 20 px
+  body standing on that row still overlaps it.)
 - **active**: the Encounter shuts its Doors (a Door closes once the player is out of the
   doorway), publishes `EncounterStarted` and spawns wave 1. When every enemy of the current wave
   is gone it waits `wave_delay` seconds and spawns the next wave. When the last wave is gone it
@@ -60,20 +62,20 @@ puff at the marker. There is no art of its own: markers and zones are not drawn.
 | trauma | 0.2 | screen shake on start and on clear |
 
 ## Acceptance criteria
-- [ ] Entering the zone starts the Encounter: Doors close, wave 1 spawns at its markers.
-- [ ] A wave's enemies are of the `Kind` of their marker; the next wave comes `wave_delay`
+- [x] Entering the zone starts the Encounter: Doors close, wave 1 spawns at its markers.
+- [x] A wave's enemies are of the `Kind` of their marker; the next wave comes `wave_delay`
   after the last of the previous one dies, and not before.
-- [ ] Killing the last wave clears it: Doors open and its Targets are powered.
-- [ ] A cleared Encounter stays cleared after a room reload, resting, and quit and continue,
+- [x] Killing the last wave clears it: Doors open and its Targets are powered.
+- [x] A cleared Encounter stays cleared after a room reload, resting, and quit and continue,
   and keeps powering its Targets while its room is unloaded.
-- [ ] Dying mid-fight, leaving the zone for `leave_grace` seconds or unloading the room resets
+- [x] Dying mid-fight, leaving the zone for `leave_grace` seconds or unloading the room resets
   it: wave enemies are gone, Doors open, nothing is saved, and it can start again.
-- [ ] A Clockrat King works as a wave enemy and its rats go with it.
-- [ ] Wave enemies are not saved, and a wave King is not retired when killed.
-- [ ] The world validator rejects a WaveSpawn without a valid Encounter or Kind, gaps in the wave
+- [x] A Clockrat King works as a wave enemy and its rats go with it.
+- [x] Wave enemies are not saved, and a wave King is not retired when killed.
+- [x] The world validator rejects a WaveSpawn without a valid Encounter or Kind, gaps in the wave
   numbers, an Encounter without a first wave, and Doors or Targets that do not exist; the
   walker treats a locked Door as passable.
-- [ ] `Arena_Lab` (a lab room) holds an Encounter of two waves, a Door and a reward, and can be
+- [x] `Arena_Lab` (a lab room) holds an Encounter of two waves, a Door and a reward, and can be
   reached with `--room Arena_Lab`.
 
 ## Tests
