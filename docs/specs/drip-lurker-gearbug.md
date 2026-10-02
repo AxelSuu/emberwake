@@ -1,6 +1,6 @@
 # Drip Lurker and Gearbug
 
-**Milestone:** M9  **Status:** ready  **Issue:** #129
+**Milestone:** M9  **Status:** done  **Issue:** #129
 
 ## Goal
 Two Quarter enemies that make the player use light and the swing on purpose. The Drip Lurker
@@ -70,18 +70,18 @@ Placed on the tile row under a ceiling; where it starts is its home.
 | gearbug_vent | 1.5 | seconds open |
 
 ## Acceptance criteria
-- [ ] A Drip Lurker above a dark spot with the player below drops after the warn time, lands,
+- [x] A Drip Lurker above a dark spot with the player below drops after the warn time, lands,
   stays `lurker_ground_time`, then climbs back and hangs again.
-- [ ] It does not drop while its spot is lit by a beacon, brazier or flare, and retracts if lit
+- [x] It does not drop while its spot is lit by a beacon, brazier or flare, and retracts if lit
   during the warn or while on the ground; the player's lantern does not count.
-- [ ] A retracted lurker neither hurts nor takes hits; a swing at it clangs.
-- [ ] A swing that hits a hanging lurker makes it drop; it takes the hit.
-- [ ] A forward swing at a Gearbug's front takes no health, does not stagger it and recoils the
+- [x] A retracted lurker neither hurts nor takes hits; a swing at it clangs.
+- [x] A swing that hits a hanging lurker makes it drop; it takes the hit.
+- [x] A forward swing at a Gearbug's front takes no health, does not stagger it and recoils the
   player; from behind it hurts.
-- [ ] While it vents, a swing from the front hurts it; a down swing onto it always does and
+- [x] While it vents, a swing from the front hurts it; a down swing onto it always does and
   pogoes the player.
-- [ ] The Gearbug walks, hisses, vents and walks again on its cycle, turning at walls and ledges.
-- [ ] Both are in `Enemy_Gallery` (a lab room) and can be reached with `--room Enemy_Gallery`.
+- [x] The Gearbug walks, hisses, vents and walks again on its cycle, turning at walls and ledges.
+- [x] Both are in `Enemy_Gallery` (a lab room) and can be reached with `--room Enemy_Gallery`.
 
 ## Tests
 Unit tests drive `enemy_system`, `combat_system` and `strike_system` on a small room (the
