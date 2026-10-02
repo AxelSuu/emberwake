@@ -89,12 +89,13 @@ class Hud:
         self.embers_left = 0.0
         self.embers: int | None = None
         self.banner_text = ""
+        self.banner_sub = ""
         self.banner_left = 0.0
         self.hidden = False
 
-    def banner(self, text: str) -> None:
-        """Show `text` at the top of the screen for a moment."""
-        self.banner_text, self.banner_left = text, BANNER_SHOWN
+    def banner(self, text: str, sub: str = "") -> None:
+        """Show `text`, and `sub` under it, at the top of the screen for a moment."""
+        self.banner_text, self.banner_sub, self.banner_left = text, sub, BANNER_SHOWN
 
     def update(self, dt: float) -> None:
         self.clock += dt
@@ -163,6 +164,10 @@ class Hud:
         line.fill((*_HOT[:3], round(160 * alpha)))
         canvas.blit(text, rect)
         canvas.blit(line, (rect.x - 12, rect.bottom + 2))
+        if self.banner_sub:
+            sub = font.render(self.banner_sub, False, _HOT)
+            sub.set_alpha(round(255 * alpha))
+            canvas.blit(sub, sub.get_rect(midtop=(rect.centerx, rect.bottom + 5)))
 
     def _get_font(self) -> pygame.font.Font:
         if self._font is None:

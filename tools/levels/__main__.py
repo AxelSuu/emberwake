@@ -18,6 +18,7 @@ from tools.levels.ldtk import build_project
 from tools.levels.source import SourceError, load_source
 from tools.levels.validate import validate
 
+from emberwake.engine.core.i18n import flatten
 from emberwake.engine.ecs.prefabs import load_prefabs
 from emberwake.engine.world.ldtk import load_project
 from emberwake.game.areas import load_areas
@@ -42,9 +43,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     check.add_argument("--prefabs", type=Path, default=ROOT / "content/prefabs.toml")
     check.add_argument("--backdrops", type=Path, default=ROOT / "content/backdrops.toml")
     check.add_argument("--areas", type=Path, default=ROOT / "content/areas.toml")
+    check.add_argument("--strings", type=Path, default=ROOT / "content/strings/en.toml")
     args = parser.parse_args(argv)
     if args.command == "validate":
-        return _validate(args.world, args.prefabs, args.backdrops, args.areas)
+        return _validate(args.world, args.prefabs, args.backdrops, args.areas, args.strings)
 
     out: Path = args.out
     if out.exists() and not (args.merge or args.force):
@@ -64,10 +66,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 0
 
 
-def _validate(world: Path, prefabs: Path, backdrops: Path, areas: Path) -> int:
+def _validate(world: Path, prefabs: Path, backdrops: Path, areas: Path, strings: Path) -> int:
     presets = tomllib.loads(backdrops.read_text(encoding="utf-8"))
     project, loaded = load_project(world), load_prefabs(prefabs)
-    problems = validate(project, loaded, backdrops=presets, areas=load_areas(areas))
+    names = flatten(tomllib.loads(strings.read_text(encoding="utf-8")))
+    problems = validate(project, loaded, backdrops=presets, areas=load_areas(areas), strings=names)
     for problem in problems:
         print(f"error: {problem}", file=sys.stderr)
     if not problems:

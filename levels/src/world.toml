@@ -32,7 +32,16 @@ cell = [0, 6]
 cell = [0, 8]
 
 [rooms.Enemy_Gallery]
-cell = [3, 4]
+cell = [66, 0]
+
+[rooms.Break_Lab]
+cell = [63, 0]
+
+[rooms.Signal_Lab]
+cell = [60, 0]
+
+[rooms.Lamp_Lab]
+cell = [0, 10]
 
 [rooms.King_Lab]
-cell = [6, 6]
+cell = [69, 0]
