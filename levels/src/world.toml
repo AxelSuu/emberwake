@@ -51,3 +51,6 @@ cell = [72, 0]
 
 [rooms.Lore_Hall]
 cell = [75, 0]
+
+[rooms.Arena_Lab]
+cell = [70, 2]

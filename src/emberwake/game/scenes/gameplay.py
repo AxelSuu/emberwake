@@ -57,6 +57,7 @@ from emberwake.game.cosmetics import Cosmetics, load_cosmetics
 from emberwake.game.data.records import RunResult, format_time, load_records, save_records, unlock
 from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
+from emberwake.game.encounters import EncounterCleared, EncounterStarted
 from emberwake.game.enemies import KINDS, Brain, Summoned, Toppled, Vented
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.flags import Facts, admits, flags_in
@@ -280,6 +281,7 @@ class GameplayScene(Scene):
             feel.swing,
             feel.switches,
             feel.breakables,
+            feel.encounters,
         )
         for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
@@ -329,6 +331,8 @@ class GameplayScene(Scene):
             bus.subscribe(Vented, self._on_vented),
             bus.subscribe(Summoned, self._on_summoned),
             bus.subscribe(Toppled, self._on_toppled),
+            bus.subscribe(EncounterStarted, self._on_encounter),
+            bus.subscribe(EncounterCleared, self._on_encounter),
             bus.subscribe(Talk, self._on_talk),
             bus.subscribe(GoalReached, self._on_goal),
             bus.subscribe(TrialDoorUsed, self._on_trial_door),
@@ -626,6 +630,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.swing)
             self.world.insert_resource(feel.breakables)
             self.world.insert_resource(feel.switches)
+            self.world.insert_resource(feel.encounters)
             self.camera.retune(feel.camera)
         prefabs = self._read_prefabs()
         if prefabs is not None:
@@ -1073,6 +1078,9 @@ class GameplayScene(Scene):
         self.camera.shake.add(self.feel.juice.dash_trauma)
         if (puff := self.emitters.get("land_dust")) is not None:
             self.particles.burst(puff, event.x, event.y + 12)
+
+    def _on_encounter(self, _: EncounterStarted | EncounterCleared) -> None:
+        self.camera.shake.add(self.feel.encounters.trauma)
 
     def _on_killed(self, event: Killed) -> None:
         if event.target == self.player and not self.motor.dead:

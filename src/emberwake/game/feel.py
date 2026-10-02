@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from emberwake.engine.core.serde import from_data, to_data
 from emberwake.engine.render.camera import CameraTuning
 from emberwake.game.breakables import BreakTuning
+from emberwake.game.encounters import EncounterTuning
 from emberwake.game.enemies import EnemyTuning
 from emberwake.game.lamps import LampTuning
 from emberwake.game.light import LightTuning
@@ -52,6 +53,7 @@ class Feel:
     swing: SwingTuning = field(default_factory=SwingTuning)
     breakables: BreakTuning = field(default_factory=BreakTuning)
     switches: SwitchTuning = field(default_factory=SwitchTuning)
+    encounters: EncounterTuning = field(default_factory=EncounterTuning)
 
 
 def load_feel(path: Path) -> Feel:
