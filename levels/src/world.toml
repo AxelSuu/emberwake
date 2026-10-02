@@ -26,6 +26,9 @@ cell = [6, 8]
 [rooms.Gloom_Cellar]
 cell = [5, 9]
 
+[rooms.Lever_Hall]
+cell = [4, 10]
+
 [rooms.Upper_Room]
 cell = [68, 0]
 

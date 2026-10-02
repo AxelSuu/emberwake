@@ -1,0 +1,13 @@
+fields = { Backdrop = "cavern" }
+
+[entities.a]
+type = "Lever"
+fields = { Targets = ["b"] }
+[entities.b]
+type = "Door"
+[entities.c]
+type = "Clockrat"
+[entities.m]
+type = "Lamp"
+[entities.n]
+type = "Lamp"
