@@ -18,7 +18,7 @@ from emberwake.engine.core.dialogue import DialogueError, Graph, flags_used, loa
 from emberwake.engine.core.jobs import Jobs
 from emberwake.engine.core.serde import SerdeError
 from emberwake.engine.debug.time_control import TimeControl
-from emberwake.engine.ecs import World
+from emberwake.engine.ecs import EntityId, World
 from emberwake.engine.ecs.prefabs import Prefab, load_prefabs
 from emberwake.engine.input import InputMapper, InputState
 from emberwake.engine.input.replay import REPLAY_CODEC, Replay, ReplayPlayer, ReplayRecorder
@@ -39,11 +39,12 @@ from emberwake.engine.world.spawning import Identity, Spawner
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
 from emberwake.game.beacons import Beacon, BeaconLit, Rested
+from emberwake.game.cinder import CinderRecovered, cinder_parts
 from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
 from emberwake.game.cosmetics import Cosmetics, load_cosmetics
 from emberwake.game.data.records import RunResult, format_time, load_records
-from emberwake.game.data.save import SaveSlot, load_slot
+from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
@@ -163,7 +164,7 @@ class GameplayScene(Scene):
         self.hitstop = 0
         self.flashes: dict[int, float] = {}
         """Seconds of white flash left per entity id."""
-        self.respawn_in = 0
+        self._init_respawn()
         self.clock = 0.0
         self.show_colliders = False
         self.show_rooms = False
@@ -176,6 +177,17 @@ class GameplayScene(Scene):
         self.camera.snap(*self._camera_target())
         if self.trial is not None:
             self._begin_attempt()
+
+    def _init_respawn(self) -> None:
+        self.respawn_in = 0
+        self.to_beacon = False
+        """The coming respawn is at the last beacon (a death), not the room's entrance."""
+        self.kept: tuple[int, float] | None = None
+        """Health and flame to keep through a respawn after a hazard."""
+        self.safe = (0.0, 0.0)
+        """The last place the player stood on solid ground, for dropping the Cinder."""
+        self.cinder: EntityId | None = None
+        """The live Cinder entity, if its room is loaded."""
 
     def _init_render(self) -> None:
         self.sprite = PlayerSprite()
@@ -272,6 +284,7 @@ class GameplayScene(Scene):
             bus.subscribe(BeaconLit, self._on_beacon_lit),
             bus.subscribe(Rested, self._on_rested),
             bus.subscribe(Kindled, self._on_kindled),
+            bus.subscribe(CinderRecovered, self._on_cinder),
             bus.subscribe(FlareThrown, self._on_flare),
             bus.subscribe(FlareFizzled, self._on_fizzle),
             *self.progress.subscribe(bus),
@@ -454,9 +467,13 @@ class GameplayScene(Scene):
         self.layers[room.name] = (layer, job)
         self.jobs.add(job)
         self.spawner.spawn_room(room)
+        self._place_cinder()
 
     def _room_unloaded(self, room: Room) -> None:
         self.spawner.despawn_room(room)
+        cinder = self.progress.data.cinder
+        if cinder is not None and cinder.room == room.name:
+            self.cinder = None
         _, job = self.layers.pop(room.name)
         self.jobs.cancel(job)
 
@@ -583,17 +600,21 @@ class GameplayScene(Scene):
 
     def warp(self, room: str) -> None:
         """Move the player to `room`'s first PlayerStart, as if it had walked in (dev)."""
-        previous = self.room
         x, y = self._entry_point(room)
-        self.rooms.enter(room)
+        self._enter_room(room, (x, y))
         if not self.motor.dead:
             body, motor = self.body, self.motor
             body.x, body.y = x - body.width / 2, y - body.height
             motor.vx = motor.vy = 0.0
             motor.previous = (body.x, body.y)
-        self.ctx.bus.publish(RoomEntered(room, previous, x, y))
-        self.spawn_point = (x, y)
         self.camera.snap(*self._camera_target())
+
+    def _enter_room(self, room: str, feet: tuple[float, float]) -> None:
+        """Make `room` the active one, streaming around it; the player will stand at `feet`."""
+        previous = self.room
+        self.rooms.enter(room)
+        self.ctx.bus.publish(RoomEntered(room, previous, *feet))
+        self.spawn_point = feet
 
     def _known_flags(self) -> set[str]:
         """Flags the content reads or writes, for the flag overlay."""
@@ -646,9 +667,7 @@ class GameplayScene(Scene):
         if self.respawn_in > 0:
             self.respawn_in -= 1
             if self.respawn_in == 0:
-                self.world.add(self.player, *self._new_player())
-                if self.trial is not None:
-                    self._begin_attempt()
+                self._respawn()
         self.recorder.record(frame)
         self._assist()
         self.schedule.run(self.world, dt)
@@ -656,6 +675,8 @@ class GameplayScene(Scene):
             self.trial_time += dt
         if self.ghost is not None:
             self.ghost.update(self.grid, dt)
+        if self.motor.grounded and not self.motor.dead:
+            self.safe = (self.body.center_x, self.body.bottom)
         if not self.free_camera:
             self.camera.update(*self._camera_target(), self.motor.facing, dt)
 
@@ -696,12 +717,72 @@ class GameplayScene(Scene):
         if (sparks := self.emitters.get("swing_sparks")) is not None:
             self.particles.burst(sparks, event.x, event.y)
 
-    def _on_died(self, _: Died) -> None:
+    def _on_died(self, event: Died) -> None:
         juice = self.feel.juice
         self.hitstop = max(self.hitstop, juice.death_hitstop)
         self.camera.shake.add(juice.death_trauma)
         self.respawn_in = juice.respawn_delay
         self.trial_deaths += 1
+        self.to_beacon, self.kept = False, None
+        if self.trial is not None:
+            return
+        health, ember = self.world.find(self.player, Health), self.world.find(self.player, Ember)
+        if event.cause == "hazard" and health is not None and health.current > 1:
+            self.kept = (health.current - 1, ember.current if ember is not None else 0.0)
+            color = pygame.Color(palette.EMBER_COOL)
+            self.texts.spawn("-1", event.x, event.y - 20, (color.r, color.g, color.b))
+            return
+        self.to_beacon = True
+        self._drop_cinder()
+
+    def _respawn(self) -> None:
+        """Bring the player back: at the room's entrance after a hazard, else at the beacon."""
+        if self.to_beacon:
+            data = self.progress.data
+            room = data.room if data.room in self.rooms.graph.levels else self.room
+            self._enter_room(room, self._continue_point(room, data.beacon))
+            self.world.resource(FlareKit).fill()
+            for loaded in self.rooms.loaded.values():
+                self.spawner.spawn_room(loaded)
+        self.world.add(self.player, *self._new_player())
+        self.world.flush()
+        if self.kept is not None:
+            self.world.get(self.player, Health).current = self.kept[0]
+            self.world.get(self.player, Ember).current = self.kept[1]
+        if self.to_beacon:
+            self.camera.snap(*self._camera_target())
+        if self.trial is not None:
+            self._begin_attempt()
+
+    def _drop_cinder(self) -> None:
+        """Leave the embers carried where the player last stood; an older Cinder is lost."""
+        data = self.progress.data
+        if data.cinder is not None:
+            data.flags[SPENT] = data.flags.get(SPENT, 0) + data.cinder.embers
+            data.cinder = None
+            if self.cinder is not None:
+                self.world.despawn(self.cinder)
+                self.cinder = None
+        carried = wallet(data)
+        if carried > 0:
+            data.cinder = Cinder(self.room, *self.safe, carried)
+            self._place_cinder()
+        self.progress.save(self.spawner)
+
+    def _place_cinder(self) -> None:
+        cinder = self.progress.data.cinder
+        if cinder is None or self.cinder is not None or cinder.room not in self.rooms.loaded:
+            return
+        self.cinder = self.world.spawn(*cinder_parts(cinder))
+
+    def _on_cinder(self, event: CinderRecovered) -> None:
+        self.progress.data.cinder = None
+        self.cinder = None
+        self.ctx.audio.sfx("player/kindle")
+        if (burst := self.emitters.get("kindle")) is not None:
+            self.particles.burst(burst, event.x, event.y)
+        color = pygame.Color(palette.EMBER_HOT)
+        self.texts.spawn(f"+{event.embers}", event.x, event.y - 10, (color.r, color.g, color.b))
 
     # Rooms
 
@@ -772,7 +853,7 @@ class GameplayScene(Scene):
         if event.target == self.player and not self.motor.dead:
             self.motor.dead = True
             body = self.body
-            self.ctx.bus.publish(Died(body.center_x, body.bottom))
+            self.ctx.bus.publish(Died(body.center_x, body.bottom, cause="health"))
 
     def _on_collected(self, event: Collected) -> None:
         body, color = self.body, pygame.Color(palette.EMBER_HOT)

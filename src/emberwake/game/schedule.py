@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from emberwake.engine.ecs import Schedule
 from emberwake.game.beacons import beacon_system
+from emberwake.game.cinder import cinder_system
 from emberwake.game.combat import combat_system
 from emberwake.game.dialogue import npc_system
 from emberwake.game.enemies import enemy_system
@@ -22,6 +23,7 @@ PHASES = ("input", "logic", "physics", "post", "camera", "render_prep")
 POST = (
     room_system,
     trigger_system,
+    cinder_system,
     plate_system,
     pickup_system,
     combat_system,

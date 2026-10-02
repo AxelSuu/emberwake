@@ -46,3 +46,9 @@ def test_corrupt_slots_load_as_empty_and_are_kept():
     storage.write(slot_key(1), "{not json")
     assert load_slot(storage, 1) is None
     assert storage.read(slot_key(1) + ".corrupt") == "{not json"
+
+
+def test_v1_saves_load_without_a_cinder():
+    loaded = SAVE_CODEC.load(V1)
+    assert loaded.cinder is None
+    assert loaded.room == "Lever_Hall"

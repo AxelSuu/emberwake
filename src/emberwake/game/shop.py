@@ -39,8 +39,9 @@ def load_shop(path: Path) -> ShopData:
 
 
 def wallet(save: SaveSlot) -> int:
-    """Embers the player can still spend."""
-    return save.stats.embers - save.flags.get(SPENT, 0)
+    """Embers the player carries: collected, less spent or lost, less those in the Cinder."""
+    dropped = save.cinder.embers if save.cinder is not None else 0
+    return save.stats.embers - save.flags.get(SPENT, 0) - dropped
 
 
 def owned(save: SaveSlot, item: Item) -> int:
