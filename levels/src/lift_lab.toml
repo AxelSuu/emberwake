@@ -1,0 +1,32 @@
+fields = { Area = "lab" }
+
+[entities.l]
+type = "Lever"
+fields = { Targets = ["A"] }
+[entities.A]
+type = "Platform"
+fields = { Path = ["a"] }
+[entities.a]
+type = "PathNode"
+
+[entities.B]
+type = "Platform"
+fields = { Path = ["b"] }
+[entities.b]
+type = "PathNode"
+
+[entities.m]
+type = "Lever"
+fields = { Targets = ["C"] }
+[entities.C]
+type = "Platform"
+fields = { Path = ["c", "d"] }
+[entities.c]
+type = "PathNode"
+[entities.d]
+type = "PathNode"
+
+[entities.k]
+type = "Beacon"
+[entities.e]
+type = "Ember"
