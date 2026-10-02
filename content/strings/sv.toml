@@ -289,6 +289,7 @@ gallery_dash = "Hoppa och tryck sedan {dash} för att ta dig över spetsarna."
 square_hub = "Torget. Vila vid fyrtornet; väktaren väntar bredvid."
 square_great_lamp = "Den Stora Lampan, kall. Två kvarterslampor måste brinna först."
 trial_gate = "Prövningsdörrar. Ställ dig vid en och tryck {interact} för att köra en prövning; dina tider väntar i menyn."
+sluice_valves = "Ventiler tömmer kanalerna för gott. Tryck {interact} vid en."
 
 [echo]
 lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."

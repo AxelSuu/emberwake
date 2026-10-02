@@ -290,6 +290,7 @@ gallery_dash = "Jump, then press {dash} to cross the spikes."
 square_hub = "Market Square. Rest at the beacon; the Keeper waits beside it."
 square_great_lamp = "The Great Lamp, cold. Two Quarter Lamps must burn before it can."
 trial_gate = "Trial doors. Stand at one and press {interact} to run a Trial; your times wait in the menu."
+sluice_valves = "Valves drain the channels for good. Press {interact} at one."
 
 [echo]
 lore_hall = "I lit this lamp last. The oil ran out before the street did."
