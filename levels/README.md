@@ -81,6 +81,8 @@ and goes live as they change ([spec](../docs/specs/world-flags.md)).
 | Ember | Collectible |
 | CrackedWall | Solid until the lantern strikes it, then gone for good ([spec](../docs/specs/breakables.md)) |
 | PushCrate | A box the player pushes by walking into it; falls, stacks, can be stood on and weighs plates; saved by iid, home again after a beacon rest ([spec](../docs/specs/push-crates.md)) |
+| Platform | A solid box (default 3x1 tiles) that carries riders along its `Path`, the `PathNode` refs it visits after its home, in the same room. Wired (`Mode`, `Invert`) it is a lift: it goes to the last node while powered and back while not; unwired it loops, resting at each end. `Speed` overrides px/s. Never crushes: it holds still while something is in the way ([spec](../docs/specs/lifts.md)). `--room Lift_Lab` has a lever lift, a loop over spikes and a two-node lift |
+| PathNode | A stop on a Platform's `Path`: the platform's top-left corner goes here. Not drawn, not solid |
 | Crate | Solid; breaks for good when struck and flings `Embers` loose embers |
 | Pot | Not solid; breaks like a crate |
 | CrumblingPlatform | One-way; clears 0.5 s after the player lands on it and returns 2 s later |

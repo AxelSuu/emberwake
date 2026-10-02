@@ -180,7 +180,19 @@ persist = ["CrateRest"]
 Sprite = { image = "push_crate" }
 PushCrate = {}
 CrateRest = {}
+Rider = {}
 Weight = {}
+
+[platform]
+fields = { Path = "Platform.path", Speed = "Platform.speed", Mode = "Receiver.mode", Invert = "Receiver.invert" }
+persist = ["PlatformRest"]
+[platform.components]
+Sprite = { image = "platform" }
+Receiver = {}
+Platform = {}
+PlatformRest = {}
+
+[path_node]
 
 [pot]
 fields = { Embers = "Breakable.embers" }

@@ -10,6 +10,7 @@ from emberwake.engine.physics import Body, TileSource
 from emberwake.game.combat import Knockback
 from emberwake.game.crates import crate_solids
 from emberwake.game.grants import Loadout
+from emberwake.game.platforms import platform_solids
 from emberwake.game.player.controller import Motor, step
 from emberwake.game.player.tuning import PlayerTuning
 
@@ -22,7 +23,7 @@ def player_system(world: World, dt: float) -> None:
     grid = world.resource(TileSource)
     tuning = world.resource(PlayerTuning)
     bus = world.resource(EventBus)
-    solids = crate_solids(world)
+    solids = [*crate_solids(world), *platform_solids(world)]
     can_dash = not world.has_resource(Loadout) or world.resource(Loadout).has("dash")
     for eid, body, motor in list(world.query(Body, Motor)):
         if world.has(eid, Knockback):

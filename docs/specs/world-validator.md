@@ -10,7 +10,8 @@ flag nobody sets fails `just check` instead of surfacing in playtests.
 Part of `tools.levels validate`. Pure functions over the loaded levels and the content files
 (`grants.toml`, `dialogue.toml`, `shop.toml`, `trials.toml`); no pygame, a fraction of a second.
 
-- **Wiring.** Every entity ref in a `Targets` field names an entity that exists in some level.
+- **Wiring.** Every entity ref in a `Targets` field names an entity that exists in some level. A
+  Platform's `Path` is not empty and names PathNodes of its own room.
 - **Flags.** Every flag a `Requires`, `Unless` or `Condition` reads is written somewhere: a
   SetFlag, a dialogue `set` or `add`, a shop item's flag, or a flag the game sets itself
   (`Rules.code_flags`: the Lamprey's `lamprey_drained` and `lamprey_defeated`). Every `has.<thing>` names a key of
@@ -28,6 +29,9 @@ Part of `tools.levels validate`. Pure functions over the loaded levels and the c
   - *Doors* open once their sources are available: a Lever or PressurePlate the search reaches, a
     PressurePlate in a room where the search reaches a PushCrate (the crate is assumed to be
     pushed onto it), a FlagSwitch whose condition holds. Mode `all` needs every source; an inverted door is open.
+  - *Platforms* ([lifts](lifts.md)) are gates like doors: once an unwired platform (it loops) or
+    a wired one with a usable source is in play, every cell its body sweeps along its path counts
+    as one-way floor (a box per leg, so a diagonal leg is generous).
   - *Facts* grow from what the search reaches: a Grant gives its thing, a SetFlag sets or adds, an
     NPC runs its whole dialogue (flags, `give:`, the shop). An entity counts once its `Requires`
     holds; `Unless` is ignored, since it can only take things away later. A flag some SetFlag adds
@@ -58,6 +62,8 @@ Part of `tools.levels validate`. Pure functions over the loaded levels and the c
 - [x] A flag set by a reachable SetFlag or dialogue opens what it gates, and an ability granted
   by reachable NPC dialogue counts.
 - [x] A lab or absent start room skips reachability; trial rooms are exempt.
+- [x] A lift or loop is a way across a pit too wide to jump; one whose lever is out of reach is
+  reported with the platform; a bad `Path` is reported.
 - [x] The committed world passes, and a missing PlayerStart at an entrance of a quarter room is
   fixed in the levels.
 
