@@ -114,8 +114,20 @@ Built passages of the Square batch:
 | Market Square to Tinker's Nook | Square west wall (col 0), rows 6 to 8, floor row 9; the lever `w` (once) opens `Tinkers_Nook:d` |
 | Market Square to Belfry | Square ceiling, cols 28 to 31 of row 0, over a one-way at row 2; the Belfry's floor is open on the same columns |
 | Market Square to Trial Gate | Square east wall (col 79), rows 6 to 8, floor row 9; Trial Gate west wall (col 0) |
-| Market Square to Sluice (#136) | Not built: carve the Square's east terrace (cols 72 to 79, rows 11 to 20) |
-| Market Square to Cistern Gate (#136) | Not built: the grate goes in the Square's floor (row 21) over cols 40 to 79 |
+| Market Square to Sluice | A tunnel under the Square's east terrace, rows 16 to 18 of col 79, floor row 19; Sluice west wall (col 0), rows 5 to 7, walkway row 8 |
+| Market Square to Cistern Gate | The grate: a one-way at cols 44 to 47 of the Square's row 21, over the Gate's row 0 (cols 4 to 7) |
+
+Built passages of the Cistern batch:
+
+| Seam | Tiles |
+|---|---|
+| Sluice to Pump House | Sluice east wall (col 79), rows 5 to 7; Pump House west wall (col 0); walkway row 8 |
+| Sluice to Rat Warren | Sluice pit, cols 60 to 62 (plank on row 10), over the Warren's row 0 at cols 20 to 22, which the Warren's Encounter shuts with a door |
+| Cistern Gate to Cistern | The Gate's floor, cols 28 to 31 of row 10, behind its door; the Cistern's row 0 on the same columns |
+
+Quarter Lamps A (Clock Face) and B (Pump House) are beacons with `Flag` set to `lamp_a` and
+`lamp_b`; two FlagSwitches open the Cistern Gate door (mode all). After the Lamprey a looping
+lift (`Requires = "lamprey_defeated"`) rises under the Gate's floor.
 
 A SetFlag at the bottom of the Clocktower Stair sets `quill_stage` to 1, so Quill leaves the
 Belfry for the Square once the player has climbed past it.
