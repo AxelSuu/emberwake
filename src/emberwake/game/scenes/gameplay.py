@@ -28,6 +28,7 @@ from emberwake.engine.render.camera import Camera
 from emberwake.engine.render.chunks import ChunkLayer
 from emberwake.engine.render.floating_text import FloatingTexts
 from emberwake.engine.render.frame import Flag, Layer, RenderFrame, ShaftCmd
+from emberwake.engine.render.hit_flash import flashed
 from emberwake.engine.render.particles import EmitterSpec, ParticleSystem, load_emitters
 from emberwake.engine.render.post import PostChain
 from emberwake.engine.render.software import SoftwareBackend
@@ -38,7 +39,7 @@ from emberwake.engine.world.spawning import Identity, Spawner
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
 from emberwake.game.beacons import Beacon, BeaconLit
-from emberwake.game.combat import Damaged, Health, Hurtbox, Killed, Team
+from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
 from emberwake.game.cosmetics import Cosmetics, load_cosmetics
 from emberwake.game.data.records import RunResult, format_time, load_records
@@ -49,11 +50,13 @@ from emberwake.game.flares import Flare, FlareKit
 from emberwake.game.interact import Collected, Interactable, Switch
 from emberwake.game.light import Ember, LightSource
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
+from emberwake.game.player.swing import Swing, SwingHit, SwingStarted
 from emberwake.game.player.visual import PlayerVisual
 from emberwake.game.progress import Progress
 from emberwake.game.render.backdrop import Backdrops, BackdropSpec, load_backdrops
 from emberwake.game.render.fx import Flash
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
+from emberwake.game.render.swing_fx import arm, lantern_point, trail
 from emberwake.game.render.toast import Toasts
 from emberwake.game.scenes.dev import FlagsScene, WarpScene
 from emberwake.game.scenes.dialogue import DialogueScene
@@ -97,6 +100,10 @@ DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
 """Seconds per frame spent baking room art in the background."""
 GLOW_RADIUS = 64
+HIT_FLASH = 0.12
+"""Seconds an enemy shows white after a hit."""
+SHOULDER = 7
+"""Px below the top of the player's body that the lantern swings around."""
 SHAFT_ANGLES = (-22, 0, 22)
 """Degrees either side of straight up for a lit beacon's light shafts."""
 _ember = pygame.Color(palette.EMBER_WARM).lerp(palette.EMBER_HOT, 0.4)
@@ -151,6 +158,8 @@ class GameplayScene(Scene):
         self.backdrops = Backdrops(self._read_backdrops() or {}, ctx.canvas_size)
         self.time = TimeControl()
         self.hitstop = 0
+        self.flashes: dict[int, float] = {}
+        """Seconds of white flash left per entity id."""
         self.respawn_in = 0
         self.clock = 0.0
         self.show_colliders = False
@@ -199,7 +208,8 @@ class GameplayScene(Scene):
         self.spawn_point = self._continue_point(start, self.progress.data.beacon)
         self.camera.bounds = self.rooms.graph.rects[start]
         resources = (self.actions, self.ctx.bus, self.grid, self.wiring, self.rooms, self.spawner)
-        tunings = (self.feel.player, self.feel.rooms, self.feel.light, self.feel.enemies)
+        feel = self.feel
+        tunings = (feel.player, feel.rooms, feel.light, feel.enemies, feel.swing)
         for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
@@ -231,6 +241,8 @@ class GameplayScene(Scene):
             bus.subscribe(Jumped, self._on_jumped),
             bus.subscribe(Landed, self._on_landed),
             bus.subscribe(Dashed, self._on_dashed),
+            bus.subscribe(SwingStarted, self._on_swing),
+            bus.subscribe(SwingHit, self._on_swing_hit),
             bus.subscribe(Died, self._on_died),
             bus.subscribe(RoomEntered, self._on_room_entered),
             bus.subscribe(RunFinished, self._on_run_finished),
@@ -453,11 +465,12 @@ class GameplayScene(Scene):
             return near
         return min(starts, key=lambda p: (p[0] - near[0]) ** 2 + (p[1] - near[1]) ** 2)
 
-    def _new_player(self) -> tuple[Body, Motor, Ember, Health, Hurtbox]:
+    def _new_player(self) -> tuple[object, ...]:
         body, motor = new_player(*self.spawn_point, self.feel.player)
         hp, most = self._maximums()
         health = Health(hp, iframes=self.feel.enemies.player_iframes)
-        return body, motor, Ember(most, max=most), health, Hurtbox(Team.PLAYER)
+        swing = Swing(), Hitbox(targets=Team.ENEMY)
+        return body, motor, Ember(most, max=most), health, Hurtbox(Team.PLAYER), *swing
 
     def _maximums(self) -> tuple[int, float]:
         """The player's health and ember capacity, with the shop upgrades bought so far."""
@@ -477,6 +490,7 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.rooms)
             self.world.insert_resource(feel.light)
             self.world.insert_resource(feel.enemies)
+            self.world.insert_resource(feel.swing)
             self.camera.retune(feel.camera)
         prefabs = self._read_prefabs()
         if prefabs is not None:
@@ -593,6 +607,7 @@ class GameplayScene(Scene):
         self.texts.update(dt)
         self.toasts.update(dt)
         self.flash.update(dt)
+        self.flashes = {eid: left - dt for eid, left in self.flashes.items() if left > dt}
         self.backdrops.update(self._room_lit(), dt)
         juice = self.feel.juice
         self.visual.update(juice.squash_recovery, dt)
@@ -643,6 +658,18 @@ class GameplayScene(Scene):
         self.ctx.audio.sfx("player/dash")
         self.hitstop = max(self.hitstop, self.feel.juice.dash_hitstop)
         self.camera.shake.add(self.feel.juice.dash_trauma)
+
+    def _on_swing(self, _: SwingStarted) -> None:
+        self.ctx.audio.sfx("player/swing")
+
+    def _on_swing_hit(self, event: SwingHit) -> None:
+        swing = self.feel.swing
+        if event.enemy:
+            self.hitstop = max(self.hitstop, swing.hitstop)
+            self.camera.shake.add(swing.trauma)
+        self.ctx.audio.sfx("player/hit" if event.enemy else "player/clang")
+        if (sparks := self.emitters.get("swing_sparks")) is not None:
+            self.particles.burst(sparks, event.x, event.y)
 
     def _on_died(self, _: Died) -> None:
         juice = self.feel.juice
@@ -711,6 +738,8 @@ class GameplayScene(Scene):
         if hurt_player:
             self.hitstop = max(self.hitstop, self.feel.juice.dash_hitstop + 1)
             self.camera.shake.add(self.feel.juice.dash_trauma)
+        if not hurt_player and not self.flash.muted:
+            self.flashes[event.target] = HIT_FLASH
         color = pygame.Color(palette.EMBER_COOL if hurt_player else palette.MIST)
         self.texts.spawn(f"-{event.amount}", event.x, event.y - 8, (color.r, color.g, color.b))
 
@@ -751,26 +780,7 @@ class GameplayScene(Scene):
 
         frame.occluded = occluded
         light = self.flicker(self.clock)
-        for _, body, beacon in self.world.query(Body, Beacon):
-            if beacon.lit:
-                bx, by = body.center_x - ox, body.y + 3 - oy
-                frame.light(bx, by, GLOW_RADIUS, GLOW, light)
-                for index, spread in enumerate(SHAFT_ANGLES):
-                    sway = math.sin(self.clock * 0.7 + index * 2.1) * 6
-                    frame.shaft(ShaftCmd(bx, by, 270 + spread + sway, 90, 36, GLOW, light * 0.8))
-        for eid, body, source in self.world.query(Body, LightSource):
-            fx, fy = body.center_x - ox, body.y + body.height / 2 - oy
-            frame.light(fx, fy, round(source.radius), GLOW, light * source.strength)
-            if self.world.has(eid, Flare):
-                image = self.art.image("flare", (round(body.width), round(body.height)))
-                frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
-        for _, body, sprite in self.world.query(Body, Sprite):
-            image = self.art.image(sprite.current, (round(body.width), round(body.height)))
-            frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
-        for _, body, interactable in self.world.query(Body, Interactable):
-            if interactable.in_range:
-                above = (round(body.center_x) - ox, round(body.y) - oy - 3)
-                frame.sprite(*self._at(self.art.prompt, above), layer=Layer.OVERLAY)
+        self._queue_world(light, ox, oy)
         if self.respawn_in == 0:
             self._queue_player(light, ox, oy, alpha)
         self.backend.render(frame, canvas)
@@ -787,6 +797,32 @@ class GameplayScene(Scene):
         if self.show_rooms:
             self._draw_rooms(canvas, ox, oy)
             self._draw_wires(canvas, ox, oy)
+
+    def _queue_world(self, light: float, ox: int, oy: int) -> None:
+        """Lights, shafts and entity sprites into the frame."""
+        frame = self.frame
+        for _, body, beacon in self.world.query(Body, Beacon):
+            if beacon.lit:
+                bx, by = body.center_x - ox, body.y + 3 - oy
+                frame.light(bx, by, GLOW_RADIUS, GLOW, light)
+                for index, spread in enumerate(SHAFT_ANGLES):
+                    sway = math.sin(self.clock * 0.7 + index * 2.1) * 6
+                    frame.shaft(ShaftCmd(bx, by, 270 + spread + sway, 90, 36, GLOW, light * 0.8))
+        for eid, body, source in self.world.query(Body, LightSource):
+            fx, fy = body.center_x - ox, body.y + body.height / 2 - oy
+            frame.light(fx, fy, round(source.radius), GLOW, light * source.strength)
+            if self.world.has(eid, Flare):
+                image = self.art.image("flare", (round(body.width), round(body.height)))
+                frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
+        for eid, body, sprite in self.world.query(Body, Sprite):
+            image = self.art.image(sprite.current, (round(body.width), round(body.height)))
+            if eid in self.flashes:
+                image = flashed(image, self.flashes[eid] / HIT_FLASH)
+            frame.sprite(image, round(body.x) - ox, round(body.y) - oy)
+        for _, body, interactable in self.world.query(Body, Interactable):
+            if interactable.in_range:
+                above = (round(body.center_x) - ox, round(body.y) - oy - 3)
+                frame.sprite(*self._at(self.art.prompt, above), layer=Layer.OVERLAY)
 
     def _draw_trial_timer(self, canvas: pygame.Surface) -> None:
         if self.trial is None:
@@ -807,6 +843,13 @@ class GameplayScene(Scene):
         canvas.fill(color, (x, y, round(width * fraction), 3))
 
     @staticmethod
+    def _centred(
+        image: pygame.Surface, centre: tuple[float, float]
+    ) -> tuple[pygame.Surface, int, int]:
+        rect = image.get_rect(center=(round(centre[0]), round(centre[1])))
+        return image, rect.x, rect.y
+
+    @staticmethod
     def _at(
         image: pygame.Surface, midbottom: tuple[float, float]
     ) -> tuple[pygame.Surface, int, int]:
@@ -820,9 +863,22 @@ class GameplayScene(Scene):
         y = py + (body.y - py) * alpha
         feet = (x + body.width / 2 - ox, y + body.height - oy)
         lx, ly = self.sprite.lantern_offset(p.facing, visual.scale_x, visual.scale_y)
-        self.frame.light(feet[0] + lx, feet[1] + ly, GLOW_RADIUS, self.glow, light)
-        image = self.sprite.image(p.facing, visual.scale_x, visual.scale_y)
+        lantern = (feet[0] + lx, feet[1] + ly)
+        swing = self.world.find(self.player, Swing)
+        swinging = swing is not None and swing.tick > 0
+        if swing is not None and swinging:
+            shoulder = (feet[0], y + SHOULDER - oy)
+            lantern = lantern_point(swing, self.feel.swing, shoulder, lantern)
+            if (arc := trail(swing, self.feel.swing)) is not None:
+                self.frame.sprite(*self._centred(arc, shoulder), layer=Layer.FOREGROUND)
+        self.frame.light(*lantern, GLOW_RADIUS, self.glow, light)
+        image = self.sprite.image(p.facing, visual.scale_x, visual.scale_y, bare=swinging)
         self.frame.sprite(*self._at(image, feet))
+        if swing is not None and swinging:
+            shoulder = (round(feet[0]), round(y + SHOULDER - oy))
+            image, (left, top) = arm(lantern[0] - shoulder[0], lantern[1] - shoulder[1])
+            self.frame.sprite(image, shoulder[0] + left, shoulder[1] + top)
+            self.frame.sprite(*self._centred(self.sprite.lantern, lantern))
         self._queue_ghost(ox, oy)
 
     def _queue_ghost(self, ox: int, oy: int) -> None:

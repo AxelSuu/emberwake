@@ -16,10 +16,14 @@ class Action(StrEnum):
     DASH = "dash"
     INTERACT = "interact"
     FLARE = "flare"
+    SWING = "swing"
 
 
 INTERACT_KEYS = ["up", "w", "e"]
 FLARE_KEYS = ["f", "q"]
+SWING_KEYS = ["c", "j"]
+OLD_JUMP_KEYS = ["space", "z", "c"]
+"""Jump's defaults before the swing took C."""
 
 
 def default_bindings() -> Bindings:
@@ -29,9 +33,10 @@ def default_bindings() -> Bindings:
             Action.RIGHT: ["right", "d"],
             Action.UP: ["up", "w"],
             Action.DOWN: ["down", "s"],
-            Action.JUMP: ["space", "z", "c"],
+            Action.JUMP: ["space", "z"],
             Action.DASH: ["x", "left shift", "k"],
             Action.INTERACT: INTERACT_KEYS,
             Action.FLARE: FLARE_KEYS,
+            Action.SWING: SWING_KEYS,
         },
     )

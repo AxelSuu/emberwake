@@ -15,7 +15,7 @@ def test_a_taken_input_moves_and_reports_who_lost_it() -> None:
     assert rebind(table, Action.DASH, "z") == Action.JUMP
     assert primary(table, Action.DASH) == "z"
     assert "z" not in table[Action.JUMP]
-    assert table[Action.JUMP] == ["space", "c"]
+    assert table[Action.JUMP] == ["space"]
 
 
 def test_an_action_left_empty_gets_the_old_input() -> None:

@@ -111,16 +111,17 @@ def _spikes(
 
 
 def _player_image(
-    skin: Mapping[str, str] | None = None, flame: str | None = None
+    skin: Mapping[str, str] | None = None, flame: str | None = None, *, lantern: bool = True
 ) -> pygame.Surface:
-    """The player; `skin` overrides ``cloak``, ``cloak_shade``, ``cloak_dark`` and ``eyes``."""
+    """The player; `skin` overrides ``cloak``, ``cloak_shade``, ``cloak_dark`` and ``eyes``.
+
+    Without `lantern` the arm and lantern are left out, for swings that draw them apart.
+    """
     skin = skin or {}
     cloak = pygame.Color(skin.get("cloak") or CLOAK)
     shade = pygame.Color(skin.get("cloak_shade") or CLOAK_SHADE)
     dark = pygame.Color(skin.get("cloak_dark") or CLOAK_DARK)
     eyes = pygame.Color(skin.get("eyes") or EYES)
-    glow = pygame.Color(flame or palette.EMBER_HOT)
-    core = glow.lerp(pygame.Color(palette.EMBER_CORE), 0.6)
     image = pygame.Surface(SPRITE_SIZE, pygame.SRCALPHA).convert_alpha()
     pygame.draw.polygon(image, cloak, [(4, 6), (9, 6), (12, 21), (1, 21)])
     pygame.draw.polygon(image, shade, [(7, 6), (9, 6), (12, 21), (7, 21)])
@@ -130,10 +131,20 @@ def _player_image(
     image.fill(eyes, (8, 4, 1, 1))
     image.fill(dark, (4, 21, 2, 1))
     image.fill(dark, (8, 21, 2, 1))
-    pygame.draw.line(image, dark, (9, 10), (12, 11))
-    image.fill(LANTERN_FRAME, (11, 11, 3, 1))
-    image.fill(glow, (11, 12, 3, 4))
-    image.fill(core, (12, 13, 1, 2))
+    if lantern:
+        pygame.draw.line(image, dark, (9, 10), (12, 11))
+        image.blit(lantern_image(flame), (11, 11))
+    return image
+
+
+def lantern_image(flame: str | None = None) -> pygame.Surface:
+    """The lantern on its own, 3x5 px."""
+    glow = pygame.Color(flame or palette.EMBER_HOT)
+    core = glow.lerp(pygame.Color(palette.EMBER_CORE), 0.6)
+    image = pygame.Surface((3, 5), pygame.SRCALPHA)
+    image.fill(LANTERN_FRAME, (0, 0, 3, 1))
+    image.fill(glow, (0, 1, 3, 4))
+    image.fill(core, (1, 2, 1, 2))
     return image
 
 
@@ -144,14 +155,24 @@ class PlayerSprite:
 
     def __init__(self, skin: Mapping[str, str] | None = None, flame: str | None = None) -> None:
         right = _player_image(skin, flame)
-        self._base = {1: right, -1: pygame.transform.flip(right, True, False)}
-        self._cache: dict[tuple[int, int, int], pygame.Surface] = {}
+        bare = _player_image(skin, flame, lantern=False)
+        self._base = {
+            (1, False): right,
+            (-1, False): pygame.transform.flip(right, True, False),
+            (1, True): bare,
+            (-1, True): pygame.transform.flip(bare, True, False),
+        }
+        self.lantern = lantern_image(flame)
+        self._cache: dict[tuple[int, int, int, bool], pygame.Surface] = {}
 
-    def image(self, facing: int, scale_x: float, scale_y: float) -> pygame.Surface:
+    def image(
+        self, facing: int, scale_x: float, scale_y: float, *, bare: bool = False
+    ) -> pygame.Surface:
+        """The player facing `facing`, squashed; `bare` leaves out the lantern."""
         qx, qy = round(scale_x / self.QUANTUM), round(scale_y / self.QUANTUM)
-        key = (facing, qx, qy)
+        key = (facing, qx, qy, bare)
         if key not in self._cache:
-            base = self._base[facing]
+            base = self._base[facing, bare]
             width, height = base.get_size()
             size = (
                 max(round(width * qx * self.QUANTUM), 1),

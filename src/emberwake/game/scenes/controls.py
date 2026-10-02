@@ -27,6 +27,7 @@ LABELS = {
     Action.DASH: "action.dash",
     Action.INTERACT: "action.interact",
     Action.FLARE: "action.flare",
+    Action.SWING: "action.swing",
 }
 
 

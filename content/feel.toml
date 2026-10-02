@@ -32,6 +32,21 @@ dash_ticks = 9
 dash_charges = 1
 hazard_margin = 2
 
+[swing]
+# Frame data in ticks (1/60 s); rules in docs/specs/lantern-swing.md.
+windup = 2
+active = 5
+recovery = 7
+buffer = 6
+damage = 1
+knockback = 160.0
+reach = 22.0
+pogo_speed = 260.0
+recoil = 90.0
+hitstop = 2
+trauma = 0.12
+stagger = 0.25
+
 [camera]
 deadzone = [24, 40]
 smoothing = 7.0

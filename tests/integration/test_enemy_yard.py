@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import pygame
+
 from emberwake.engine.physics import Body
 from emberwake.engine.scene import SceneManager
 from emberwake.game.combat import Health
@@ -67,3 +69,24 @@ def test_dying_to_an_enemy_respawns_the_player_whole(ctx: GameContext) -> None:
     health = game.world.get(game.player, Health)
     assert not game.motor.dead
     assert health.current == ctx_hp(game)
+
+
+def test_swinging_kills_a_clockrat_and_counts_for_achievements(ctx: GameContext) -> None:
+    scenes, game = start(ctx)
+    rat = next(eid for eid, brain in game.world.query(Brain) if brain.kind == "clockrat")
+    game.world.get(game.player, Health).invulnerable = 99.0
+    for _ in range(240):
+        if rat not in game.world:
+            break
+        target, player = game.world.get(rat, Body), game.body
+        facing = 1 if target.center_x >= player.center_x else -1
+        game.motor.facing = facing
+        player.x = target.center_x - facing * 14 - player.width / 2
+        player.y = target.bottom - player.height
+        scenes.handle(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_j))
+        scenes.update(STEP)
+        scenes.handle(pygame.event.Event(pygame.KEYUP, key=pygame.K_j))
+        for _ in range(16):
+            scenes.update(STEP)
+    assert rat not in game.world
+    assert ctx.achievements.counter("Killed") >= 1

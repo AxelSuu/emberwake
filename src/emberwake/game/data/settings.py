@@ -7,7 +7,13 @@ from typing import Any
 
 from emberwake.engine.core.serde import VersionedCodec
 from emberwake.engine.input import Bindings
-from emberwake.game.actions import FLARE_KEYS, INTERACT_KEYS, default_bindings
+from emberwake.game.actions import (
+    FLARE_KEYS,
+    INTERACT_KEYS,
+    OLD_JUMP_KEYS,
+    SWING_KEYS,
+    default_bindings,
+)
 
 SETTINGS_KEY = "settings.json"
 
@@ -99,6 +105,18 @@ def _add_cosmetics_and_assist(data: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
+def _add_swing(data: dict[str, Any]) -> dict[str, Any]:
+    """v7 -> v8: bind the swing. It takes C from jump only if jump still has the old defaults."""
+    keys = data.get("controls", {}).get("keys")
+    if keys is None or "swing" in keys:
+        return data
+    if keys.get("jump") == OLD_JUMP_KEYS:
+        keys["jump"] = [key for key in OLD_JUMP_KEYS if key not in SWING_KEYS]
+    taken = {key for inputs in keys.values() for key in inputs}
+    keys["swing"] = [key for key in SWING_KEYS if key not in taken]
+    return data
+
+
 def _drop_gamepad(data: dict[str, Any]) -> dict[str, Any]:
     """v4 -> v5: gamepad support was removed, so saved button bindings go."""
     data.get("controls", {}).pop("buttons", None)
@@ -107,7 +125,7 @@ def _drop_gamepad(data: dict[str, Any]) -> dict[str, Any]:
 
 SETTINGS_CODEC = VersionedCodec(
     Settings,
-    version=7,
+    version=8,
     migrations={
         1: _add_interact,
         2: _add_post_effects,
@@ -115,5 +133,6 @@ SETTINGS_CODEC = VersionedCodec(
         4: _drop_gamepad,
         5: _add_flare,
         6: _add_cosmetics_and_assist,
+        7: _add_swing,
     },
 )
