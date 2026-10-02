@@ -6,5 +6,6 @@ type = "DripLurker"
 type = "Gearbug"
 [entities.B]
 type = "Brazier"
+fields = { Lit = true }
 [entities.k]
 type = "Beacon"

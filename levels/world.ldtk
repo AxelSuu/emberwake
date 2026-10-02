@@ -13855,14 +13855,14 @@
 								{
 									"__identifier": "Lit",
 									"__type": "Bool",
-									"__value": false,
+									"__value": true,
 									"__tile": null,
 									"defUid": 77,
 									"realEditorValues": [
 										{
 											"id": "V_Bool",
 											"params": [
-												false
+												true
 											]
 										}
 									]
