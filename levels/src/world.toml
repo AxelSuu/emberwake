@@ -33,3 +33,6 @@ cell = [0, 8]
 
 [rooms.Enemy_Gallery]
 cell = [3, 4]
+
+[rooms.King_Lab]
+cell = [6, 6]
