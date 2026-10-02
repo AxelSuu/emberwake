@@ -100,21 +100,23 @@ class Hitbox:
 class Guard:
     """Armor: while `active`, hits from the side `facing` (not from above) do nothing.
 
-    A `facing` of 0 guards every side.
+    A `facing` of 0 guards every side, from above too unless `top` is off.
     """
 
     facing: int = 0
     active: bool = False
+    top: bool = True
+    """Whether a `facing` of 0 also guards from above; off leaves the crown open."""
 
     def blocks(self, attacker: Body, target: Body) -> bool:
         """Whether a hit from `attacker` on `target` is stopped."""
         if not self.active:
             return False
-        if self.facing == 0:
-            return True
         above = attacker.bottom <= target.y + target.height / 2
+        if above:
+            return self.facing == 0 and self.top
         side = 1 if attacker.center_x >= target.center_x else -1
-        return not above and side == self.facing
+        return self.facing in (0, side)
 
 
 @component
