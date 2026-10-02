@@ -47,6 +47,15 @@ help = "Så spelar du"
 settings = "Inställningar"
 quit = "Avsluta till titel"
 
+[area]
+light = "Ljus {percent} %"
+
+[area.quarter]
+name = "Det sjunkna kvarteret"
+
+[area.lab]
+name = "Labbet"
+
 [menu]
 continue = "Fortsätt"
 new = "Nytt spel"

@@ -1,6 +1,6 @@
 # Areas
 
-**Milestone:** M9  **Status:** ready  **Issue:** #120
+**Milestone:** M9  **Status:** done  **Issue:** #120
 
 ## Goal
 Rooms belong to areas. Crossing into another area announces it, and an area gets its colour
@@ -41,15 +41,15 @@ back as the player lights it, so progress shows on screen and not only in menus.
 | rate | 0.5 | light per second the saturation eases by |
 
 ## Acceptance criteria
-- [ ] A room without `Area` is in `quarter`; an empty `Music` falls back to the area's set.
-- [ ] Crossing into another area shows its banner; moving within an area does not.
-- [ ] A session starts with its area's banner; a Trial shows none.
-- [ ] Light % counts lit beacons over all beacons of the area, unloaded rooms included, from the
+- [x] A room without `Area` is in `quarter`; an empty `Music` falls back to the area's set.
+- [x] Crossing into another area shows its banner; moving within an area does not.
+- [x] A session starts with its area's banner; a Trial shows none.
+- [x] Light % counts lit beacons over all beacons of the area, unloaded rooms included, from the
   saved world state.
-- [ ] A prefab added to `[light]` counts with no code change.
-- [ ] An area with nothing to light is 100 % and shows no percent.
-- [ ] At 0 % light the saturation is `dim` of the preset's; at 100 % it is the preset's.
-- [ ] The validator rejects unknown areas, bad music names and light rules that cannot be saved.
+- [x] A prefab added to `[light]` counts with no code change.
+- [x] An area with nothing to light is 100 % and shows no percent.
+- [x] At 0 % light the saturation is `dim` of the preset's; at 100 % it is the preset's.
+- [x] The validator rejects unknown areas, bad music names and light rules that cannot be saved.
 
 ## Tests
 `tests/unit/game/test_areas.py`, `tests/integration/test_areas.py`,

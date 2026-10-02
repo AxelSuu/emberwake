@@ -38,6 +38,16 @@ from emberwake.engine.world.rooms import Room, RoomEntered, RoomGraph, RoomStrea
 from emberwake.engine.world.spawning import Identity, Spawner
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
+from emberwake.game.areas import (
+    AreaGrade,
+    AreaLight,
+    Areas,
+    LightCensus,
+    area_of,
+    describe,
+    load_areas,
+    music_of,
+)
 from emberwake.game.beacons import Beacon, BeaconLit, Rested
 from emberwake.game.cinder import CinderRecovered, cinder_parts
 from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team
@@ -104,6 +114,7 @@ COSMETICS = "cosmetics.toml"
 DIALOGUE = "dialogue.toml"
 TRIALS = "trials.toml"
 GRANTS = "grants.toml"
+AREAS = "areas.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
@@ -180,6 +191,7 @@ class GameplayScene(Scene):
         self.layers: dict[str, tuple[ChunkLayer, Iterator[None]]] = {}
         self._build_world(start)
         self._show_backdrops()
+        self._init_areas()
         self.camera.snap(*self._camera_target())
         if self.trial is not None:
             self._begin_attempt()
@@ -303,6 +315,7 @@ class GameplayScene(Scene):
             bus.subscribe(Granted, self._on_granted),
             bus.subscribe(FlareThrown, self._on_flare),
             bus.subscribe(FlareFizzled, self._on_fizzle),
+            bus.subscribe(BeaconLit, self._on_light_changed),
             *self.progress.subscribe(bus),
         ]
 
@@ -588,6 +601,8 @@ class GameplayScene(Scene):
             self.rooms.reload(graph)
             self.camera.bounds = graph.rects[self.room]
         self._show_backdrops()
+        self._read_area_config()
+        self._count_light()
         log.info("Reloaded")
 
     # Input
@@ -596,7 +611,8 @@ class GameplayScene(Scene):
         self.mapper.handle(event)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                self.manager.push(PauseScene(self.ctx))
+                self._count_light()
+                self.manager.push(PauseScene(self.ctx, *self._area_text()))
             elif event.key == pygame.K_RETURN and self.cutscenes.active:
                 self.cutscenes.skip()
             elif self.ctx.dev:
@@ -694,6 +710,7 @@ class GameplayScene(Scene):
         self.flash.update(dt)
         self.flashes = {eid: left - dt for eid, left in self.flashes.items() if left > dt}
         self.backdrops.update(self._room_lit(), dt)
+        self.area_grade.update(dt)
         juice = self.feel.juice
         self.visual.update(juice.squash_recovery, dt)
         if self.hitstop > 0:
@@ -865,6 +882,7 @@ class GameplayScene(Scene):
         self.spawn_point = self._entry_point(event.room, (event.x, event.y))
         self.progress.discover(self.rooms.graph.levels[event.room].iid)
         self.backdrops.show(self._backdrop(event.room))
+        self._enter_area(event.room)
         log.debug("Entered %s from %s", event.room, event.previous)
 
     def _room_lit(self) -> bool:
@@ -873,6 +891,51 @@ class GameplayScene(Scene):
             beacon.lit and identity.room == self.room
             for _, identity, beacon in self.world.query(Identity, Beacon)
         )
+
+    # Areas
+
+    def _init_areas(self) -> None:
+        self.area_grade = AreaGrade()
+        self.area = ""
+        self.light: dict[str, AreaLight] = {}
+        self._read_area_config()
+        self._enter_area(self.room, instantly=True)
+
+    def _read_area_config(self) -> None:
+        try:
+            self.areas = load_areas(paths.content(AREAS))
+        except (OSError, tomllib.TOMLDecodeError, SerdeError) as error:
+            log.error("Could not load %s: %s", AREAS, error)
+            self.areas = Areas()
+        levels, prefabs = self.rooms.graph.levels.values(), self.spawner.prefabs
+        self.census = LightCensus(levels, prefabs, self.areas.light)
+        self.area_grade.dim, self.area_grade.rate = self.areas.dim, self.areas.rate
+
+    def _enter_area(self, room: str, *, instantly: bool = False) -> None:
+        area = area_of(self.rooms.graph.levels[room])
+        if area == self.area:
+            return
+        self.area = area
+        self._count_light(instantly=instantly)
+        if self.trial is None:
+            self.hud.banner(*self._area_text())
+
+    def _area_text(self) -> tuple[str, str]:
+        return describe(self.area, self.light.get(self.area, AreaLight()), self.ctx.t)
+
+    def _count_light(self, *, instantly: bool = False) -> None:
+        """Recount every area's light, and aim the grade at the active area's."""
+        self.spawner.snapshot_all()
+        self.light = self.census.count(self.spawner.state)
+        self.area_grade.aim(self.light.get(self.area, AreaLight()).fraction, instantly=instantly)
+
+    def _on_light_changed(self, _: object) -> None:
+        self._count_light()
+
+    @property
+    def music(self) -> str:
+        """The stem set the active room plays (no music system plays it yet)."""
+        return music_of(self.rooms.graph.levels[self.room], self.areas)
 
     def _on_run_finished(self, event: RunFinished) -> None:
         self.manager.push(ResultsScene(self.ctx, event.result))
@@ -987,7 +1050,7 @@ class GameplayScene(Scene):
         self.particles.draw(canvas, (ox, oy))
         self.texts.draw(canvas, (ox, oy))
         self.backdrops.draw_near(canvas, (ox, oy), room_top)
-        self.post.apply(canvas, self.frame.flags, self.backdrops.grade())
+        self.post.apply(canvas, self.frame.flags, self.area_grade.apply(self.backdrops.grade()))
         self.flash.draw(canvas)
         self._draw_hud(canvas)
         self._draw_trial_timer(canvas)
