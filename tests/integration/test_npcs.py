@@ -39,8 +39,10 @@ def settle(scenes: SceneManager, ticks: int = 3) -> None:
 
 
 def placed(game: GameplayScene) -> list[tuple[str, int]]:
-    """Each NPC in the world as (dialogue, tile column), left to right."""
-    found = [(npc.dialogue, int(body.x) // 16) for _, body, npc in game.world.query(Body, Npc)]
+    """Each NPC in the room as (dialogue, tile column), left to right."""
+    left = game.rooms.graph.rects[ROOM].x
+    query = game.world.query(Body, Npc)
+    found = [(npc.dialogue, int(body.x - left) // 16) for _, body, npc in query]
     return sorted(found, key=lambda item: item[1])
 
 
