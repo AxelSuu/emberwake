@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from dataclasses import dataclass
+from itertools import pairwise
 from typing import TYPE_CHECKING
 
 from tools.levels.reach import Cell, Moves, reach
@@ -47,6 +48,10 @@ class Walk:
         self.crates = [t for t in world.things if t.kind == "PushCrate"]
         self.sources: dict[str, list[Thing]] = defaultdict(list)
         by_iid = {t.iid: t for t in world.things}
+        platforms = {t.iid: t for t in world.things if t.kind == "Platform"}
+        self.sweeps = {iid: _sweep(platform, by_iid) for iid, platform in platforms.items()}
+        self.gates = {**self.doors, **platforms}
+        """Doors and platforms: what the player needs the signals to use."""
         for thing in world.things:
             for target in thing.targets():
                 if target in by_iid:
@@ -86,9 +91,9 @@ class Walk:
                 facts[HAS + name] = max(
                     facts.get(HAS + name, 0), min(self.rules.grants[name].max, count)
                 )
-            for door in self.doors.values():
-                if self._opens(door, reached, facts, wide):
-                    opened.add(door.iid)
+            for gate in self.gates.values():
+                if self._opens(gate, reached, facts, wide):
+                    opened.add(gate.iid)
             after = (
                 frozenset(abilities),
                 tuple(sorted(facts.items())),
@@ -108,6 +113,9 @@ class Walk:
                 if iid not in opened:
                     tiles.update(dict.fromkeys(door.cells, Tile.SOLID))
             starts = self.world.starts.get(self.rules.start, [])
+            for iid in opened & self.sweeps.keys():
+                free = (cell for cell in self.sweeps[iid] if tiles.get(cell) is Tile.EMPTY)
+                tiles.update(dict.fromkeys(free, Tile.ONE_WAY))
             self.reaches[key] = reach(tiles, starts, moves)
         return self.reaches[key]
 
@@ -115,8 +123,8 @@ class Walk:
         requires = thing.entity.field(REQUIRES)
         return not requires or _holds(requires, facts, wide)
 
-    def _opens(self, door: Thing, reached: list[Thing], facts: Known, wide: set[str]) -> bool:
-        entity = door.entity
+    def _opens(self, gate: Thing, reached: list[Thing], facts: Known, wide: set[str]) -> bool:
+        entity = gate.entity
         if entity.field("Invert"):
             return True
 
@@ -130,7 +138,9 @@ class Walk:
                 )
             return source in reached
 
-        states = [on(source) for source in self.sources[door.iid]]
+        if gate.kind == "Platform" and not self.sources[gate.iid]:
+            return True
+        states = [on(source) for source in self.sources[gate.iid]]
         return all(states) and bool(states) if entity.field("Mode") == "all" else any(states)
 
     def _effects(
@@ -165,6 +175,26 @@ class Walk:
             items[name] += count
 
 
+def _sweep(platform: Thing, things: dict[str, Thing]) -> frozenset[Cell]:
+    """The cells a platform's body covers anywhere along its path, a box per leg."""
+    cells = platform.cells
+    left, top = min(x for x, _ in cells), min(y for _, y in cells)
+    width, height = max(x for x, _ in cells) - left, max(y for _, y in cells) - top
+    stops = [(left, top)]
+    for iid in platform.entity.values().get("Path") or []:
+        node = things.get(iid)
+        if node is not None and node.cells:
+            stops.append((min(x for x, _ in node.cells), min(y for _, y in node.cells)))
+    swept = set(cells)
+    for (ax, ay), (bx, by) in pairwise(stops):
+        swept |= {
+            (x, y)
+            for x in range(min(ax, bx), max(ax, bx) + width + 1)
+            for y in range(min(ay, by), max(ay, by) + height + 1)
+        }
+    return frozenset(swept)
+
+
 def _granted_in(world: Index, rules: Rules, ability: str) -> str:
     rooms = {
         t.room
@@ -191,11 +221,12 @@ def _why(walk: Walk, room: str, base: Settled) -> str:
     for ability in missing:
         if room in walk.settle(extra=[ability]).rooms:
             return f"needs {ability}, granted in {_granted_in(walk.world, rules, ability)}"
-    for iid, door in walk.doors.items():
+    for iid, gate in walk.gates.items():
         if iid not in base.opened and room in walk.settle(forced=[iid]).rooms:
             sources = [s.iid for s in walk.sources[iid]]
-            return f"is behind Door {iid} in {door.room}, whose sources {sources} cannot be used"
-    if room in walk.settle(extra=missing, forced=walk.doors).rooms:
+            where = f"{gate.kind} {iid} in {gate.room}"
+            return f"is behind {where}, whose sources {sources} cannot be used"
+    if room in walk.settle(extra=missing, forced=walk.gates).rooms:
         return "needs more than one ability or door"
     return "has no open way in"
 
