@@ -47,6 +47,22 @@ hitstop = 2
 trauma = 0.12
 stagger = 0.25
 
+[breakables]
+crumble_delay = 0.5
+crumble_return = 2.0
+ember_speed = [60.0, 140.0]
+ember_gravity = 600.0
+ember_settle = 0.4
+ember_pull = 240.0
+hitstop = 3
+trauma = 0.15
+
+[lamps]
+# docs/specs/lamps.md
+radius = 80.0
+strength = 1.0
+color = "#fbb954"
+
 [camera]
 deadzone = [24, 40]
 smoothing = 7.0
@@ -112,8 +128,44 @@ gloom_flee_light = 0.5
 gloom_burn_rate = 1.0
 wisp_hp = 2
 wisp_speed = 40.0
+wisp_hunt_speed = 70.0
+wisp_snuff_reach = 10.0
 wisp_swoop_speed = 130.0
 wisp_sight = 110.0
 wisp_attract = 140.0
 wisp_swoop_time = 0.55
 wisp_retreat_time = 1.2
+lurker_hp = 2
+lurker_reach = 24.0
+lurker_range = 176.0
+lurker_rest = 1.0
+lurker_warn = 0.5
+lurker_light = 0.2
+lurker_ground_time = 1.5
+lurker_climb_speed = 70.0
+lurker_climb_max = 3.0
+gearbug_hp = 3
+gearbug_speed = 20.0
+gearbug_cycle = 4.0
+gearbug_hiss = 0.6
+gearbug_vent = 1.5
+king_hp = 10
+king_speed = 28.0
+king_sight = 128.0
+king_rear = 0.6
+king_charge_speed = 150.0
+king_charge_time = 1.2
+king_rest = 1.0
+king_alert = 224.0
+king_summon_every = 6.0
+king_call = 1.0
+king_summon_count = 2
+king_rats_max = 3
+king_topple_time = 2.5
+
+[switches]
+brazier_radius = 72.0
+bell_radius = 80.0
+bell_stun = 2.0
+bell_pulse = 1.5
+bell_trauma = 0.15

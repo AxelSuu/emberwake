@@ -33,6 +33,7 @@ def validate(
     *,
     backdrops: Collection[str] | None = None,
     areas: Areas | None = None,
+    strings: Mapping[str, str] | None = None,
     rules: Rules | None = None,
 ) -> list[str]:
     """Problems found, one line each; empty when every entity would spawn."""
@@ -42,8 +43,9 @@ def validate(
         for problem in check(prefab, registry)
     ]
     if areas is not None:
-        problems += _check_areas(areas, prefabs, registry)
+        problems += _check_areas(areas, prefabs, registry, strings)
     missing: set[str] = set()
+    kinds = {e.iid: e.identifier for level in project.all_levels for e in level.entities()}
     for level in project.all_levels:
         backdrop = level.field("Backdrop")
         if backdrops is not None and backdrop and backdrop not in backdrops:
@@ -63,6 +65,7 @@ def validate(
             unknown = sorted(prefab.fields.keys() - values.keys())
             if unknown:
                 problems.append(f"{where}: no LDtk fields {unknown} for prefab {name}")
+            problems += _check_shelter(entity, where, kinds)
             try:
                 build(prefab, values, registry)
             except (KeyError, SerdeError) as error:
@@ -70,6 +73,14 @@ def validate(
     if rules is not None:
         problems += check_world(project, prefabs, rules)
     return problems
+
+
+def _check_shelter(entity: EntityInstance, where: str, kinds: Mapping[str, str]) -> list[str]:
+    """A lamp's Beacon field must point at a beacon."""
+    target = entity.values().get("Beacon") if entity.identifier == "Lamp" else None
+    if target is None or kinds.get(target) == "Beacon":
+        return []
+    return [f"{where}: Beacon is {kinds.get(target, 'missing')}, not a Beacon"]
 
 
 def _check_conditions(where: str, entity: EntityInstance, values: Mapping[str, Any]) -> list[str]:
@@ -95,7 +106,12 @@ def _check_level_area(level: Level, areas: Areas | None) -> list[str]:
     return problems
 
 
-def _check_areas(areas: Areas, prefabs: Mapping[str, Prefab], registry: Registry) -> list[str]:
+def _check_areas(
+    areas: Areas,
+    prefabs: Mapping[str, Prefab],
+    registry: Registry,
+    strings: Mapping[str, str] | None,
+) -> list[str]:
     """Area names and music, and light rules naming a persisted ``Component.field``."""
     problems = []
     for name, spec in areas.areas.items():
@@ -103,6 +119,8 @@ def _check_areas(areas: Areas, prefabs: Mapping[str, Prefab], registry: Registry
             problems.append(f"area {name!r}: not a lowercase name")
         if spec.music and not NAME.fullmatch(spec.music):
             problems.append(f"area {name}: music {spec.music!r} is not a stem-set name")
+        if strings is not None and f"area.{name}.name" not in strings:
+            problems.append(f"area {name}: no string area.{name}.name")
     for name, rule in areas.light.items():
         component, _, attribute = rule.partition(".")
         prefab = prefabs.get(name)

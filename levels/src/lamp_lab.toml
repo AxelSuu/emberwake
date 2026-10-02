@@ -1,0 +1,16 @@
+fields = { Area = "lab" }
+
+[entities.a]
+type = "Lamp"
+[entities.b]
+type = "Lamp"
+[entities.k]
+type = "Beacon"
+[entities.c]
+type = "Lamp"
+fields = { Beacon = "k" }
+[entities.d]
+type = "Lamp"
+fields = { Beacon = "k" }
+[entities.w]
+type = "WispEater"

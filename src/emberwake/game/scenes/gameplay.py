@@ -38,7 +38,18 @@ from emberwake.engine.world.rooms import Room, RoomEntered, RoomGraph, RoomStrea
 from emberwake.engine.world.spawning import Identity, Spawner
 from emberwake.game import palette, paths
 from emberwake.game.actions import Action
+from emberwake.game.areas import (
+    AreaGrade,
+    AreaLight,
+    Areas,
+    LightCensus,
+    area_of,
+    describe,
+    load_areas,
+    music_of,
+)
 from emberwake.game.beacons import Beacon, BeaconLit, Rested
+from emberwake.game.breakables import Broken, Crumble, Crumbled
 from emberwake.game.cinder import CinderRecovered, cinder_parts
 from emberwake.game.combat import Damaged, Health, Hitbox, Hurtbox, Killed, Team
 from emberwake.game.components import Sprite
@@ -46,12 +57,13 @@ from emberwake.game.cosmetics import Cosmetics, load_cosmetics
 from emberwake.game.data.records import RunResult, format_time, load_records
 from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
-from emberwake.game.enemies import Brain
+from emberwake.game.enemies import KINDS, Brain, Summoned, Toppled, Vented
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.flags import Facts, admits, flags_in
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
 from emberwake.game.interact import Collected, Interactable, Switch
+from emberwake.game.lamps import LampLit, LampSnuffed
 from emberwake.game.light import Ember, LightSource
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.kindle import Kindle, Kindled
@@ -73,6 +85,7 @@ from emberwake.game.scenes.results import ResultsScene, RunFinished
 from emberwake.game.schedule import gameplay_schedule
 from emberwake.game.shop import EMBER_PER_UPGRADE, HP_PER_UPGRADE, SPENT, wallet
 from emberwake.game.signals import Receiver, Wiring
+from emberwake.game.switches import BellRung, BrazierLit
 from emberwake.game.trials import (
     Ghost,
     GoalReached,
@@ -104,6 +117,7 @@ COSMETICS = "cosmetics.toml"
 DIALOGUE = "dialogue.toml"
 TRIALS = "trials.toml"
 GRANTS = "grants.toml"
+AREAS = "areas.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
@@ -115,8 +129,12 @@ BRIGHTNESS_LIFT = 0.6
 """How far the brightness setting at full lifts the darkness toward full light."""
 WALKING = frozenset({"patrol", "charge", "creep", "flee"})
 """Brain states in which a placeholder enemy bobs as it walks."""
+TREMBLING = frozenset({"warn", "hiss", "rear", "call"})
+"""Brain states in which a placeholder enemy shakes before it acts."""
 LANDING_DUST = 0.35
 """Share of the fall speed above which a landing kicks up dust."""
+TREMBLE_RATE = 30.0
+"""Sideways flips per second of a crumbling platform about to go."""
 HIT_FLASH = 0.12
 """Seconds an enemy shows white after a hit."""
 SHAFT_ANGLES = (-22, 0, 22)
@@ -180,6 +198,7 @@ class GameplayScene(Scene):
         self.layers: dict[str, tuple[ChunkLayer, Iterator[None]]] = {}
         self._build_world(start)
         self._show_backdrops()
+        self._init_areas()
         self.camera.snap(*self._camera_target())
         if self.trial is not None:
             self._begin_attempt()
@@ -247,7 +266,16 @@ class GameplayScene(Scene):
         resources = (self.actions, self.ctx.bus, self.grid, self.wiring, self.rooms, self.spawner)
         self.world.insert_resource(self.facts)
         feel = self.feel
-        tunings = (feel.player, feel.rooms, feel.light, feel.enemies, feel.swing)
+        tunings = (
+            feel.player,
+            feel.rooms,
+            feel.light,
+            feel.lamps,
+            feel.enemies,
+            feel.swing,
+            feel.switches,
+            feel.breakables,
+        )
         for resource in (*resources, *tunings):
             self.world.insert_resource(resource)
         self.world.insert_resource(self.grid, key=TileSource)
@@ -286,11 +314,16 @@ class GameplayScene(Scene):
             bus.subscribe(Dashed, self._on_dashed),
             bus.subscribe(SwingStarted, self._on_swing),
             bus.subscribe(SwingHit, self._on_swing_hit),
+            bus.subscribe(Broken, self._on_broken),
+            bus.subscribe(Crumbled, self._on_crumbled),
             bus.subscribe(Died, self._on_died),
             bus.subscribe(RoomEntered, self._on_room_entered),
             bus.subscribe(RunFinished, self._on_run_finished),
             bus.subscribe(Collected, self._on_collected),
             bus.subscribe(Damaged, self._on_damaged),
+            bus.subscribe(Vented, self._on_vented),
+            bus.subscribe(Summoned, self._on_summoned),
+            bus.subscribe(Toppled, self._on_toppled),
             bus.subscribe(Talk, self._on_talk),
             bus.subscribe(GoalReached, self._on_goal),
             *self._track_achievements(bus),
@@ -303,6 +336,11 @@ class GameplayScene(Scene):
             bus.subscribe(Granted, self._on_granted),
             bus.subscribe(FlareThrown, self._on_flare),
             bus.subscribe(FlareFizzled, self._on_fizzle),
+            bus.subscribe(BrazierLit, self._on_brazier_lit),
+            bus.subscribe(BellRung, self._on_bell),
+            bus.subscribe(BeaconLit, self._on_light_changed),
+            bus.subscribe(LampLit, self._on_lamp_lit),
+            bus.subscribe(LampSnuffed, self._on_lamp_snuffed),
             *self.progress.subscribe(bus),
         ]
 
@@ -483,7 +521,9 @@ class GameplayScene(Scene):
         return name
 
     def _room_loaded(self, room: Room) -> None:
-        layer = ChunkLayer(room.rect.topleft, room.rect.size, tile_painter(room.grid))
+        # Baked over later frames, by when doors, walls and platforms have changed their cells.
+        level_tiles = dataclasses.replace(room.grid, cells=bytearray(room.grid.cells))
+        layer = ChunkLayer(room.rect.topleft, room.rect.size, tile_painter(level_tiles))
         job = layer.bake()
         self.layers[room.name] = (layer, job)
         self.jobs.add(job)
@@ -561,8 +601,11 @@ class GameplayScene(Scene):
             self.world.insert_resource(feel.player)
             self.world.insert_resource(feel.rooms)
             self.world.insert_resource(feel.light)
+            self.world.insert_resource(feel.lamps)
             self.world.insert_resource(feel.enemies)
             self.world.insert_resource(feel.swing)
+            self.world.insert_resource(feel.breakables)
+            self.world.insert_resource(feel.switches)
             self.camera.retune(feel.camera)
         prefabs = self._read_prefabs()
         if prefabs is not None:
@@ -588,6 +631,8 @@ class GameplayScene(Scene):
             self.rooms.reload(graph)
             self.camera.bounds = graph.rects[self.room]
         self._show_backdrops()
+        self._read_area_config()
+        self._count_light()
         log.info("Reloaded")
 
     # Input
@@ -596,7 +641,8 @@ class GameplayScene(Scene):
         self.mapper.handle(event)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                self.manager.push(PauseScene(self.ctx))
+                self._count_light()
+                self.manager.push(PauseScene(self.ctx, *self._area_text()))
             elif event.key == pygame.K_RETURN and self.cutscenes.active:
                 self.cutscenes.skip()
             elif self.ctx.dev:
@@ -694,6 +740,7 @@ class GameplayScene(Scene):
         self.flash.update(dt)
         self.flashes = {eid: left - dt for eid, left in self.flashes.items() if left > dt}
         self.backdrops.update(self._room_lit(), dt)
+        self.area_grade.update(dt)
         juice = self.feel.juice
         self.visual.update(juice.squash_recovery, dt)
         if self.hitstop > 0:
@@ -759,6 +806,17 @@ class GameplayScene(Scene):
         self.ctx.audio.sfx("player/hit" if event.enemy else "player/clang")
         if (sparks := self.emitters.get("swing_sparks")) is not None:
             self.particles.burst(sparks, event.x, event.y)
+
+    def _on_broken(self, event: Broken) -> None:
+        tuning = self.feel.breakables
+        self.hitstop = max(self.hitstop, tuning.hitstop)
+        self.camera.shake.add(tuning.trauma)
+        self.ctx.audio.sfx("world/break")
+        self._dust("debris", event.x + event.width / 2, event.y + event.height / 2)
+
+    def _on_crumbled(self, event: Crumbled) -> None:
+        self.ctx.audio.sfx("world/crumble")
+        self._dust("crumble_dust", event.x + event.width / 2, event.y + event.height / 2)
 
     def _on_died(self, event: Died) -> None:
         juice = self.feel.juice
@@ -865,6 +923,7 @@ class GameplayScene(Scene):
         self.spawn_point = self._entry_point(event.room, (event.x, event.y))
         self.progress.discover(self.rooms.graph.levels[event.room].iid)
         self.backdrops.show(self._backdrop(event.room))
+        self._enter_area(event.room)
         log.debug("Entered %s from %s", event.room, event.previous)
 
     def _room_lit(self) -> bool:
@@ -873,6 +932,51 @@ class GameplayScene(Scene):
             beacon.lit and identity.room == self.room
             for _, identity, beacon in self.world.query(Identity, Beacon)
         )
+
+    # Areas
+
+    def _init_areas(self) -> None:
+        self.area_grade = AreaGrade()
+        self.area = ""
+        self.light: dict[str, AreaLight] = {}
+        self._read_area_config()
+        self._enter_area(self.room, instantly=True)
+
+    def _read_area_config(self) -> None:
+        try:
+            self.areas = load_areas(paths.content(AREAS))
+        except (OSError, tomllib.TOMLDecodeError, SerdeError) as error:
+            log.error("Could not load %s: %s", AREAS, error)
+            self.areas = Areas()
+        levels, prefabs = self.rooms.graph.levels.values(), self.spawner.prefabs
+        self.census = LightCensus(levels, prefabs, self.areas.light)
+        self.area_grade.dim, self.area_grade.rate = self.areas.dim, self.areas.rate
+
+    def _enter_area(self, room: str, *, instantly: bool = False) -> None:
+        area = area_of(self.rooms.graph.levels[room])
+        if area == self.area:
+            return
+        self.area = area
+        self._count_light(instantly=instantly)
+        if self.trial is None:
+            self.hud.banner(*self._area_text())
+
+    def _area_text(self) -> tuple[str, str]:
+        return describe(self.area, self.light.get(self.area, AreaLight()), self.ctx.t)
+
+    def _count_light(self, *, instantly: bool = False) -> None:
+        """Recount every area's light, and aim the grade at the active area's."""
+        self.spawner.snapshot_all()
+        self.light = self.census.count(self.spawner.state)
+        self.area_grade.aim(self.light.get(self.area, AreaLight()).fraction, instantly=instantly)
+
+    def _on_light_changed(self, _: object) -> None:
+        self._count_light()
+
+    @property
+    def music(self) -> str:
+        """The stem set the active room plays (no music system plays it yet)."""
+        return music_of(self.rooms.graph.levels[self.room], self.areas)
 
     def _on_run_finished(self, event: RunFinished) -> None:
         self.manager.push(ResultsScene(self.ctx, event.result))
@@ -923,6 +1027,19 @@ class GameplayScene(Scene):
         color = pygame.Color(palette.EMBER_COOL if hurt_player else palette.MIST)
         self.texts.spawn(f"-{event.amount}", event.x, event.y - 8, (color.r, color.g, color.b))
 
+    def _on_vented(self, event: Vented) -> None:
+        if (puff := self.emitters.get("steam")) is not None:
+            self.particles.burst(puff, event.x, event.y - 6)
+
+    def _on_summoned(self, event: Summoned) -> None:
+        if (puff := self.emitters.get("land_dust")) is not None:
+            self.particles.burst(puff, event.x, event.y)
+
+    def _on_toppled(self, event: Toppled) -> None:
+        self.camera.shake.add(self.feel.juice.dash_trauma)
+        if (puff := self.emitters.get("land_dust")) is not None:
+            self.particles.burst(puff, event.x, event.y + 12)
+
     def _on_killed(self, event: Killed) -> None:
         if event.target == self.player and not self.motor.dead:
             self.motor.dead = True
@@ -938,6 +1055,15 @@ class GameplayScene(Scene):
 
     def _on_fizzle(self, _: FlareFizzled) -> None:
         self.ctx.audio.sfx("player/fizzle")
+
+    def _on_brazier_lit(self, event: BrazierLit) -> None:
+        self.ctx.audio.sfx("world/ignite")
+        if (burst := self.emitters.get("beacon_burst")) is not None:
+            self.particles.burst(burst, event.x, event.y - 6)
+
+    def _on_bell(self, _: BellRung) -> None:
+        self.ctx.audio.sfx("world/bell")
+        self.camera.shake.add(self.feel.switches.bell_trauma)
 
     def _on_rested(self, _: Rested) -> None:
         self.world.resource(FlareKit).fill()
@@ -959,6 +1085,21 @@ class GameplayScene(Scene):
         if (burst := self.emitters.get("beacon_burst")) is not None:
             self.particles.burst(burst, event.x, event.y - 14)
         self.progress.checkpoint(event.room, event.iid, self.spawner)
+
+    def _on_lamp_lit(self, event: LampLit) -> None:
+        self.ctx.audio.sfx("player/kindle")
+        if (burst := self.emitters.get("kindle")) is not None:
+            self.particles.burst(burst, event.x, event.y - 8)
+        self._lamps_changed()
+
+    def _on_lamp_snuffed(self, _: LampSnuffed) -> None:
+        self.ctx.audio.sfx("player/fizzle")
+        self._lamps_changed()
+
+    def _lamps_changed(self) -> None:
+        self._count_light()
+        if self.trial is None:
+            self.hud.banner(*self._area_text())
 
     # Rendering
 
@@ -987,7 +1128,7 @@ class GameplayScene(Scene):
         self.particles.draw(canvas, (ox, oy))
         self.texts.draw(canvas, (ox, oy))
         self.backdrops.draw_near(canvas, (ox, oy), room_top)
-        self.post.apply(canvas, self.frame.flags, self.backdrops.grade())
+        self.post.apply(canvas, self.frame.flags, self.area_grade.apply(self.backdrops.grade()))
         self.flash.draw(canvas)
         self._draw_hud(canvas)
         self._draw_trial_timer(canvas)
@@ -1024,7 +1165,9 @@ class GameplayScene(Scene):
             image = self._finished(sprite)
             lift = 0 if image is not None else self._bob(eid)
             image = image or self.art.image(sprite.current, size)
+            image = self._facing(eid, image)
             _, x, y = self._at(image, (body.center_x - ox, body.bottom - oy - lift))
+            x += self._tremble(eid)
             if eid in self.flashes:
                 frame.sprite(flashed(image, self.flashes[eid] / HIT_FLASH), x, y)
             else:
@@ -1042,6 +1185,20 @@ class GameplayScene(Scene):
                 return clip
         return self.bank.image(sprite.current, self.clock)
 
+    def _facing(self, eid: EntityId, image: pygame.Surface) -> pygame.Surface:
+        """Placeholder art faces right; mirror it for enemies facing left."""
+        brain = self.world.find(eid, Brain)
+        if brain is not None and brain.facing < 0 and KINDS[brain.kind].directional:
+            return pygame.transform.flip(image, True, False)
+        return image
+
+    def _tremble(self, eid: EntityId) -> int:
+        """Sideways shake of a crumbling platform that is about to give way."""
+        crumble = self.world.find(eid, Crumble)
+        if crumble is None or crumble.state != "shaking":
+            return 0
+        return 1 if int(self.clock * TREMBLE_RATE) % 2 else -1
+
     def _bob(self, eid: EntityId) -> int:
         """A little life for placeholder enemies: walkers bob, fliers float."""
         brain = self.world.find(eid, Brain)
@@ -1050,6 +1207,8 @@ class GameplayScene(Scene):
         phase = self.clock + eid * FLICKER_PHASE
         if brain.kind == "wisp_eater":
             return round(math.sin(phase * 3.0) * 2)
+        if brain.state in TREMBLING:
+            return round(abs(math.sin(phase * 40.0)))
         return round(abs(math.sin(phase * 14.0))) if brain.state in WALKING else 0
 
     def _queue_lit(

@@ -19,6 +19,7 @@ from tools.levels.source import SourceError, load_source
 from tools.levels.validate import validate
 from tools.levels.world import load_rules
 
+from emberwake.engine.core.i18n import flatten
 from emberwake.engine.ecs.prefabs import load_prefabs
 from emberwake.engine.world.ldtk import load_project
 from emberwake.game.areas import load_areas
@@ -44,9 +45,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     check.add_argument("--backdrops", type=Path, default=ROOT / "content/backdrops.toml")
     check.add_argument("--areas", type=Path, default=ROOT / "content/areas.toml")
     check.add_argument("--content", type=Path, default=ROOT / "content")
+    check.add_argument("--strings", type=Path, default=ROOT / "content/strings/en.toml")
     args = parser.parse_args(argv)
     if args.command == "validate":
-        return _validate(args.world, args.prefabs, args.backdrops, args.areas, args.content)
+        return _validate(args)
 
     out: Path = args.out
     if out.exists() and not (args.merge or args.force):
@@ -66,16 +68,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 0
 
 
-def _validate(world: Path, prefabs: Path, backdrops: Path, areas: Path, content: Path) -> int:
-    presets = tomllib.loads(backdrops.read_text(encoding="utf-8"))
-    project, loaded = load_project(world), load_prefabs(prefabs)
+def _validate(args: argparse.Namespace) -> int:
+    presets = tomllib.loads(args.backdrops.read_text(encoding="utf-8"))
+    project, loaded = load_project(args.world), load_prefabs(args.prefabs)
+    names = flatten(tomllib.loads(args.strings.read_text(encoding="utf-8")))
     problems = validate(
-        project, loaded, backdrops=presets, areas=load_areas(areas), rules=load_rules(content)
+        project,
+        loaded,
+        backdrops=presets,
+        areas=load_areas(args.areas),
+        strings=names,
+        rules=load_rules(args.content),
     )
     for problem in problems:
         print(f"error: {problem}", file=sys.stderr)
     if not problems:
-        print(f"{world.name}: entities match {prefabs.name}; wiring, flags, entrances reachable")
+        world, prefabs = args.world.name, args.prefabs.name
+        print(f"{world}: entities match {prefabs}; wiring, flags, entrances reachable")
     return 1 if problems else 0
 
 

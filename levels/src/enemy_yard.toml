@@ -6,6 +6,7 @@ type = "Gloomcrawler"
 type = "WispEater"
 [entities.B]
 type = "Brazier"
+fields = { Lit = true }
 [entities.L]
 type = "Lightform"
 [entities.k]

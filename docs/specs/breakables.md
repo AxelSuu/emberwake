@@ -1,6 +1,6 @@
 # Breakables
 
-**Milestone:** M9  **Status:** ready  **Issue:** #123
+**Milestone:** M9  **Status:** done  **Issue:** #123
 
 ## Goal
 The lantern changes the world: cracked walls open shortcuts and secrets, crates and pots pay out
@@ -46,15 +46,15 @@ embers, and crumbling platforms make the player keep moving. What breaks stays b
 | trauma | 0.15 | screen shake on breaking something |
 
 ## Acceptance criteria
-- [ ] A cracked wall blocks the player until struck; one swing, in any direction, empties its
+- [x] A cracked wall blocks the player until struck; one swing, in any direction, empties its
   cells.
-- [ ] A broken wall, crate or pot stays broken when its room reloads and after quitting and
+- [x] A broken wall, crate or pot stays broken when its room reloads and after quitting and
   continuing.
-- [ ] Breaking a crate or pot flings its embers, which reach the player and count as collected;
+- [x] Breaking a crate or pot flings its embers, which reach the player and count as collected;
   the same crate always flings them the same way.
-- [ ] A crumbling platform holds the player, clears 0.5 s after they land and is back 2 s later.
-- [ ] A crumbling platform does not come back while the player overlaps it.
-- [ ] Breaking stops time briefly and throws debris; a crumbling platform trembles before it
+- [x] A crumbling platform holds the player, clears 0.5 s after they land and is back 2 s later.
+- [x] A crumbling platform does not come back while the player overlaps it.
+- [x] Breaking stops time briefly and throws debris; a crumbling platform trembles before it
   goes.
 
 ## Tests
