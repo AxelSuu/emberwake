@@ -83,3 +83,28 @@ Npc = { dialogue = "tinker" }
 [goal.components]
 Sprite = { image = "goal" }
 Goal = {}
+
+[cracked_wall]
+[cracked_wall.components]
+Sprite = { image = "cracked_wall" }
+Breakable = { blocks = true }
+Strikeable = { solid = true }
+
+[crate]
+fields = { Embers = "Breakable.embers" }
+[crate.components]
+Sprite = { image = "crate" }
+Breakable = { blocks = true, embers = 2 }
+Strikeable = { solid = true }
+
+[pot]
+fields = { Embers = "Breakable.embers" }
+[pot.components]
+Sprite = { image = "pot" }
+Breakable = { embers = 1 }
+Strikeable = {}
+
+[crumbling_platform]
+[crumbling_platform.components]
+Sprite = { image = "crumbling_platform", active_image = "crumbling_platform_gone" }
+Crumble = {}
