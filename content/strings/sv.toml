@@ -164,17 +164,23 @@ rose = "Ros"
 violet = "Violett"
 
 [shop]
-title = "Fixarens varor"
 back = "Tillbaka"
 wallet = "Glöd: {embers}"
 item = "{name}: {price} glöd"
 sold_out = "{name}: slutsåld"
+
+[shop.title]
+tinker = "Fixarens varor"
+quill = "Quills kartor"
 
 [shop.hp]
 name = "Segare mantel (+1 liv)"
 
 [shop.oil]
 name = "Lampolja (+25 låga)"
+
+[shop.map.quarter]
+name = "Karta över Sjunkna kvarteret"
 
 [dialogue]
 continue = "..."
@@ -223,3 +229,6 @@ name = "Oljeflaska"
 
 [grant.flare_pouch]
 name = "Blosspung"
+
+[grant.map.quarter]
+name = "Karta över Sjunkna kvarteret"

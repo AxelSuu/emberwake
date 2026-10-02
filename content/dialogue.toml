@@ -26,7 +26,7 @@ next = "again"
 
 [tinker.shop]
 text = "dialogue.tinker.shop"
-action = "shop"
+action = "shop:tinker"
 next = "thanks"
 
 [tinker.thanks]

@@ -165,17 +165,23 @@ rose = "Rose"
 violet = "Violet"
 
 [shop]
-title = "The Tinker's wares"
 back = "Back"
 wallet = "Embers: {embers}"
 item = "{name}: {price} embers"
 sold_out = "{name}: sold out"
+
+[shop.title]
+tinker = "The Tinker's wares"
+quill = "Quill's maps"
 
 [shop.hp]
 name = "Tougher cloak (+1 health)"
 
 [shop.oil]
 name = "Lantern oil (+25 flame)"
+
+[shop.map.quarter]
+name = "Map of the Sunken Quarter"
 
 [dialogue]
 continue = "..."
@@ -224,3 +230,6 @@ name = "Oil flask"
 
 [grant.flare_pouch]
 name = "Flare pouch"
+
+[grant.map.quarter]
+name = "Map of the Sunken Quarter"
