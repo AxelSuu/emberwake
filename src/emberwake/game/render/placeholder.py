@@ -289,6 +289,34 @@ class EntityArt:
         image.fill(ROCK_EDGE, (rect.right - 5, rect.bottom - 1, 2, 1))
 
     @staticmethod
+    def _clockrat_king(image: pygame.Surface, rect: pygame.Rect) -> None:
+        EntityArt._king_body(image, rect)
+        image.fill(LANTERN_FRAME, (rect.right - 13, rect.top + 3, 8, 3))
+        image.fill(palette.EMBER_WARM, (rect.right - 12, rect.top, 6, 3))
+        image.fill(palette.EMBER_CORE, (rect.right - 10, rect.top + 1, 2, 2))
+        image.fill(EYES, (rect.right - 6, rect.top + 11, 2, 2))
+
+    @staticmethod
+    def _clockrat_king_down(image: pygame.Surface, rect: pygame.Rect) -> None:
+        low = pygame.Rect(rect.left, rect.top + 14, rect.width, rect.height - 14)
+        EntityArt._king_body(image, low)
+        image.fill(LANTERN_FRAME, (rect.right - 9, rect.bottom - 18, 8, 3))
+        image.fill(ROCK_EDGE, (rect.right - 8, rect.bottom - 20, 6, 2))
+        image.fill(SPIKE, (rect.right - 6, rect.bottom - 11, 2, 1))
+
+    @staticmethod
+    def _king_body(image: pygame.Surface, rect: pygame.Rect) -> None:
+        image.fill(PLANK_DARK, (rect.left + 2, rect.top + 12, rect.width - 4, rect.height - 14))
+        image.fill(PLANK, (rect.left + 4, rect.top + 10, rect.width - 12, 4))
+        image.fill(PLANK_LIGHT, (rect.left + 6, rect.top + 10, rect.width - 16, 1))
+        image.fill(ROCK_EDGE, (rect.right - 12, rect.top + 6, 10, rect.height - 8))
+        image.fill(SPIKE_TIP, (rect.right - 4, rect.top + 16, 2, 2))
+        for x in range(rect.left + 5, rect.right - 14, 6):
+            pygame.draw.circle(image, ROCK_EDGE, (x, rect.bottom - 8), 3, 1)
+        image.fill(ROCK_EDGE, (rect.left + 4, rect.bottom - 1, 4, 1))
+        image.fill(ROCK_EDGE, (rect.right - 9, rect.bottom - 1, 4, 1))
+
+    @staticmethod
     def _gloomcrawler(image: pygame.Surface, rect: pygame.Rect) -> None:
         image.fill(CLOAK_DARK, (rect.left, rect.bottom - 6, rect.width, 5))
         image.fill(CLOAK_SHADE, (rect.left + 2, rect.bottom - 7, rect.width - 4, 2))

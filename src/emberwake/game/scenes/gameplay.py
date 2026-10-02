@@ -46,7 +46,7 @@ from emberwake.game.cosmetics import Cosmetics, load_cosmetics
 from emberwake.game.data.records import RunResult, format_time, load_records
 from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
-from emberwake.game.enemies import KINDS, Brain, Vented
+from emberwake.game.enemies import KINDS, Brain, Summoned, Toppled, Vented
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
 from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
@@ -114,7 +114,7 @@ BRIGHTNESS_LIFT = 0.6
 """How far the brightness setting at full lifts the darkness toward full light."""
 WALKING = frozenset({"patrol", "charge", "creep", "flee"})
 """Brain states in which a placeholder enemy bobs as it walks."""
-TREMBLING = frozenset({"warn", "hiss"})
+TREMBLING = frozenset({"warn", "hiss", "rear", "call"})
 """Brain states in which a placeholder enemy shakes before it acts."""
 LANDING_DUST = 0.35
 """Share of the fall speed above which a landing kicks up dust."""
@@ -290,6 +290,8 @@ class GameplayScene(Scene):
             bus.subscribe(Collected, self._on_collected),
             bus.subscribe(Damaged, self._on_damaged),
             bus.subscribe(Vented, self._on_vented),
+            bus.subscribe(Summoned, self._on_summoned),
+            bus.subscribe(Toppled, self._on_toppled),
             bus.subscribe(Talk, self._on_talk),
             bus.subscribe(GoalReached, self._on_goal),
             *self._track_achievements(bus),
@@ -925,6 +927,15 @@ class GameplayScene(Scene):
     def _on_vented(self, event: Vented) -> None:
         if (puff := self.emitters.get("steam")) is not None:
             self.particles.burst(puff, event.x, event.y - 6)
+
+    def _on_summoned(self, event: Summoned) -> None:
+        if (puff := self.emitters.get("land_dust")) is not None:
+            self.particles.burst(puff, event.x, event.y)
+
+    def _on_toppled(self, event: Toppled) -> None:
+        self.camera.shake.add(self.feel.juice.dash_trauma)
+        if (puff := self.emitters.get("land_dust")) is not None:
+            self.particles.burst(puff, event.x, event.y + 12)
 
     def _on_killed(self, event: Killed) -> None:
         if event.target == self.player and not self.motor.dead:
