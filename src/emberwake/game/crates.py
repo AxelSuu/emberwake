@@ -15,6 +15,7 @@ from emberwake.engine.input import InputState
 from emberwake.engine.physics import Body, TileSource, move
 from emberwake.engine.world.spawning import WorldState
 from emberwake.game.actions import Action
+from emberwake.game.platforms import platform_solids
 from emberwake.game.player.controller import Motor
 
 if TYPE_CHECKING:
@@ -96,7 +97,7 @@ def crate_system(world: World, dt: float) -> None:
         return
     tuning, grid = world.resource(CrateTuning), world.resource(TileSource)
     player = _player(world)
-    solids = [body for _, body, _, _ in crates]
+    solids = [*(body for _, body, _, _ in crates), *platform_solids(world)]
     if player is not None:
         solids.append(player[0])
     for _, body, crate, rest in crates:

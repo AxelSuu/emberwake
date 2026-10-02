@@ -217,6 +217,23 @@ fields.Embers = { type = "Int", default = 2 }
 color = "#6e2727"
 doc = "Pushed by walking into it; falls, stacks, can be stood on and weighs plates"
 
+[entities.Platform]
+color = "#ab947a"
+size = [48, 16]
+pivot = [0.0, 0.0]
+resizable = true
+doc = "A solid box that carries the player along its Path; a lift while wired, a loop when not"
+fields.Path = { type = "EntityRef", array = true, doc = "PathNodes it visits in order: the top-left corner it goes to" }
+fields.Speed = { type = "Float", default = 0.0, doc = "px/s; 0 uses content/feel.toml" }
+fields.Mode = { type = "String", default = "any", doc = "any or all of its sources" }
+fields.Invert = { type = "Bool", default = false, doc = "Travels while unpowered instead" }
+
+[entities.PathNode]
+color = "#ab947a"
+size = [16, 16]
+pivot = [0.0, 0.0]
+doc = "A stop on a Platform's Path, in the same room; the platform's top-left goes here"
+
 [entities.Pot]
 color = "#e6904e"
 doc = "Breakable; drops embers"

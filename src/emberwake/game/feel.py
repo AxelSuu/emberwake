@@ -15,6 +15,7 @@ from emberwake.game.enemies import EnemyTuning
 from emberwake.game.lamprey import LampreyTuning
 from emberwake.game.lamps import LampTuning
 from emberwake.game.light import LightTuning
+from emberwake.game.platforms import PlatformTuning
 from emberwake.game.player.swing import SwingTuning
 from emberwake.game.player.tuning import PlayerTuning
 from emberwake.game.rooms import RoomTuning
@@ -55,6 +56,7 @@ class Feel:
     swing: SwingTuning = field(default_factory=SwingTuning)
     breakables: BreakTuning = field(default_factory=BreakTuning)
     crates: CrateTuning = field(default_factory=CrateTuning)
+    platforms: PlatformTuning = field(default_factory=PlatformTuning)
     switches: SwitchTuning = field(default_factory=SwitchTuning)
     encounters: EncounterTuning = field(default_factory=EncounterTuning)
     lamprey: LampreyTuning = field(default_factory=LampreyTuning)
