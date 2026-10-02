@@ -151,7 +151,10 @@ def swing_left_of(scene: GameplayScene, target: Body) -> None:
 
 
 def lamps(scene: GameplayScene) -> list[tuple[Body, Lamp]]:
-    return sorted(((b, lamp) for _, b, lamp in scene.world.query(Body, Lamp)), key=lambda r: r[0].x)
+    room = scene.rooms.graph.rects[scene.room]
+    rows = scene.world.query(Body, Lamp)
+    here = [(b, lamp) for _, b, lamp in rows if room.collidepoint(b.center_x, b.y)]
+    return sorted(here, key=lambda r: r[0].x)
 
 
 def wisps(scene: GameplayScene) -> list[tuple[EntityId, Body]]:
