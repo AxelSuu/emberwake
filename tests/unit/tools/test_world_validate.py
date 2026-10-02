@@ -316,3 +316,67 @@ class TestAbilities:
         rooms = pair()
         rooms["A"] = ((0, 0), hall(), "")
         assert "A: the start room has no PlayerStart" in problems(rooms)
+
+
+ARENA = """
+[entities.d]
+type = "Door"
+[entities.z]
+type = "Encounter"
+fields = { Doors = ["d"] }
+[entities.w]
+type = "WaveSpawn"
+fields = { Encounter = "z", Wave = 1, Kind = "clockrat" }
+"""
+
+
+def arena(toml: str = ARENA, floor: str = "..Pzw") -> dict[str, Any]:
+    rooms = pair()
+    rooms["A"] = ((0, 0), partition(floor), toml)
+    return rooms
+
+
+class TestEncounters:
+    def test_a_door_an_encounter_shuts_does_not_wall_off_the_rest(self):
+        assert problems(arena()) == []
+
+    def test_a_door_nothing_opens_still_does(self):
+        toml = ARENA.replace('fields = { Doors = ["d"] }', "")
+        assert len(reaching(problems(arena(toml)))) == 1
+
+    def test_an_unknown_kind(self):
+        found = problems(arena(ARENA.replace('"clockrat"', '"dragon"')))
+        assert [line.split(": ")[1][:23] for line in found] == ["Kind 'dragon' is not an"]
+
+    def test_waves_must_count_up_from_one(self):
+        found = problems(arena(ARENA.replace("Wave = 1", "Wave = 2")))
+        assert [line.split(": ")[1] for line in found] == ["waves [2] do not run from 1 up"]
+
+    def test_an_encounter_without_waves(self):
+        toml = ARENA.split("[entities.w]", maxsplit=1)[0]
+        found = problems(arena(toml, floor="..Pz"))
+        assert [line.split(": ")[1] for line in found] == ["waves [] do not run from 1 up"]
+
+    def test_a_wave_spawn_must_name_an_encounter(self):
+        found = problems(arena(ARENA.replace('Encounter = "z"', 'Encounter = "d"')))
+        assert [line.split(": ")[1] for line in found] == [
+            "Encounter is Door, not an Encounter",
+            "waves [] do not run from 1 up",
+        ]
+
+    def test_a_wave_spawn_in_another_room_than_its_encounter(self):
+        rooms = arena()
+        toml = '[entities.s]\ntype = "WaveSpawn"\nfields = { Encounter = "A:z", Kind = "gearbug" }'
+        rooms["B"] = ((1, 0), hall({8: "..Ps"}), toml)
+        found = problems(rooms)
+        assert [line.split(": ")[1] for line in found] == ["Encounter is in A, not in this room"]
+
+    def test_doors_must_be_doors(self):
+        found = problems(arena(ARENA.replace('Doors = ["d"]', 'Doors = ["w"]')))
+        assert [line.split(": ")[1] for line in found if "Doors" in line] == [
+            f"Doors names {_iid(found)}, which is a WaveSpawn, not a Door"
+        ]
+
+
+def _iid(found: list[str]) -> str:
+    return next(line.split("Doors names ")[1].split(",")[0] for line in found if "Doors" in line)

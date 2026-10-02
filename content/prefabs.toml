@@ -121,6 +121,18 @@ LightSource = { radius = 88.0, color = "#f9c22b" }
 [rat_spawn.components]
 RatSpawn = {}
 
+[encounter]
+fields = { Doors = "Encounter.doors", Targets = "Switch.targets" }
+persist = ["Switch"]
+[encounter.components]
+Encounter = {}
+Switch = {}
+
+[wave_spawn]
+fields = { Encounter = "WaveSpawn.encounter", Wave = "WaveSpawn.wave", Kind = "WaveSpawn.kind" }
+[wave_spawn.components]
+WaveSpawn = {}
+
 [tinker]
 [tinker.components]
 Sprite = { image = "tinker" }

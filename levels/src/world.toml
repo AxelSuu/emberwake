@@ -55,3 +55,6 @@ cell = [85, 0]
 
 [rooms.Lamp_Lab]
 cell = [89, 0]
+
+[rooms.Arena_Lab]
+cell = [70, 2]

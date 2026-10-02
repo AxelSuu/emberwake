@@ -12,3 +12,4 @@ One file per mechanic, written before implementation. Copy `_template.md`.
 - [Clockrat King](clockrat-king.md): elite that charges, calls rats and topples when hit on the crown
 - [World validator](world-validator.md): wiring, flags, entrances and reachability by ability
 - [NPCs](npcs.md): Keeper Hesper, Quill and their stages
+- [Encounters](encounters.md): arena locks, waves and rewards
