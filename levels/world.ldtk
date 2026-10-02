@@ -11,7 +11,7 @@
 	"iid": "87b725ab-f0a4-5a9b-ba96-4e58e071114b",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703.0,
-	"nextUid": 147,
+	"nextUid": 149,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -9374,14 +9374,14 @@
 				},
 				{
 					"dir": "e",
-					"levelIid": "b61dd4c9-a095-5020-81ac-cf4750a3d7eb"
+					"levelIid": "f3fd35a5-1063-54eb-b166-9b71831683c1"
 				}
 			]
 		},
 		{
-			"identifier": "Lever_Hall",
-			"iid": "b61dd4c9-a095-5020-81ac-cf4750a3d7eb",
-			"uid": 18,
+			"identifier": "Lab_Lever_Hall",
+			"iid": "f3fd35a5-1063-54eb-b166-9b71831683c1",
+			"uid": 147,
 			"worldX": 20800,
 			"worldY": 352,
 			"worldDepth": 0,
@@ -9471,8 +9471,8 @@
 					"__pxTotalOffsetY": 0,
 					"__tilesetDefUid": null,
 					"__tilesetRelPath": null,
-					"iid": "ab6c4c2d-5cba-59ee-b88c-358a8a4d6926",
-					"levelId": 18,
+					"iid": "0866ab72-d7f8-5871-b9ca-81e8ba1269ab",
+					"levelId": 147,
 					"layerDefUid": 1,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
@@ -9480,7 +9480,7 @@
 					"optionalRules": [],
 					"intGridCsv": [],
 					"autoLayerTiles": [],
-					"seed": 1000018,
+					"seed": 1000147,
 					"overrideTilesetUid": null,
 					"gridTiles": [],
 					"entityInstances": [
@@ -9499,7 +9499,7 @@
 							"__smartColor": "#966C6C",
 							"__worldX": 20960,
 							"__worldY": 432,
-							"iid": "596c1b7e-eee6-53dd-a281-028ef6634884",
+							"iid": "51d3b410-4f5f-5355-a013-a5f253707632",
 							"width": 16,
 							"height": 48,
 							"defUid": 6,
@@ -9571,7 +9571,7 @@
 							"__smartColor": "#F9C22B",
 							"__worldX": 20856,
 							"__worldY": 480,
-							"iid": "25b8481b-16b1-54b4-af41-8ad599c75475",
+							"iid": "affd981a-5dd1-5e31-adb7-ad7e7c0312cd",
 							"width": 16,
 							"height": 16,
 							"defUid": 3,
@@ -9613,7 +9613,7 @@
 							"__smartColor": "#FB6B1D",
 							"__worldX": 20888,
 							"__worldY": 480,
-							"iid": "8c1b95b8-bc59-5ef7-b8e3-be41217e8632",
+							"iid": "c439e675-2ece-5d1b-b157-ade3612b0c15",
 							"width": 16,
 							"height": 16,
 							"defUid": 9,
@@ -9627,9 +9627,9 @@
 									"__type": "Array<EntityRef>",
 									"__value": [
 										{
-											"entityIid": "596c1b7e-eee6-53dd-a281-028ef6634884",
-											"layerIid": "ab6c4c2d-5cba-59ee-b88c-358a8a4d6926",
-											"levelIid": "b61dd4c9-a095-5020-81ac-cf4750a3d7eb",
+											"entityIid": "51d3b410-4f5f-5355-a013-a5f253707632",
+											"layerIid": "0866ab72-d7f8-5871-b9ca-81e8ba1269ab",
+											"levelIid": "f3fd35a5-1063-54eb-b166-9b71831683c1",
 											"worldIid": "0a310f1f-1725-59aa-9eaf-dcac989ad33f"
 										}
 									],
@@ -9639,7 +9639,7 @@
 										{
 											"id": "V_String",
 											"params": [
-												"596c1b7e-eee6-53dd-a281-028ef6634884"
+												"51d3b410-4f5f-5355-a013-a5f253707632"
 											]
 										}
 									]
@@ -9692,7 +9692,7 @@
 							"__smartColor": "#EA4F36",
 							"__worldX": 21064,
 							"__worldY": 472,
-							"iid": "f8a4fb2d-61ae-58a5-93dc-0b87114df9f5",
+							"iid": "12f8af65-cb9f-5a33-8542-c8d74ecd2867",
 							"width": 16,
 							"height": 16,
 							"defUid": 14,
@@ -9749,7 +9749,7 @@
 							"__smartColor": "#F9C22B",
 							"__worldX": 21096,
 							"__worldY": 480,
-							"iid": "34174be8-6a99-5342-9480-183de46d9d83",
+							"iid": "982ae4a8-5172-5c7b-ab10-1e6f891a51cb",
 							"width": 16,
 							"height": 16,
 							"defUid": 3,
@@ -9789,8 +9789,8 @@
 					"__pxTotalOffsetY": 0,
 					"__tilesetDefUid": null,
 					"__tilesetRelPath": null,
-					"iid": "ca93041b-0f17-55ea-852b-281ab1edc59d",
-					"levelId": 18,
+					"iid": "632fe75e-0964-553a-ad47-11df2afa3312",
+					"levelId": 147,
 					"layerDefUid": 2,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
@@ -10019,7 +10019,7 @@
 						1
 					],
 					"autoLayerTiles": [],
-					"seed": 1000018,
+					"seed": 1000147,
 					"overrideTilesetUid": null,
 					"gridTiles": [],
 					"entityInstances": []
@@ -10698,11 +10698,11 @@
 			"__neighbours": [
 				{
 					"dir": "w",
-					"levelIid": "b61dd4c9-a095-5020-81ac-cf4750a3d7eb"
+					"levelIid": "f3fd35a5-1063-54eb-b166-9b71831683c1"
 				},
 				{
 					"dir": "e",
-					"levelIid": "f75739c3-7034-5fc0-beed-47597700ccde"
+					"levelIid": "9e1656b2-5d13-5f5e-a005-52fb2ae3d543"
 				},
 				{
 					"dir": "n",
@@ -10711,9 +10711,9 @@
 			]
 		},
 		{
-			"identifier": "Plate_Room",
-			"iid": "f75739c3-7034-5fc0-beed-47597700ccde",
-			"uid": 21,
+			"identifier": "Lab_Plate_Room",
+			"iid": "9e1656b2-5d13-5f5e-a005-52fb2ae3d543",
+			"uid": 148,
 			"worldX": 21440,
 			"worldY": 176,
 			"worldDepth": 0,
@@ -10803,8 +10803,8 @@
 					"__pxTotalOffsetY": 0,
 					"__tilesetDefUid": null,
 					"__tilesetRelPath": null,
-					"iid": "cee45ade-e1ff-5a83-ab6f-ebe3ec8700f7",
-					"levelId": 21,
+					"iid": "fea1d079-4a93-5e07-ae98-17ee78e6a650",
+					"levelId": 148,
 					"layerDefUid": 1,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
@@ -10812,7 +10812,7 @@
 					"optionalRules": [],
 					"intGridCsv": [],
 					"autoLayerTiles": [],
-					"seed": 1000021,
+					"seed": 1000148,
 					"overrideTilesetUid": null,
 					"gridTiles": [],
 					"entityInstances": [
@@ -10831,7 +10831,7 @@
 							"__smartColor": "#966C6C",
 							"__worldX": 21696,
 							"__worldY": 272,
-							"iid": "7de21a2a-ff4f-5ba6-bd51-c9078dafc4c7",
+							"iid": "80d6e818-cca0-5eb5-b439-e31a8a79bdf8",
 							"width": 16,
 							"height": 48,
 							"defUid": 6,
@@ -10903,7 +10903,7 @@
 							"__smartColor": "#F9C22B",
 							"__worldX": 21480,
 							"__worldY": 320,
-							"iid": "2c87b34c-cc36-585b-a58a-ef99f6bf8c69",
+							"iid": "0fe5b25e-0e0e-5fc3-9212-38f364a8810b",
 							"width": 16,
 							"height": 16,
 							"defUid": 3,
@@ -10945,7 +10945,7 @@
 							"__smartColor": "#AB947A",
 							"__worldX": 21688,
 							"__worldY": 320,
-							"iid": "2f8b6809-6f16-5377-9314-34b2c1cd0ea8",
+							"iid": "50dd3a35-0147-5061-be03-036ec21b017d",
 							"width": 16,
 							"height": 16,
 							"defUid": 11,
@@ -10959,9 +10959,9 @@
 									"__type": "Array<EntityRef>",
 									"__value": [
 										{
-											"entityIid": "7de21a2a-ff4f-5ba6-bd51-c9078dafc4c7",
-											"layerIid": "cee45ade-e1ff-5a83-ab6f-ebe3ec8700f7",
-											"levelIid": "f75739c3-7034-5fc0-beed-47597700ccde",
+											"entityIid": "80d6e818-cca0-5eb5-b439-e31a8a79bdf8",
+											"layerIid": "fea1d079-4a93-5e07-ae98-17ee78e6a650",
+											"levelIid": "9e1656b2-5d13-5f5e-a005-52fb2ae3d543",
 											"worldIid": "0a310f1f-1725-59aa-9eaf-dcac989ad33f"
 										}
 									],
@@ -10971,7 +10971,7 @@
 										{
 											"id": "V_String",
 											"params": [
-												"7de21a2a-ff4f-5ba6-bd51-c9078dafc4c7"
+												"80d6e818-cca0-5eb5-b439-e31a8a79bdf8"
 											]
 										}
 									]
@@ -11009,7 +11009,7 @@
 							"__smartColor": "#F9C22B",
 							"__worldX": 21736,
 							"__worldY": 320,
-							"iid": "4283774e-a6dc-58ea-a1a6-901dd78e3827",
+							"iid": "f100b722-6cde-5211-a44e-e6524d06b2c0",
 							"width": 16,
 							"height": 16,
 							"defUid": 3,
@@ -11049,8 +11049,8 @@
 					"__pxTotalOffsetY": 0,
 					"__tilesetDefUid": null,
 					"__tilesetRelPath": null,
-					"iid": "26e653bb-2393-59ad-ac17-23c17469ed95",
-					"levelId": 21,
+					"iid": "59b734e6-8413-5463-bd66-973978ce0149",
+					"levelId": 148,
 					"layerDefUid": 2,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
@@ -11279,7 +11279,7 @@
 						1
 					],
 					"autoLayerTiles": [],
-					"seed": 1000021,
+					"seed": 1000148,
 					"overrideTilesetUid": null,
 					"gridTiles": [],
 					"entityInstances": []
@@ -12133,7 +12133,7 @@
 			"__neighbours": [
 				{
 					"dir": "w",
-					"levelIid": "f75739c3-7034-5fc0-beed-47597700ccde"
+					"levelIid": "9e1656b2-5d13-5f5e-a005-52fb2ae3d543"
 				},
 				{
 					"dir": "w",
@@ -13209,7 +13209,7 @@
 				},
 				{
 					"dir": "s",
-					"levelIid": "f75739c3-7034-5fc0-beed-47597700ccde"
+					"levelIid": "9e1656b2-5d13-5f5e-a005-52fb2ae3d543"
 				},
 				{
 					"dir": "e",

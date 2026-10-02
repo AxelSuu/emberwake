@@ -11,13 +11,13 @@ cell = [60, 0]
 [rooms.East_Passage]
 cell = [64, 2]
 
-[rooms.Lever_Hall]
+[rooms.Lab_Lever_Hall]
 cell = [65, 2]
 
 [rooms.Shaft]
 cell = [66, 1]
 
-[rooms.Plate_Room]
+[rooms.Lab_Plate_Room]
 cell = [67, 1]
 
 [rooms.Upper_Room]

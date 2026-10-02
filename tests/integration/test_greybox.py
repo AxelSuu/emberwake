@@ -210,11 +210,11 @@ def return_hall() -> Phase:
 
 
 def test_shaft_is_climbed_to_its_east_exit(ctx: GameContext):
-    run(ctx, "Shaft", climb(SHAFT_TOP, 1, in_room("Plate_Room")))
+    run(ctx, "Shaft", climb(SHAFT_TOP, 1, in_room("Lab_Plate_Room")))
 
 
 def test_plate_room_is_crossed_by_standing_on_the_plate(ctx: GameContext):
-    run(ctx, "Plate_Room", plate_room())
+    run(ctx, "Lab_Plate_Room", plate_room())
 
 
 def test_upper_room_lights_its_beacon_and_leaves_west(ctx: GameContext):
@@ -246,7 +246,7 @@ def test_the_loop_can_be_walked_using_every_mechanism(ctx: GameContext):
             Leg(at(EAST, 10.5)[0]),
             Leg(at(EAST, 10.5)[0], interact=True),
             Leg(at(hall, 0.5)[0]),
-            until=in_room("Lever_Hall"),
+            until=in_room("Lab_Lever_Hall"),
         ),
         walk(
             Leg(at(hall, 5.5)[0]),
@@ -255,7 +255,7 @@ def test_the_loop_can_be_walked_using_every_mechanism(ctx: GameContext):
             Leg(at(SHAFT, 0.5)[0]),
             until=in_room("Shaft"),
         ),
-        climb(SHAFT_TOP, 1, in_room("Plate_Room")),
+        climb(SHAFT_TOP, 1, in_room("Lab_Plate_Room")),
         plate_room(),
         upper_room(),
         return_hall(),
@@ -263,9 +263,9 @@ def test_the_loop_can_be_walked_using_every_mechanism(ctx: GameContext):
         ticks=4000,
     )
     assert entered == [
-        "Lever_Hall",
+        "Lab_Lever_Hall",
         "Shaft",
-        "Plate_Room",
+        "Lab_Plate_Room",
         "Upper_Room",
         "Return_Hall",
         "Test_Room",
