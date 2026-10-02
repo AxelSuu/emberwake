@@ -11,7 +11,7 @@
 	"iid": "87b725ab-f0a4-5a9b-ba96-4e58e071114b",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703.0,
-	"nextUid": 198,
+	"nextUid": 199,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -54780,6 +54780,10 @@
 				{
 					"dir": "e",
 					"levelIid": "6c925b30-3e0f-5b6d-aef5-ddd3c1b23ae0"
+				},
+				{
+					"dir": "s",
+					"levelIid": "6fac896c-7273-5075-9db0-63b597cb141b"
 				}
 			]
 		},
@@ -55861,6 +55865,1605 @@
 			"__neighbours": [
 				{
 					"dir": "w",
+					"levelIid": "3dddcbfe-bf97-5f4e-9f88-7273c8995e11"
+				}
+			]
+		},
+		{
+			"identifier": "Rat_Warren",
+			"iid": "6fac896c-7273-5075-9db0-63b597cb141b",
+			"uid": 198,
+			"worldX": 4480,
+			"worldY": 1760,
+			"worldDepth": 0,
+			"pxWid": 640,
+			"pxHei": 176,
+			"__bgColor": "#2E222F",
+			"bgColor": null,
+			"useAutoIdentifier": false,
+			"bgRelPath": null,
+			"bgPos": null,
+			"bgPivotX": 0.5,
+			"bgPivotY": 0.5,
+			"__smartColor": "#ADADB5",
+			"__bgPos": null,
+			"externalRelPath": null,
+			"fieldInstances": [
+				{
+					"__identifier": "Generated",
+					"__type": "Bool",
+					"__value": true,
+					"__tile": null,
+					"defUid": 15,
+					"realEditorValues": [
+						{
+							"id": "V_Bool",
+							"params": [
+								true
+							]
+						}
+					]
+				},
+				{
+					"__identifier": "Backdrop",
+					"__type": "String",
+					"__value": "cavern",
+					"__tile": null,
+					"defUid": 19,
+					"realEditorValues": [
+						{
+							"id": "V_String",
+							"params": [
+								"cavern"
+							]
+						}
+					]
+				},
+				{
+					"__identifier": "Area",
+					"__type": "String",
+					"__value": "quarter",
+					"__tile": null,
+					"defUid": 37,
+					"realEditorValues": [
+						{
+							"id": "V_String",
+							"params": [
+								"quarter"
+							]
+						}
+					]
+				},
+				{
+					"__identifier": "Music",
+					"__type": "String",
+					"__value": "",
+					"__tile": null,
+					"defUid": 38,
+					"realEditorValues": [
+						{
+							"id": "V_String",
+							"params": [
+								""
+							]
+						}
+					]
+				}
+			],
+			"layerInstances": [
+				{
+					"__identifier": "Entities",
+					"__type": "Entities",
+					"__cWid": 40,
+					"__cHei": 11,
+					"__gridSize": 16,
+					"__opacity": 1.0,
+					"__pxTotalOffsetX": 0,
+					"__pxTotalOffsetY": 0,
+					"__tilesetDefUid": null,
+					"__tilesetRelPath": null,
+					"iid": "3c67edc3-6cc4-52d8-a0b9-27f7ff503dc6",
+					"levelId": 198,
+					"layerDefUid": 1,
+					"pxOffsetX": 0,
+					"pxOffsetY": 0,
+					"visible": true,
+					"optionalRules": [],
+					"intGridCsv": [],
+					"autoLayerTiles": [],
+					"seed": 1000198,
+					"overrideTilesetUid": null,
+					"gridTiles": [],
+					"entityInstances": [
+						{
+							"__identifier": "Door",
+							"__grid": [
+								20,
+								0
+							],
+							"__pivot": [
+								0.0,
+								0.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#966C6C",
+							"__worldX": 4800,
+							"__worldY": 1760,
+							"iid": "82d9ca61-74c3-5a52-a096-22b205453b17",
+							"width": 48,
+							"height": 16,
+							"defUid": 6,
+							"px": [
+								320,
+								0
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Mode",
+									"__type": "String",
+									"__value": "any",
+									"__tile": null,
+									"defUid": 4,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"any"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Invert",
+									"__type": "Bool",
+									"__value": false,
+									"__tile": null,
+									"defUid": 5,
+									"realEditorValues": [
+										{
+											"id": "V_Bool",
+											"params": [
+												false
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 39,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 40,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "PlayerStart",
+							"__grid": [
+								22,
+								2
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#F9C22B",
+							"__worldX": 4840,
+							"__worldY": 1792,
+							"iid": "a8633676-1365-5beb-8b99-0bf58757f3b8",
+							"width": 16,
+							"height": 16,
+							"defUid": 3,
+							"px": [
+								360,
+								32
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 37,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 38,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "Ember",
+							"__grid": [
+								13,
+								4
+							],
+							"__pivot": [
+								0.5,
+								0.5
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#EA4F36",
+							"__worldX": 4696,
+							"__worldY": 1832,
+							"iid": "b2ebbf28-390c-52f4-978d-59fe11cef9d2",
+							"width": 16,
+							"height": 16,
+							"defUid": 14,
+							"px": [
+								216,
+								72
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Value",
+									"__type": "Int",
+									"__value": 1,
+									"__tile": null,
+									"defUid": 13,
+									"realEditorValues": [
+										{
+											"id": "V_Int",
+											"params": [
+												1
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 47,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 48,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "Encounter",
+							"__grid": [
+								25,
+								4
+							],
+							"__pivot": [
+								0.0,
+								0.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#E83B3B",
+							"__worldX": 4880,
+							"__worldY": 1824,
+							"iid": "b0b1c7de-ff3e-539e-bd54-5e4fe13c99cf",
+							"width": 176,
+							"height": 80,
+							"defUid": 150,
+							"px": [
+								400,
+								64
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Doors",
+									"__type": "Array<EntityRef>",
+									"__value": [
+										{
+											"entityIid": "82d9ca61-74c3-5a52-a096-22b205453b17",
+											"layerIid": "3c67edc3-6cc4-52d8-a0b9-27f7ff503dc6",
+											"levelIid": "6fac896c-7273-5075-9db0-63b597cb141b",
+											"worldIid": "0a310f1f-1725-59aa-9eaf-dcac989ad33f"
+										}
+									],
+									"__tile": null,
+									"defUid": 146,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"82d9ca61-74c3-5a52-a096-22b205453b17"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Targets",
+									"__type": "Array<EntityRef>",
+									"__value": [
+										{
+											"entityIid": "570a7761-9aeb-5c83-9243-9c6ed0fba14c",
+											"layerIid": "3c67edc3-6cc4-52d8-a0b9-27f7ff503dc6",
+											"levelIid": "6fac896c-7273-5075-9db0-63b597cb141b",
+											"worldIid": "0a310f1f-1725-59aa-9eaf-dcac989ad33f"
+										}
+									],
+									"__tile": null,
+									"defUid": 147,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"570a7761-9aeb-5c83-9243-9c6ed0fba14c"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 148,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 149,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "Door",
+							"__grid": [
+								5,
+								7
+							],
+							"__pivot": [
+								0.0,
+								0.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#966C6C",
+							"__worldX": 4560,
+							"__worldY": 1872,
+							"iid": "570a7761-9aeb-5c83-9243-9c6ed0fba14c",
+							"width": 16,
+							"height": 48,
+							"defUid": 6,
+							"px": [
+								80,
+								112
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Mode",
+									"__type": "String",
+									"__value": "any",
+									"__tile": null,
+									"defUid": 4,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"any"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Invert",
+									"__type": "Bool",
+									"__value": false,
+									"__tile": null,
+									"defUid": 5,
+									"realEditorValues": [
+										{
+											"id": "V_Bool",
+											"params": [
+												false
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 39,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 40,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "Grant",
+							"__grid": [
+								2,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FBFF86",
+							"__worldX": 4520,
+							"__worldY": 1920,
+							"iid": "60c9e27c-9643-55e3-96ec-2cbc63cb82d4",
+							"width": 16,
+							"height": 16,
+							"defUid": 36,
+							"px": [
+								40,
+								160
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Thing",
+									"__type": "String",
+									"__value": "shard",
+									"__tile": null,
+									"defUid": 34,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"shard"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Count",
+									"__type": "Int",
+									"__value": 1,
+									"__tile": null,
+									"defUid": 35,
+									"realEditorValues": [
+										{
+											"id": "V_Int",
+											"params": [
+												1
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 49,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 50,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "Ember",
+							"__grid": [
+								3,
+								9
+							],
+							"__pivot": [
+								0.5,
+								0.5
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#EA4F36",
+							"__worldX": 4536,
+							"__worldY": 1912,
+							"iid": "e0837d50-3cfc-5167-b5e6-69bbdf2e8306",
+							"width": 16,
+							"height": 16,
+							"defUid": 14,
+							"px": [
+								56,
+								152
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Value",
+									"__type": "Int",
+									"__value": 1,
+									"__tile": null,
+									"defUid": 13,
+									"realEditorValues": [
+										{
+											"id": "V_Int",
+											"params": [
+												1
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 47,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 48,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "PlayerStart",
+							"__grid": [
+								9,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#F9C22B",
+							"__worldX": 4632,
+							"__worldY": 1920,
+							"iid": "210ba203-9024-577c-8315-e4c9eab17800",
+							"width": 16,
+							"height": 16,
+							"defUid": 3,
+							"px": [
+								152,
+								160
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 37,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 38,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "WaveSpawn",
+							"__grid": [
+								26,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#E83B3B",
+							"__worldX": 4904,
+							"__worldY": 1920,
+							"iid": "3288b294-a004-56bf-8822-ef2bb63df846",
+							"width": 16,
+							"height": 16,
+							"defUid": 156,
+							"px": [
+								424,
+								160
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Encounter",
+									"__type": "EntityRef",
+									"__value": {
+										"entityIid": "b0b1c7de-ff3e-539e-bd54-5e4fe13c99cf",
+										"layerIid": "3c67edc3-6cc4-52d8-a0b9-27f7ff503dc6",
+										"levelIid": "6fac896c-7273-5075-9db0-63b597cb141b",
+										"worldIid": "0a310f1f-1725-59aa-9eaf-dcac989ad33f"
+									},
+									"__tile": null,
+									"defUid": 151,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"b0b1c7de-ff3e-539e-bd54-5e4fe13c99cf"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Wave",
+									"__type": "Int",
+									"__value": 1,
+									"__tile": null,
+									"defUid": 152,
+									"realEditorValues": [
+										{
+											"id": "V_Int",
+											"params": [
+												1
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Kind",
+									"__type": "String",
+									"__value": "clockrat",
+									"__tile": null,
+									"defUid": 153,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"clockrat"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 154,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 155,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "WaveSpawn",
+							"__grid": [
+								28,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#E83B3B",
+							"__worldX": 4936,
+							"__worldY": 1920,
+							"iid": "fa8cf300-1e31-5f5d-b4e1-405406d3ad4a",
+							"width": 16,
+							"height": 16,
+							"defUid": 156,
+							"px": [
+								456,
+								160
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Encounter",
+									"__type": "EntityRef",
+									"__value": {
+										"entityIid": "b0b1c7de-ff3e-539e-bd54-5e4fe13c99cf",
+										"layerIid": "3c67edc3-6cc4-52d8-a0b9-27f7ff503dc6",
+										"levelIid": "6fac896c-7273-5075-9db0-63b597cb141b",
+										"worldIid": "0a310f1f-1725-59aa-9eaf-dcac989ad33f"
+									},
+									"__tile": null,
+									"defUid": 151,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"b0b1c7de-ff3e-539e-bd54-5e4fe13c99cf"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Wave",
+									"__type": "Int",
+									"__value": 2,
+									"__tile": null,
+									"defUid": 152,
+									"realEditorValues": [
+										{
+											"id": "V_Int",
+											"params": [
+												2
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Kind",
+									"__type": "String",
+									"__value": "clockrat",
+									"__tile": null,
+									"defUid": 153,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"clockrat"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 154,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 155,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "WaveSpawn",
+							"__grid": [
+								30,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#E83B3B",
+							"__worldX": 4968,
+							"__worldY": 1920,
+							"iid": "a8243450-73af-51c0-b26b-69ea25abe49d",
+							"width": 16,
+							"height": 16,
+							"defUid": 156,
+							"px": [
+								488,
+								160
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Encounter",
+									"__type": "EntityRef",
+									"__value": {
+										"entityIid": "b0b1c7de-ff3e-539e-bd54-5e4fe13c99cf",
+										"layerIid": "3c67edc3-6cc4-52d8-a0b9-27f7ff503dc6",
+										"levelIid": "6fac896c-7273-5075-9db0-63b597cb141b",
+										"worldIid": "0a310f1f-1725-59aa-9eaf-dcac989ad33f"
+									},
+									"__tile": null,
+									"defUid": 151,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"b0b1c7de-ff3e-539e-bd54-5e4fe13c99cf"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Wave",
+									"__type": "Int",
+									"__value": 2,
+									"__tile": null,
+									"defUid": 152,
+									"realEditorValues": [
+										{
+											"id": "V_Int",
+											"params": [
+												2
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Kind",
+									"__type": "String",
+									"__value": "clockrat",
+									"__tile": null,
+									"defUid": 153,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"clockrat"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 154,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 155,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "WaveSpawn",
+							"__grid": [
+								32,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#E83B3B",
+							"__worldX": 5000,
+							"__worldY": 1920,
+							"iid": "9c390627-06ba-5f90-8fb6-9f42592192d4",
+							"width": 16,
+							"height": 16,
+							"defUid": 156,
+							"px": [
+								520,
+								160
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Encounter",
+									"__type": "EntityRef",
+									"__value": {
+										"entityIid": "b0b1c7de-ff3e-539e-bd54-5e4fe13c99cf",
+										"layerIid": "3c67edc3-6cc4-52d8-a0b9-27f7ff503dc6",
+										"levelIid": "6fac896c-7273-5075-9db0-63b597cb141b",
+										"worldIid": "0a310f1f-1725-59aa-9eaf-dcac989ad33f"
+									},
+									"__tile": null,
+									"defUid": 151,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"b0b1c7de-ff3e-539e-bd54-5e4fe13c99cf"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Wave",
+									"__type": "Int",
+									"__value": 3,
+									"__tile": null,
+									"defUid": 152,
+									"realEditorValues": [
+										{
+											"id": "V_Int",
+											"params": [
+												3
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Kind",
+									"__type": "String",
+									"__value": "clockrat",
+									"__tile": null,
+									"defUid": 153,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"clockrat"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 154,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 155,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "WaveSpawn",
+							"__grid": [
+								34,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#E83B3B",
+							"__worldX": 5032,
+							"__worldY": 1920,
+							"iid": "98450075-3da6-50af-9018-5aacdca3ee4e",
+							"width": 16,
+							"height": 16,
+							"defUid": 156,
+							"px": [
+								552,
+								160
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Encounter",
+									"__type": "EntityRef",
+									"__value": {
+										"entityIid": "b0b1c7de-ff3e-539e-bd54-5e4fe13c99cf",
+										"layerIid": "3c67edc3-6cc4-52d8-a0b9-27f7ff503dc6",
+										"levelIid": "6fac896c-7273-5075-9db0-63b597cb141b",
+										"worldIid": "0a310f1f-1725-59aa-9eaf-dcac989ad33f"
+									},
+									"__tile": null,
+									"defUid": 151,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"b0b1c7de-ff3e-539e-bd54-5e4fe13c99cf"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Wave",
+									"__type": "Int",
+									"__value": 3,
+									"__tile": null,
+									"defUid": 152,
+									"realEditorValues": [
+										{
+											"id": "V_Int",
+											"params": [
+												3
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Kind",
+									"__type": "String",
+									"__value": "clockrat",
+									"__tile": null,
+									"defUid": 153,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"clockrat"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 154,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 155,
+									"realEditorValues": []
+								}
+							]
+						},
+						{
+							"__identifier": "Signpost",
+							"__grid": [
+								37,
+								10
+							],
+							"__pivot": [
+								0.5,
+								1.0
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#AB947A",
+							"__worldX": 5080,
+							"__worldY": 1920,
+							"iid": "6d47ff6d-ad26-5415-8048-dbde3688db4f",
+							"width": 16,
+							"height": 16,
+							"defUid": 79,
+							"px": [
+								600,
+								160
+							],
+							"fieldInstances": [
+								{
+									"__identifier": "Text",
+									"__type": "String",
+									"__value": "warren_deep",
+									"__tile": null,
+									"defUid": 76,
+									"realEditorValues": [
+										{
+											"id": "V_String",
+											"params": [
+												"warren_deep"
+											]
+										}
+									]
+								},
+								{
+									"__identifier": "Requires",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 77,
+									"realEditorValues": []
+								},
+								{
+									"__identifier": "Unless",
+									"__type": "String",
+									"__value": null,
+									"__tile": null,
+									"defUid": 78,
+									"realEditorValues": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"__identifier": "Collisions",
+					"__type": "IntGrid",
+					"__cWid": 40,
+					"__cHei": 11,
+					"__gridSize": 16,
+					"__opacity": 1.0,
+					"__pxTotalOffsetX": 0,
+					"__pxTotalOffsetY": 0,
+					"__tilesetDefUid": null,
+					"__tilesetRelPath": null,
+					"iid": "a5593d0d-8464-5f8d-84be-048a81b2e462",
+					"levelId": 198,
+					"layerDefUid": 2,
+					"pxOffsetX": 0,
+					"pxOffsetY": 0,
+					"visible": true,
+					"optionalRules": [],
+					"intGridCsv": [
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						2,
+						2,
+						2,
+						2,
+						2,
+						2,
+						2,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						2,
+						2,
+						2,
+						2,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						2,
+						2,
+						2,
+						2,
+						2,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						3,
+						3,
+						3,
+						1
+					],
+					"autoLayerTiles": [],
+					"seed": 1000198,
+					"overrideTilesetUid": null,
+					"gridTiles": [],
+					"entityInstances": []
+				}
+			],
+			"__neighbours": [
+				{
+					"dir": "n",
 					"levelIid": "3dddcbfe-bf97-5f4e-9f88-7273c8995e11"
 				}
 			]

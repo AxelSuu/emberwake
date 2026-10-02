@@ -292,6 +292,7 @@ square_great_lamp = "The Great Lamp, cold. Two Quarter Lamps must burn before it
 trial_gate = "Trial doors. Stand at one and press {interact} to run a Trial; your times wait in the menu."
 sluice_valves = "Valves drain the channels for good. Press {interact} at one."
 pump_twist = "The pump door wants weight on the plate and light on the lens, both at once."
+warren_deep = "The water runs deep here. Something that holds air could go down."
 gate_lamps = "The gate wakes when both Quarter Lamps burn: the Clocktower's and the Pump House's."
 
 [echo]

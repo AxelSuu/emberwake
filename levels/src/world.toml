@@ -116,5 +116,8 @@ cell = [12, 9]
 [rooms.Pump_House]
 cell = [16, 9]
 
+[rooms.Rat_Warren]
+cell = [14, 10]
+
 [rooms.Lift_Lab]
 cell = [76, 2]

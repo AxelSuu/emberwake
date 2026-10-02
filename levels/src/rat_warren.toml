@@ -1,0 +1,29 @@
+# Rat_Warren, cell [14, 10] 2x1, the old Enemy_Yard made a room. Entered by the Sluice's pit over
+# x 20..22, which door d shuts while Encounter Z runs: three waves of Clockrats. Clearing it opens
+# door o to Lantern Shard 2. The water at x 36..38 goes down to the Tidal Works with the Bell Jar.
+fields = { Backdrop = "cavern" }
+
+[entities.Z]
+type = "Encounter"
+fields = { Doors = ["d"], Targets = ["o"] }
+[entities.d]
+type = "Door"
+[entities.o]
+type = "Door"
+[entities.a]
+type = "WaveSpawn"
+fields = { Encounter = "Z", Wave = 1, Kind = "clockrat" }
+[entities.b]
+type = "WaveSpawn"
+fields = { Encounter = "Z", Wave = 2, Kind = "clockrat" }
+[entities.c]
+type = "WaveSpawn"
+fields = { Encounter = "Z", Wave = 3, Kind = "clockrat" }
+[entities.S]
+type = "Grant"
+fields = { Thing = "shard" }
+[entities.h]
+type = "Signpost"
+fields = { Text = "warren_deep" }
+[entities.e]
+type = "Ember"
