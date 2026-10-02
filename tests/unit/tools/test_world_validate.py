@@ -374,6 +374,19 @@ class TestLifts:
         assert len(found) == 1
         assert "is behind Platform" in found[0]
 
+    def test_an_inverted_door_its_lever_shuts_is_a_floor_over_the_pit(self):
+        toml = """
+[entities.w]
+type = "Door"
+fields = { Invert = true }
+[entities.l]
+type = "Lever"
+fields = { Targets = ["w"] }
+"""
+        water = "...." + "w" * 14
+        assert reaching(problems(gap("lP" + water[2:], toml))) == []
+        assert len(reaching(problems(gap("..P." + "w" * 14 + "l", toml)))) == 1
+
     def test_a_platform_over_the_pit_without_a_path_is_reported(self):
         toml = '[entities.L]\ntype = "Platform"\nfields = { Path = [] }\n'
         found = problems(gap("..P.LLL", toml))

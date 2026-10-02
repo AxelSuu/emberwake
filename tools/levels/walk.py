@@ -57,7 +57,7 @@ class Walk:
                 if target in by_iid:
                     self.sources[target].append(thing)
         self.memo: dict[tuple[frozenset[str], frozenset[str]], Settled] = {}
-        self.reaches: dict[tuple[frozenset[str], Moves], set[Cell]] = {}
+        self.reaches: dict[tuple[frozenset[str], frozenset[str], Moves], set[Cell]] = {}
         self.tiles = dict(world.tiles)
         for thing in world.things:
             if thing.kind == "Lightform":
@@ -75,14 +75,16 @@ class Walk:
         facts: Known = {HAS + name: 1 for name in abilities}
         wide: set[str] = set()
         opened = set(forced)
+        floors: set[str] = set()  # inverted doors that can be shut: stood on, or passed open
         while True:
             before = (
                 frozenset(abilities),
                 tuple(sorted(facts.items())),
                 frozenset(opened),
+                frozenset(floors),
                 len(wide),
             )
-            cells = self._cells(opened, abilities)
+            cells = self._cells(opened, floors, abilities)
             reached = [t for t in world.things if t.cells & cells and self._present(t, facts, wide)]
             items: Counter[str] = Counter()
             for thing in reached:
@@ -94,25 +96,34 @@ class Walk:
             for gate in self.gates.values():
                 if self._opens(gate, reached, facts, wide):
                     opened.add(gate.iid)
+                inverted = gate.iid in self.doors and gate.entity.field("Invert")
+                if inverted and self._powered(gate, reached, facts, wide):
+                    floors.add(gate.iid)
             after = (
                 frozenset(abilities),
                 tuple(sorted(facts.items())),
                 frozenset(opened),
+                frozenset(floors),
                 len(wide),
             )
             if after == before:
                 rooms = {world.owner[cell] for cell in cells if cell in world.owner}
                 return Settled(abilities, rooms, opened)
 
-    def _cells(self, opened: Collection[str], abilities: Collection[str]) -> set[Cell]:
+    def _cells(
+        self, opened: Collection[str], floors: Collection[str], abilities: Collection[str]
+    ) -> set[Cell]:
         moves = Moves().with_abilities(abilities)
-        key = frozenset(opened), moves
+        key = frozenset(opened), frozenset(floors), moves
         if key not in self.reaches:
             tiles = dict(self.tiles)
             for iid, door in self.doors.items():
-                if iid not in opened:
+                if iid not in opened and not door.entity.field("Invert"):
                     tiles.update(dict.fromkeys(door.cells, Tile.SOLID))
             starts = self.world.starts.get(self.rules.start, [])
+            for iid in floors:
+                free = (cell for cell in self.doors[iid].cells if tiles.get(cell) is Tile.EMPTY)
+                tiles.update(dict.fromkeys(free, Tile.ONE_WAY))
             for iid in opened & self.sweeps.keys():
                 free = (cell for cell in self.sweeps[iid] if tiles.get(cell) is Tile.EMPTY)
                 tiles.update(dict.fromkeys(free, Tile.ONE_WAY))
@@ -124,9 +135,14 @@ class Walk:
         return not requires or _holds(requires, facts, wide)
 
     def _opens(self, gate: Thing, reached: list[Thing], facts: Known, wide: set[str]) -> bool:
-        entity = gate.entity
-        if entity.field("Invert"):
+        if gate.entity.field("Invert"):
             return True
+        if gate.kind == "Platform" and not self.sources[gate.iid]:
+            return True
+        return self._powered(gate, reached, facts, wide)
+
+    def _powered(self, gate: Thing, reached: list[Thing], facts: Known, wide: set[str]) -> bool:
+        """Whether the gate's sources can be switched on, by its `Mode`."""
 
         def on(source: Thing) -> bool:
             if source.kind == "FlagSwitch":
@@ -138,10 +154,8 @@ class Walk:
                 )
             return source in reached
 
-        if gate.kind == "Platform" and not self.sources[gate.iid]:
-            return True
         states = [on(source) for source in self.sources[gate.iid]]
-        return all(states) and bool(states) if entity.field("Mode") == "all" else any(states)
+        return all(states) and bool(states) if gate.entity.field("Mode") == "all" else any(states)
 
     def _effects(
         self, thing: Thing, abilities: set[str], items: Counter[str], facts: Known, wide: set[str]
