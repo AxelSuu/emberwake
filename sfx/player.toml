@@ -81,3 +81,12 @@ sustain = 0.0
 decay = 0.08
 lowpass = 0.5
 variants = 2
+
+[step]
+wave = "noise"
+freq = 260.0
+slide = -0.6
+sustain = 0.0
+decay = 0.04
+lowpass = 0.25
+variants = 4

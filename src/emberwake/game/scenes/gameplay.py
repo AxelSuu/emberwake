@@ -46,8 +46,10 @@ from emberwake.game.cosmetics import Cosmetics, load_cosmetics
 from emberwake.game.data.records import RunResult, format_time, load_records
 from emberwake.game.data.save import Cinder, SaveSlot, load_slot
 from emberwake.game.dialogue import Talk
+from emberwake.game.enemies import Brain
 from emberwake.game.feel import Feel, diff, load_feel
 from emberwake.game.flares import Flare, FlareFizzled, FlareKit, FlareThrown
+from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
 from emberwake.game.interact import Collected, Interactable, Switch
 from emberwake.game.light import Ember, LightSource
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
@@ -61,7 +63,7 @@ from emberwake.game.render.fx import Flash
 from emberwake.game.render.glow import Glows
 from emberwake.game.render.hud import Hud, HudState
 from emberwake.game.render.placeholder import EntityArt, Flicker, PlayerSprite, tile_painter
-from emberwake.game.render.swing_fx import arm, lantern_point, trail
+from emberwake.game.render.player_view import Light, PlayerView
 from emberwake.game.render.toast import Toasts
 from emberwake.game.scenes.dev import FlagsScene, WarpScene
 from emberwake.game.scenes.dialogue import DialogueScene
@@ -100,6 +102,7 @@ PARTICLES = "particles.toml"
 COSMETICS = "cosmetics.toml"
 DIALOGUE = "dialogue.toml"
 TRIALS = "trials.toml"
+GRANTS = "grants.toml"
 COLLISIONS = {1: Tile.SOLID, 2: Tile.ONE_WAY, 3: Tile.HAZARD}
 DEFAULT_ROOM = "Test_Room"
 BAKE_BUDGET = 0.002
@@ -109,10 +112,12 @@ FLICKER_PHASE = 1.37
 """Seconds of flicker between entities with consecutive ids, so lights do not pulse together."""
 BRIGHTNESS_LIFT = 0.6
 """How far the brightness setting at full lifts the darkness toward full light."""
+WALKING = frozenset({"patrol", "charge", "creep", "flee"})
+"""Brain states in which a placeholder enemy bobs as it walks."""
+LANDING_DUST = 0.35
+"""Share of the fall speed above which a landing kicks up dust."""
 HIT_FLASH = 0.12
 """Seconds an enemy shows white after a hit."""
-SHOULDER = 7
-"""Px below the top of the player's body that the lantern swings around."""
 SHAFT_ANGLES = (-22, 0, 22)
 """Degrees either side of straight up for a lit beacon's light shafts."""
 _ember = pygame.Color(palette.EMBER_WARM).lerp(palette.EMBER_HOT, 0.4)
@@ -199,6 +204,7 @@ class GameplayScene(Scene):
         self.art = EntityArt()
         self.bank = SpriteBank(paths.sprites())
         self.glows = Glows()
+        self.view = PlayerView(self.sprite, self.bank, self.glows)
         self._colors: dict[str, tuple[int, int, int]] = {}
 
     def _open_progress(self, room: str | None, replay: Replay | None) -> str:
@@ -243,6 +249,10 @@ class GameplayScene(Scene):
         flares = self.feel.light.flare_charges
         kit = FlareKit(PropWorld(self.grid, (0, 0, 1, 1)), charges=flares, max_charges=flares)
         self.world.insert_resource(kit)
+        data = self.progress.data
+        self.loadout = Loadout(data.abilities, data.inventory, self._read_grants())
+        self.world.insert_resource(self.loadout)
+        kit.max_charges = kit.charges = self._flare_charges()
         self.schedule = gameplay_schedule()
         self._apply_settings()
         self.player = self.world.spawn(*self._new_player())
@@ -285,6 +295,8 @@ class GameplayScene(Scene):
             bus.subscribe(Rested, self._on_rested),
             bus.subscribe(Kindled, self._on_kindled),
             bus.subscribe(CinderRecovered, self._on_cinder),
+            bus.subscribe(Give, self._on_give),
+            bus.subscribe(Granted, self._on_granted),
             bus.subscribe(FlareThrown, self._on_flare),
             bus.subscribe(FlareFizzled, self._on_fizzle),
             *self.progress.subscribe(bus),
@@ -347,6 +359,7 @@ class GameplayScene(Scene):
         skin = self.cosmetics.skin(settings.cosmetics.skin)
         flame = self.cosmetics.lantern(settings.cosmetics.lantern, palette.EMBER_HOT)
         self.sprite = PlayerSprite({k: v for k, v in dataclasses.asdict(skin).items() if v}, flame)
+        self.view.sprite = self.sprite
         color = pygame.Color(flame)
         self.glow = (color.r, color.g, color.b)
         self.time.speed = min(max(settings.assist.game_speed, 0.25), 1.0)
@@ -376,6 +389,10 @@ class GameplayScene(Scene):
         if most > ember.max:
             ember.current += most - ember.max
             ember.max = most
+        kit = self.world.resource(FlareKit)
+        if (charges := self._flare_charges()) > kit.max_charges:
+            kit.charges += charges - kit.max_charges
+            kit.max_charges = charges
 
     def _on_talk(self, event: Talk) -> None:
         graph = self.dialogues.get(event.dialogue)
@@ -512,11 +529,23 @@ class GameplayScene(Scene):
         return body, motor, Ember(most, max=most), health, hurtbox, *swing, Kindle()
 
     def _maximums(self) -> tuple[int, float]:
-        """The player's health and ember capacity, with the shop upgrades bought so far."""
-        flags = self.progress.data.flags
+        """The player's health and flame capacity, with shop upgrades and items found."""
+        flags, loadout = self.progress.data.flags, self.loadout
         hp = self.feel.enemies.player_hp + flags.get(UP_HP, 0) * HP_PER_UPGRADE
+        hp += loadout.bonus_health
         most = self.feel.light.ember_max + flags.get(UP_OIL, 0) * EMBER_PER_UPGRADE
+        most += loadout.bonus_flame
         return hp, most
+
+    def _flare_charges(self) -> int:
+        return self.feel.light.flare_charges + self.loadout.bonus_flares
+
+    def _read_grants(self) -> dict[str, GrantSpec]:
+        try:
+            return load_grants(paths.content(GRANTS))
+        except (OSError, tomllib.TOMLDecodeError, SerdeError) as error:
+            log.error("Could not load %s: %s", GRANTS, error)
+            return {}
 
     def reload(self) -> None:
         """Re-read feel.toml, prefabs and the levels, keeping the player where it is."""
@@ -587,8 +616,7 @@ class GameplayScene(Scene):
                 rooms = sorted(self.rooms.graph.levels)
                 self.manager.push(WarpScene(self.ctx, rooms, self.room, self.warp))
             case pygame.K_F7:
-                flags = self.progress.data.flags
-                self.manager.push(FlagsScene(self.ctx, flags, self._known_flags()))
+                self._flags_overlay()
             case pygame.K_F9:
                 self.save_replay()
             case pygame.K_p:
@@ -597,6 +625,12 @@ class GameplayScene(Scene):
                 self.time.step()
             case pygame.K_COMMA:
                 self.time.toggle_slow()
+
+    def _flags_overlay(self) -> None:
+        data, specs = self.progress.data, self.loadout.specs
+        abilities = [name for name, spec in specs.items() if spec.kind == "ability"]
+        flags = self._known_flags()
+        self.manager.push(FlagsScene(self.ctx, data.flags, flags, data.abilities, abilities))
 
     def warp(self, room: str) -> None:
         """Move the player to `room`'s first PlayerStart, as if it had walked in (dev)."""
@@ -607,6 +641,7 @@ class GameplayScene(Scene):
             body.x, body.y = x - body.width / 2, y - body.height
             motor.vx = motor.vy = 0.0
             motor.previous = (body.x, body.y)
+            self.view.place(body, motor)
         self.camera.snap(*self._camera_target())
 
     def _enter_room(self, room: str, feet: tuple[float, float]) -> None:
@@ -675,6 +710,8 @@ class GameplayScene(Scene):
             self.trial_time += dt
         if self.ghost is not None:
             self.ghost.update(self.grid, dt)
+        if not self.motor.dead:
+            self._animate(dt)
         if self.motor.grounded and not self.motor.dead:
             self.safe = (self.body.center_x, self.body.bottom)
         if not self.free_camera:
@@ -697,6 +734,8 @@ class GameplayScene(Scene):
         impact = min(event.speed / max_fall, 1.0)
         self.ctx.audio.sfx("player/land", impact)
         self.visual.squash(juice.squash * impact)
+        if impact > LANDING_DUST:
+            self._dust("land_dust", event.x, event.y)
         if impact >= juice.hard_landing:
             self.camera.shake.add(juice.hard_landing_trauma)
 
@@ -735,6 +774,23 @@ class GameplayScene(Scene):
         self.to_beacon = True
         self._drop_cinder()
 
+    def _animate(self, dt: float) -> None:
+        """Secondary motion and the dust and footsteps it calls for."""
+        body, motor = self.body, self.motor
+        for event in self.visual.animate(motor, dt):
+            if event == "step":
+                self.ctx.audio.sfx("player/step", 0.5)
+                self._dust("step_dust", body.center_x, body.bottom)
+            else:
+                side = 1 if motor.facing > 0 else -1
+                self._dust("slide_dust", body.center_x + side * body.width / 2, body.y + 6)
+        swing, kindle = self.world.find(self.player, Swing), self.world.find(self.player, Kindle)
+        self.view.update(body, motor, swing, kindle, dt)
+
+    def _dust(self, emitter: str, x: float, y: float) -> None:
+        if (spec := self.emitters.get(emitter)) is not None:
+            self.particles.burst(spec, x, y)
+
     def _respawn(self) -> None:
         """Bring the player back: at the room's entrance after a hazard, else at the beacon."""
         if self.to_beacon:
@@ -749,6 +805,7 @@ class GameplayScene(Scene):
         if self.kept is not None:
             self.world.get(self.player, Health).current = self.kept[0]
             self.world.get(self.player, Ember).current = self.kept[1]
+        self.view.place(self.body, self.motor)
         if self.to_beacon:
             self.camera.snap(*self._camera_target())
         if self.trial is not None:
@@ -774,6 +831,19 @@ class GameplayScene(Scene):
         if cinder is None or self.cinder is not None or cinder.room not in self.rooms.loaded:
             return
         self.cinder = self.world.spawn(*cinder_parts(cinder))
+
+    def _on_give(self, event: Give) -> None:
+        if self.loadout.give(event.thing, event.count):
+            self.ctx.bus.publish(Granted(event.thing, event.count))
+
+    def _on_granted(self, event: Granted) -> None:
+        name = self.ctx.t(f"grant.{event.thing}.name")
+        self.toasts.push(self.ctx.t("grant.found", name=name))
+        self.ctx.audio.sfx("player/kindle")
+        self._apply_upgrades()
+        body = self.body
+        self._dust("kindle", body.center_x, body.y)
+        self.progress.save(self.spawner)
 
     def _on_cinder(self, event: CinderRecovered) -> None:
         self.progress.data.cinder = None
@@ -947,9 +1017,10 @@ class GameplayScene(Scene):
                 self._queue_lit(image, round(body.x) - ox, round(body.y) - oy)
         for eid, body, sprite in self.world.query(Body, Sprite):
             size = (round(body.width), round(body.height))
-            image = self.bank.image(sprite.current, self.clock)
+            image = self._finished(sprite)
+            lift = 0 if image is not None else self._bob(eid)
             image = image or self.art.image(sprite.current, size)
-            _, x, y = self._at(image, (body.center_x - ox, body.bottom - oy))
+            _, x, y = self._at(image, (body.center_x - ox, body.bottom - oy - lift))
             if eid in self.flashes:
                 frame.sprite(flashed(image, self.flashes[eid] / HIT_FLASH), x, y)
             else:
@@ -958,6 +1029,24 @@ class GameplayScene(Scene):
             if interactable.in_range:
                 above = (round(body.center_x) - ox, round(body.y) - oy - 3)
                 frame.sprite(*self._at(self.art.prompt, above), layer=Layer.OVERLAY)
+
+    def _finished(self, sprite: Sprite) -> pygame.Surface | None:
+        """The finished art for `sprite` now: its state's clip, else its looping sheet."""
+        if sprite.state:
+            clip = self.bank.image(f"{sprite.current}_{sprite.state}", sprite.since)
+            if clip is not None:
+                return clip
+        return self.bank.image(sprite.current, self.clock)
+
+    def _bob(self, eid: EntityId) -> int:
+        """A little life for placeholder enemies: walkers bob, fliers float."""
+        brain = self.world.find(eid, Brain)
+        if brain is None:
+            return 0
+        phase = self.clock + eid * FLICKER_PHASE
+        if brain.kind == "wisp_eater":
+            return round(math.sin(phase * 3.0) * 2)
+        return round(abs(math.sin(phase * 14.0))) if brain.state in WALKING else 0
 
     def _queue_lit(
         self, image: pygame.Surface, x: int, y: int, layer: Layer = Layer.ACTORS
@@ -1031,28 +1120,19 @@ class GameplayScene(Scene):
         return image, rect.x, rect.y
 
     def _queue_player(self, light: float, ox: int, oy: int, alpha: float) -> None:
-        p, body, visual = self.motor, self.body, self.visual
-        px, py = p.previous
-        x = px + (body.x - px) * alpha
-        y = py + (body.y - py) * alpha
-        feet = (x + body.width / 2 - ox, y + body.height - oy)
-        lx, ly = self.sprite.lantern_offset(p.facing, visual.scale_x, visual.scale_y)
-        lantern = (feet[0] + lx, feet[1] + ly)
         swing = self.world.find(self.player, Swing)
-        swinging = swing is not None and swing.tick > 0
-        if swing is not None and swinging:
-            shoulder = (feet[0], y + SHOULDER - oy)
-            lantern = lantern_point(swing, self.feel.swing, shoulder, lantern)
-            if (arc := trail(swing, self.feel.swing)) is not None:
-                self.frame.sprite(*self._centred(arc, shoulder), layer=Layer.GLOW)
-        self.frame.light(*lantern, self._lantern_radius(), self.glow, light)
-        image = self.sprite.image(p.facing, visual.scale_x, visual.scale_y, bare=swinging)
-        self._queue_lit(*self._at(image, feet))
-        if swing is not None and swinging:
-            shoulder = (round(feet[0]), round(y + SHOULDER - oy))
-            image, (left, top) = arm(lantern[0] - shoulder[0], lantern[1] - shoulder[1])
-            self.frame.sprite(image, shoulder[0] + left, shoulder[1] + top)
-            self._queue_lit(*self._centred(self.sprite.lantern, lantern))
+        lantern = Light(self._lantern_radius(), self.glow, light)
+        self.view.queue(
+            self.frame,
+            self.body,
+            self.motor,
+            self.visual,
+            swing,
+            self.feel.swing,
+            offset=(ox, oy),
+            alpha=alpha,
+            light=lantern,
+        )
         self._queue_ghost(ox, oy)
 
     def _lantern_radius(self) -> int:

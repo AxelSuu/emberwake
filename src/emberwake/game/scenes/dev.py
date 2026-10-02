@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from emberwake.engine.ui import Button, Label, Panel, ScrollList, Toggle
+from emberwake.engine.ui import Button, Label, Panel, ScrollList, Toggle, Widget
 from emberwake.game.scenes.overlay import Overlay
 
 if TYPE_CHECKING:
@@ -41,11 +41,23 @@ class WarpScene(Overlay):
 
 
 class FlagsScene(Overlay):
-    """Toggle flags of the running game in place: on sets 1, off removes the flag."""
+    """Toggle abilities and flags of the running game in place: on sets 1, off removes the flag."""
 
-    def __init__(self, ctx: GameContext, flags: dict[str, int], names: Iterable[str]) -> None:
+    def __init__(
+        self,
+        ctx: GameContext,
+        flags: dict[str, int],
+        names: Iterable[str],
+        abilities: list[str] | None = None,
+        known_abilities: Iterable[str] = (),
+    ) -> None:
         self.flags = flags
-        rows = [
+        self.abilities = abilities if abilities is not None else []
+        rows: list[Widget] = [
+            Toggle(f"ability: {name}", name in self.abilities, lambda on, n=name: self._own(n, on))
+            for name in sorted({*known_abilities, *self.abilities})
+        ]
+        rows += [
             Toggle(self._label(name), flags.get(name, 0) != 0, lambda on, n=name: self._set(n, on))
             for name in sorted({*names, *flags})
         ]
@@ -55,6 +67,12 @@ class FlagsScene(Overlay):
     def _label(self, name: str) -> str:
         value = self.flags.get(name, 0)
         return f"{name} = {value}" if value not in (0, 1) else name
+
+    def _own(self, ability: str, on: bool) -> None:
+        if on and ability not in self.abilities:
+            self.abilities.append(ability)
+        elif not on and ability in self.abilities:
+            self.abilities.remove(ability)
 
     def _set(self, name: str, on: bool) -> None:
         if on:

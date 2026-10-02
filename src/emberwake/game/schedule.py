@@ -9,6 +9,7 @@ from emberwake.game.combat import combat_system
 from emberwake.game.dialogue import npc_system
 from emberwake.game.enemies import enemy_system
 from emberwake.game.flares import flare_system
+from emberwake.game.grants import grant_system
 from emberwake.game.interact import interact_system, pickup_system, plate_system, trigger_system
 from emberwake.game.light import ember_system, lightform_system
 from emberwake.game.player.kindle import kindle_system
@@ -26,6 +27,7 @@ POST = (
     cinder_system,
     plate_system,
     pickup_system,
+    grant_system,
     combat_system,
     strike_system,
     goal_system,

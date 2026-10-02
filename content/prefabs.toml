@@ -42,6 +42,12 @@ fields = { Value = "Pickup.value" }
 Sprite = { image = "ember" }
 Pickup = {}
 
+[grant]
+fields = { Thing = "Grant.thing", Count = "Grant.count" }
+[grant.components]
+Sprite = { image = "grant" }
+Grant = {}
+
 [lightform]
 [lightform.components]
 Sprite = { image = "lightform", active_image = "lightform_lit" }

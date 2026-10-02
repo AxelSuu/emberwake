@@ -18,6 +18,10 @@ class Sprite:
     active_image: str | None = None
     """Drawn instead while the entity is active: a switch on, a door open."""
     active: bool = False
+    state: str = ""
+    """What it is doing (an enemy's brain state); a finished sheet ``<image>_<state>`` wins."""
+    since: float = 0.0
+    """Seconds in `state`, so a clip starts from its first frame."""
 
     @property
     def current(self) -> str:
@@ -32,6 +36,7 @@ from emberwake.game import (  # noqa: E402, F401
     dialogue,
     enemies,
     flares,
+    grants,
     interact,
     light,
     signals,

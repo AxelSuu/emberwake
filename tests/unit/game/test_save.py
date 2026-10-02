@@ -29,6 +29,7 @@ def test_v1_saves_load():
         world=WorldState({"l-1": {"Switch": {"on": True}}}, ["e-1"]),
         discovered=["r-1", "r-2"],
         stats=Stats(2, 30, 4, 1),
+        abilities=["dash", "flare"],
     )
 
 
@@ -52,3 +53,7 @@ def test_v1_saves_load_without_a_cinder():
     loaded = SAVE_CODEC.load(V1)
     assert loaded.cinder is None
     assert loaded.room == "Lever_Hall"
+
+
+def test_new_games_start_with_only_the_dash():
+    assert SaveSlot(room="Wake").abilities == ["dash"]
