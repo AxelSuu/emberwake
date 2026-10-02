@@ -1,0 +1,11 @@
+fields = { Area = "lab" }
+
+[entities.d]
+type = "DripLurker"
+[entities.g]
+type = "Gearbug"
+[entities.B]
+type = "Brazier"
+fields = { Lit = true }
+[entities.k]
+type = "Beacon"

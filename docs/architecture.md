@@ -6,7 +6,7 @@
 emberwake.app        wiring: builds services, pushes the first scene, runs the loop
 emberwake.game       Emberwake content: scenes, components, systems, data models
 emberwake.engine     reusable, game-agnostic
-  core               pure Python: events, clock, serde, log, mathx, noise, jobs (later: fsm, tween)
+  core               pure Python: events, clock, serde, log, mathx, noise, jobs, bt (later: fsm, tween)
   ecs                pure Python: entities, component stores, queries, resources, phase schedule
   platform           desktop vs browser: storage, documents, display
   scene              scene stack

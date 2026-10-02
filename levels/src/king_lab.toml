@@ -1,0 +1,8 @@
+fields = { Area = "lab" }
+
+[entities.K]
+type = "ClockratKing"
+[entities.r]
+type = "RatSpawn"
+[entities.k]
+type = "Beacon"

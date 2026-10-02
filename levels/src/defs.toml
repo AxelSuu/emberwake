@@ -36,6 +36,13 @@ fields.Targets = { type = "EntityRef", array = true }
 color = "#fbff86"
 doc = "Relight to save and set the continue point"
 
+[entities.Lamp]
+color = "#fbb954"
+size = [16, 32]
+pivot = [0.5, 1.0]
+doc = "A dead lamp post: a swing lights it, a Wisp-eater snuffs it unless its beacon is lit"
+fields.Beacon = { type = "EntityRef", doc = "The beacon that holds it once both are lit" }
+
 [entities.Ember]
 color = "#ea4f36"
 pivot = [0.5, 0.5]
@@ -58,7 +65,20 @@ doc = "A one-way platform that exists only while light reaches it"
 
 [entities.Brazier]
 color = "#f9c22b"
-doc = "A fixed light source"
+doc = "Lit by a swing or a flare; then a light and an on switch for good"
+fields.Targets = { type = "EntityRef", array = true }
+fields.Lit = { type = "Bool", default = false, doc = "Placed already lit" }
+
+[entities.Photocell]
+color = "#8ff8e2"
+doc = "On while the light at it reaches the threshold"
+fields.Targets = { type = "EntityRef", array = true }
+fields.Threshold = { type = "Float", default = 0.4, doc = "Light level, 0 to 1" }
+
+[entities.Bell]
+color = "#fbb954"
+doc = "Swing to ring: stuns nearby enemies and pulses its targets"
+fields.Targets = { type = "EntityRef", array = true }
 
 [entities.Clockrat]
 color = "#b33831"
@@ -77,6 +97,30 @@ color = "#8ff8e2"
 size = [16, 16]
 pivot = [0.5, 0.5]
 doc = "Flier drawn to light; swoops at the player"
+
+[entities.DripLurker]
+color = "#6b3e75"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Hangs from the ceiling above it; drops on the player below when its spot is dark"
+
+[entities.Gearbug]
+color = "#a24b6f"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Patrols behind an armored front and vents on a cycle; pogo its back"
+
+[entities.ClockratKing]
+color = "#b33831"
+size = [32, 32]
+pivot = [0.5, 1.0]
+doc = "Elite: armored but for its crown; charges, calls rats to the RatSpawn markers of its room, topples when hit from above"
+
+[entities.RatSpawn]
+color = "#966c6c"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "Where a Clockrat King's rats appear"
 
 [entities.Tinker]
 color = "#fbb954"
@@ -123,3 +167,24 @@ doc = "Sets a flag when the player enters"
 [entity_fields]
 Requires = { type = "String", doc = "Condition for the entity to be in the world" }
 Unless = { type = "String", doc = "Condition that takes the entity out of the world" }
+
+[entities.CrackedWall]
+color = "#966c6c"
+resizable = true
+doc = "Solid until struck by the lantern"
+
+[entities.Crate]
+color = "#cd683d"
+doc = "Solid breakable; drops embers"
+fields.Embers = { type = "Int", default = 2 }
+
+[entities.Pot]
+color = "#e6904e"
+doc = "Breakable; drops embers"
+fields.Embers = { type = "Int", default = 1 }
+
+[entities.CrumblingPlatform]
+color = "#b33831"
+size = [32, 8]
+resizable = true
+doc = "One-way platform that crumbles under the player"

@@ -20,3 +20,9 @@ fields = { Requires = "quill_stage>=1", Unless = "quill_stage>=2" }
 [entities.r]
 type = "Quill"
 fields = { Requires = "quill_stage>=2" }
+[entities.s]
+type = "SetFlag"
+fields = { Flag = "quill_stage", Mode = "add" }
+[entities.t]
+type = "SetFlag"
+fields = { Flag = "hesper_stage", Mode = "add" }

@@ -1,0 +1,19 @@
+fields = { Area = "lab" }
+
+[entities.w]
+type = "CrackedWall"
+[entities.f]
+type = "CrackedWall"
+[entities.c]
+type = "Crate"
+[entities.C]
+type = "Crate"
+fields = { Embers = 4 }
+[entities.o]
+type = "Pot"
+[entities.z]
+type = "CrumblingPlatform"
+[entities.y]
+type = "CrumblingPlatform"
+[entities.e]
+type = "Ember"

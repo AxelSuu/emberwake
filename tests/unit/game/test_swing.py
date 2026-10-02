@@ -9,7 +9,16 @@ from emberwake.engine.input import InputState
 from emberwake.engine.physics import Body, Tile, TileGrid, TileSource
 from emberwake.engine.world.rooms import WorldGrid
 from emberwake.game.actions import Action
-from emberwake.game.combat import Health, Hitbox, Hurtbox, Killed, Knockback, Team, combat_system
+from emberwake.game.combat import (
+    Guard,
+    Health,
+    Hitbox,
+    Hurtbox,
+    Killed,
+    Knockback,
+    Team,
+    combat_system,
+)
 from emberwake.game.enemies import Brain, EnemyTuning, enemy_system
 from emberwake.game.light import LightTuning
 from emberwake.game.player.controller import Motor
@@ -165,6 +174,18 @@ def test_a_forward_hit_recoils_the_player() -> None:
     room.enemy(115)
     room.swing_now()
     assert room.motor.vx == -TUNING.recoil
+
+
+def test_a_swing_clanging_off_armor_recoils_without_hurting() -> None:
+    room = Room()
+    rat = room.enemy(115)
+    room.world.add(rat, Guard(-1, active=True))
+    room.swing_now()
+    room.tick(ticks=TUNING.active)
+    assert room.world.get(rat, Health).current == 2
+    assert not room.world.has(rat, Knockback)
+    assert room.motor.vx == -TUNING.recoil
+    assert [hit.enemy for hit in room.hits] == [False]
 
 
 def test_swinging_into_a_wall_recoils_and_sparks() -> None:

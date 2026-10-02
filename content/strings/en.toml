@@ -48,6 +48,15 @@ help = "How to play"
 settings = "Settings"
 quit = "Quit to title"
 
+[area]
+light = "Light {percent} %"
+
+[area.quarter]
+name = "The Sunken Quarter"
+
+[area.lab]
+name = "The Lab"
+
 [menu]
 continue = "Continue"
 new = "New game"
