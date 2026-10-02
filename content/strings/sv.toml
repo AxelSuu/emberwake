@@ -274,9 +274,12 @@ name = "Karta över Sjunkna kvarteret"
 
 [sign]
 lore_move = "Spring med {left} och {right}.\nHoppa med {jump}."
+wake_move = "Spring med {left} och {right}."
+wake_jump = "Hoppa med {jump}. Håll inne för ett högre hopp."
 
 [echo]
 lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."
+wake = "Min sista runda. Upp ur brunnen, sedan fjorton lampor före mörkret. Tidvattnet kom först."
 
 [lore]
 echo_heard = "Eko hört"

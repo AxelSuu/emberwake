@@ -275,9 +275,12 @@ name = "Map of the Sunken Quarter"
 
 [sign]
 lore_move = "Run with {left} and {right}.\nJump with {jump}."
+wake_move = "Run with {left} and {right}."
+wake_jump = "Jump with {jump}. Hold it for a higher one."
 
 [echo]
 lore_hall = "I lit this lamp last. The oil ran out before the street did."
+wake = "My last round. Up the well, then fourteen lamps before dark. The tide came first."
 
 [lore]
 echo_heard = "Echo heard"
