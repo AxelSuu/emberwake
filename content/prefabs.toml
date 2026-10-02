@@ -110,3 +110,12 @@ Interactable = { prompt = "listen" }
 LightSource = { radius = 36.0, strength = 0.6, color = "#8ff8e2" }
 Echo = {}
 Recording = {}
+
+[lost_light]
+fields = { Id = "Spirit.id" }
+persist = ["LostLight"]
+[lost_light.components]
+Sprite = { image = "lost_light" }
+LightSource = { radius = 44.0, strength = 0.7, color = "#fbb954" }
+LostLight = {}
+Spirit = {}

@@ -120,6 +120,13 @@ pivot = [0.5, 1.0]
 doc = "Interact to watch a lamplighter's last moments: a ghost replay and a line of text"
 fields.Id = { type = "String", default = "", doc = "Names content/echoes/<Id>.json and the string echo.<Id>" }
 
+[entities.LostLight]
+color = "#fbb954"
+size = [16, 16]
+pivot = [0.5, 1.0]
+doc = "A spirit that follows the player to a beacon and is rescued there"
+fields.Id = { type = "String", default = "", doc = "Names the flag lost_light_<Id>" }
+
 # Fields every entity type has. Conditions use the dialogue syntax; has.<thing> reads abilities
 # (1 or 0) and item counts. See docs/specs/world-flags.md.
 [entity_fields]

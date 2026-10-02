@@ -10,8 +10,12 @@ from emberwake.engine.physics import Body
 from emberwake.engine.scene import SceneManager
 from emberwake.engine.world.ldtk import load_project
 from emberwake.game import paths
+from emberwake.game.actions import Action
 from emberwake.game.areas import LightCensus, load_areas
+from emberwake.game.combat import Killed
+from emberwake.game.components import Sprite
 from emberwake.game.lore import Echo, EchoPlay, Sign, speeches
+from emberwake.game.lost_lights import Spirit
 from emberwake.game.scenes.gameplay import GameplayScene
 
 if TYPE_CHECKING:
@@ -39,6 +43,11 @@ def stand_at(game: GameplayScene, component: type) -> None:
         game.body.x, game.body.y = body.x, body.y + body.height - game.body.height
         return
     raise AssertionError(component)
+
+
+def census_of(game: GameplayScene) -> LightCensus:
+    levels = load_project(game.world_path).all_levels
+    return LightCensus(levels, game.spawner.prefabs, load_areas(paths.content("areas.toml")).light)
 
 
 def said(game: GameplayScene) -> list[str]:
@@ -123,11 +132,72 @@ def test_an_echo_counts_once_however_often_it_is_heard(ctx: GameContext) -> None
 
 def test_a_heard_echo_is_saved_and_counts_toward_the_light(ctx: GameContext) -> None:
     _, game = start(ctx)
-    levels = load_project(game.world_path).all_levels
-    areas = load_areas(paths.content("areas.toml"))
-    census = LightCensus(levels, game.spawner.prefabs, areas.light)
+    census = census_of(game)
     before = census.count(game.progress.data.world)["lab"]
     _, game = hear_the_echo(ctx)
     game.spawner.snapshot_all()
     after = census.count(game.progress.data.world)["lab"]
     assert (after.lit, after.total) == (before.lit + 1, before.total)
+
+
+def drive(game: GameplayScene, actions: frozenset[Action]) -> None:
+    game.__dict__["_sample"] = lambda: actions
+
+
+def light_of(game: GameplayScene) -> tuple[Body, Spirit]:
+    ((_, body, spirit),) = game.world.query(Body, Spirit)
+    return body, spirit
+
+
+def lead_the_light(scenes: SceneManager, game: GameplayScene, limit: int = 900) -> None:
+    """Walk to the light, then right until it is rescued or time is up."""
+    stand_at(game, Spirit)
+    drive(game, frozenset({Action.RIGHT}))
+    for _ in range(limit):
+        scenes.update(STEP)
+        if game.progress.data.flags.get("lost_lights"):
+            break
+
+
+def test_a_lost_light_follows_the_player_to_the_beacon_and_is_rescued(ctx: GameContext) -> None:
+    scenes, game = start(ctx)
+    body, spirit = light_of(game)
+    home = body.x
+    lead_the_light(scenes, game)
+    flags = game.progress.data.flags
+    assert flags["lost_light_lore_hall"] == flags["lost_lights"] == 1
+    assert body.x > home + 100
+    assert not spirit.following
+    assert len(game.toasts) == 1
+    settle(scenes)
+    ((eid, _),) = game.world.query(Spirit)
+    assert not game.world.has(eid, Sprite)
+
+
+def test_a_rescued_light_is_saved_and_counts_toward_the_light(ctx: GameContext) -> None:
+    scenes, game = start(ctx)
+    census = census_of(game)
+    before = census.count(game.progress.data.world)["lab"]
+    lead_the_light(scenes, game)
+    game.spawner.snapshot_all()
+    after = census.count(game.progress.data.world)["lab"]
+    assert (after.lit, after.total) == (before.lit + 1, before.total)
+
+
+def test_dying_sends_the_light_home_and_it_can_be_led_again(ctx: GameContext) -> None:
+    scenes, game = start(ctx)
+    body, spirit = light_of(game)
+    home = (body.x, body.y)
+    stand_at(game, Spirit)
+    drive(game, frozenset({Action.RIGHT}))
+    settle(scenes, 90)
+    assert spirit.following
+    assert body.x > home[0] + 40
+    game.ctx.bus.publish(Killed(game.player, game.player))
+    drive(game, frozenset())
+    settle(scenes, 120)
+    assert (body.x, body.y) == home
+    assert not spirit.following
+    assert game.progress.data.flags.get("lost_lights", 0) == 0
+    lead_the_light(scenes, game)
+    assert game.progress.data.flags["lost_lights"] == 1

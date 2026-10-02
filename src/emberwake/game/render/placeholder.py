@@ -330,6 +330,12 @@ class EntityArt:
         pygame.draw.circle(image, palette.MIST, (w // 2, h - 8), 2)
 
     @staticmethod
+    def _lost_light(image: pygame.Surface, rect: pygame.Rect) -> None:
+        pygame.draw.circle(image, palette.EMBER_WARM, rect.center, 6)
+        pygame.draw.circle(image, palette.EMBER_HOT, rect.center, 4)
+        pygame.draw.circle(image, palette.EMBER_CORE, rect.center, 2)
+
+    @staticmethod
     def _goal(image: pygame.Surface, rect: pygame.Rect) -> None:
         for y in range(rect.top, rect.bottom, 8):
             image.fill(palette.EMBER_CORE, (rect.left + 2, y, 3, 4))

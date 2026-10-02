@@ -40,6 +40,7 @@ from emberwake.game import (  # noqa: E402, F401
     interact,
     light,
     lore,
+    lost_lights,
     signals,
     trials,
 )

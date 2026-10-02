@@ -69,7 +69,7 @@ def test_an_echo_without_a_replay_still_speaks():
     assert speech.text == STRINGS.t("echo.lore_hall")
 
 
-def test_every_sign_and_echo_in_the_world_has_its_content():
+def test_every_sign_echo_and_lost_light_in_the_world_has_its_content():
     problems = []
     for level in load_project(paths.levels("world.ldtk")).all_levels:
         for entity in level.entities():
@@ -80,6 +80,10 @@ def test_every_sign_and_echo_in_the_world_has_its_content():
                 key = f"echo.{ident}"
             elif entity.identifier == "Signpost":
                 key = f"sign.{ident}"
+            elif entity.identifier == "LostLight":
+                if not ident:
+                    problems.append(f"{level.identifier}: a Lost Light has no Id")
+                continue
             else:
                 continue
             problems += [

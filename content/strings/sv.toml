@@ -232,3 +232,4 @@ lore_hall = "Jag tände den här lampan sist. Oljan tog slut före gatan."
 
 [lore]
 echo_heard = "Eko hört"
+rescued = "Förlorat ljus räddat"

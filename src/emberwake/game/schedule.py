@@ -14,6 +14,7 @@ from emberwake.game.grants import grant_system
 from emberwake.game.interact import interact_system, pickup_system, plate_system, trigger_system
 from emberwake.game.light import ember_system, lightform_system
 from emberwake.game.lore import echo_system
+from emberwake.game.lost_lights import lost_light_system
 from emberwake.game.player.kindle import kindle_system
 from emberwake.game.player.swing import strike_system, swing_system
 from emberwake.game.player.system import player_system
@@ -27,6 +28,7 @@ POST = (
     room_system,
     trigger_system,
     flag_system,
+    lost_light_system,
     cinder_system,
     plate_system,
     pickup_system,

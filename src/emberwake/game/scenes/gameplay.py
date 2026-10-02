@@ -54,6 +54,7 @@ from emberwake.game.grants import Give, Granted, GrantSpec, Loadout, load_grants
 from emberwake.game.interact import Collected, Interactable, Switch
 from emberwake.game.light import Ember, LightSource
 from emberwake.game.lore import EchoHeard, EchoPlay, speeches
+from emberwake.game.lost_lights import LostLightRescued, Spirit
 from emberwake.game.player.controller import Dashed, Died, Jumped, Landed, Motor, new_player
 from emberwake.game.player.kindle import Kindle, Kindled
 from emberwake.game.player.swing import Swing, SwingHit, SwingStarted
@@ -304,6 +305,7 @@ class GameplayScene(Scene):
             bus.subscribe(CinderRecovered, self._on_cinder),
             bus.subscribe(Give, self._on_give),
             bus.subscribe(EchoHeard, self._on_echo),
+            bus.subscribe(LostLightRescued, self._on_rescued),
             bus.subscribe(Granted, self._on_granted),
             bus.subscribe(FlareThrown, self._on_flare),
             bus.subscribe(FlareFizzled, self._on_fizzle),
@@ -860,6 +862,13 @@ class GameplayScene(Scene):
         self.ctx.audio.sfx("player/kindle")
         self.progress.save(self.spawner)
 
+    def _on_rescued(self, event: LostLightRescued) -> None:
+        self.toasts.push(self.ctx.t("lore.rescued"))
+        self.ctx.audio.sfx("player/kindle")
+        if (burst := self.emitters.get("kindle")) is not None:
+            self.particles.burst(burst, event.x, event.y)
+        self.progress.save(self.spawner)
+
     def _on_cinder(self, event: CinderRecovered) -> None:
         self.progress.data.cinder = None
         self.cinder = None
@@ -1026,7 +1035,8 @@ class GameplayScene(Scene):
             fx, fy = body.center_x - ox, body.y + body.height / 2 - oy
             color = self._light_color(source.color)
             strength = self._flicker(eid) * source.strength
-            key = None if self.world.has(eid, Flare) else self._still(eid, body)
+            moving = self.world.has(eid, Flare) or self.world.has(eid, Spirit)
+            key = None if moving else self._still(eid, body)
             frame.light(fx, fy, round(source.radius), color, strength, key=key)
             if self.world.has(eid, Flare):
                 image = self.art.image("flare", (round(body.width), round(body.height)))

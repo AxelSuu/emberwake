@@ -233,3 +233,4 @@ lore_hall = "I lit this lamp last. The oil ran out before the street did."
 
 [lore]
 echo_heard = "Echo heard"
+rescued = "Lost Light rescued"
